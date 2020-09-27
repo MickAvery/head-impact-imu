@@ -7,10 +7,6 @@
             "label": "make",
             "type": "shell",
             "command": "make",
-            "options":
-            {
-                "cwd":"${workspaceFolder}/ble_app/ble_app_cli_pcb"
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -20,10 +16,7 @@
             "label": "clean",
             "type": "shell",
             "command": "make clean",
-            "options":
-            {
-                "cwd":"${workspaceFolder}/ble_app/ble_app_cli_pcb"
-            }
+            "problemMatcher": []
         }
     ]
 }
