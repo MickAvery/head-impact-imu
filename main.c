@@ -7,6 +7,8 @@
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
+#include "nrf_drv_clock.h"
+#include "app_timer.h"
 #include "datetime.h"
 #include "shell.h"
 
@@ -17,9 +19,17 @@
  */
 int main(void)
 {
-    /* initialize shell interface for user inputs */
-    shell_init();
+    /* initialize the LFCLK to be used by multiple peripherals */
+    ret_code_t ret = nrf_drv_clock_init();
+    APP_ERROR_CHECK(ret);
+    nrf_drv_clock_lfclk_request(NULL);
+
+    ret = app_timer_init();
+    APP_ERROR_CHECK(ret);
+
+    /* initialize system modules */
     datetime_init();
+    shell_init();
 
     while(1)
     {

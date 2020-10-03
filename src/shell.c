@@ -6,10 +6,8 @@
 
 #include "shell.h"
 #include "nrf.h"
-#include "app_timer.h"
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
-#include "nrf_drv_clock.h"
 
 /**
  * @notapi
@@ -93,13 +91,6 @@ NRF_CLI_DEF(cli_uart,
 void shell_init(void)
 {
     ret_code_t ret;
-
-    ret = nrf_drv_clock_init();
-    APP_ERROR_CHECK(ret);
-    nrf_drv_clock_lfclk_request(NULL);
-
-    ret = app_timer_init();
-    APP_ERROR_CHECK(ret);
 
     /**
      * Configure the UART peripheral
