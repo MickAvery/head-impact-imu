@@ -12,6 +12,7 @@ $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
 SRC_FILES += \
   main.c \
   src/shell.c \
+  src/datetime.c \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_flash.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \

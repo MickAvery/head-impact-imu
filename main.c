@@ -7,6 +7,7 @@
 #include "nrf.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
+#include "datetime.h"
 #include "shell.h"
 
 /**
@@ -18,6 +19,7 @@ int main(void)
 {
     /* initialize shell interface for user inputs */
     shell_init();
+    datetime_init();
 
     while(1)
     {

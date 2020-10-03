@@ -88,8 +88,7 @@ NRF_CLI_DEF(cli_uart,
  ******************/
 
 /**
- * @brief 
- * 
+ * @brief Initialize she CLI for user inputs
  */
 void shell_init(void)
 {
@@ -124,8 +123,7 @@ void shell_init(void)
 }
 
 /**
- * @brief 
- * 
+ * @brief Shell process to be called continuously in main()
  */
 void shell_process(void)
 {
