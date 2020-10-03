@@ -85,6 +85,12 @@ datetime_err_code_t datetime_set(datetime_t* datetime_in)
         datetime.sec = datetime_in->sec;
         datetime.msec =  datetime_in->msec;
 
+        /* enable OVRFLW event and interrupt */
+        nrf_drv_rtc_overflow_enable(&rtc, true);
+
+        /* enable RTC instance */
+        nrf_drv_rtc_enable(&rtc);
+
         ret = DATETIME_OK;
     }
 
@@ -96,7 +102,14 @@ datetime_err_code_t datetime_set(datetime_t* datetime_in)
  * 
  * @return datetime_err_code_t Error code, what went wrong?
  */
-datetime_err_code_t datetime_reset(void);
+datetime_err_code_t datetime_reset(void)
+{
+    datetime_err_code_t ret = DATETIME_ERR;
+
+    /* TODO */
+
+    return ret;
+}
 
 /**
  * @brief Get datetime values
@@ -104,4 +117,11 @@ datetime_err_code_t datetime_reset(void);
  * @param datetime_out pointer to datetime struct to store datetime info
  * @return datetime_err_code_t datetime_err_code_t Error code, what went wrong?
  */
-datetime_err_code_t datetime_get(datetime_t* datetime_out);
+datetime_err_code_t datetime_get(datetime_t* datetime_out)
+{
+    datetime_err_code_t ret = DATETIME_ERR;
+
+    /* TODO */
+
+    return ret;
+}
