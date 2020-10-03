@@ -5,6 +5,8 @@
  */
 
 #include "nrf.h"
+#include "nrf_gpio.h"
+#include "nrf_delay.h"
 #include "shell.h"
 
 /**
@@ -20,6 +22,7 @@ int main(void)
     while(1)
     {
         /* infinite loop */
+        shell_process();
     }
 
     /* we should never get here */

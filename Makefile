@@ -78,6 +78,7 @@ SRC_FILES += \
 INC_FOLDERS += \
   . \
   inc \
+  board_config \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/components/libraries/cli \
   $(SDK_ROOT)/modules/nrfx/mdk \
@@ -127,7 +128,7 @@ INC_FOLDERS += \
 LIB_FILES += \
 
 # Optimization flags
-OPT = -O3 -g3
+OPT = -O0 -g3
 # Uncomment the line below to enable link time optimization
 #OPT += -flto
 
@@ -135,11 +136,12 @@ OPT = -O3 -g3
 CFLAGS += $(OPT)
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
-CFLAGS += -DBOARD_PCA10040
-CFLAGS += -DNRF_CLI
+CFLAGS += -DBOARD_CUSTOM
+CFLAGS += -DNRF52832_MDK
+# CFLAGS += -DNRF_CLI
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
-CFLAGS += -DDEBUG
-CFLAGS += -DDEBUG_NRF
+# CFLAGS += -DDEBUG
+# CFLAGS += -DDEBUG_NRF
 CFLAGS += -DFLOAT_ABI_HARD
 CFLAGS += -DNRF52
 CFLAGS += -DNRF52832_XXAA

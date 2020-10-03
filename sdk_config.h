@@ -579,7 +579,7 @@
 // <e> NRF_CRYPTO_ENABLED - nrf_crypto - Cryptography library.
 //==========================================================
 #ifndef NRF_CRYPTO_ENABLED
-#define NRF_CRYPTO_ENABLED 1
+#define NRF_CRYPTO_ENABLED 0
 #endif
 // <o> NRF_CRYPTO_ALLOCATOR  - Memory allocator
  
@@ -7162,7 +7162,7 @@
  
 
 #ifndef NRF_SORTLIST_ENABLED
-#define NRF_SORTLIST_ENABLED 0
+#define NRF_SORTLIST_ENABLED 1
 #endif
 
 // <q> NRF_SPI_MNGR_ENABLED  - nrf_spi_mngr - SPI transaction manager
@@ -7196,7 +7196,7 @@
 // <e> TASK_MANAGER_ENABLED - task_manager - Task manager.
 //==========================================================
 #ifndef TASK_MANAGER_ENABLED
-#define TASK_MANAGER_ENABLED 1
+#define TASK_MANAGER_ENABLED 0
 #endif
 // <q> TASK_MANAGER_CLI_CMDS  - Enable CLI commands specific to the module
  
@@ -7244,7 +7244,7 @@
  
 
 #ifndef BUTTON_ENABLED
-#define BUTTON_ENABLED 1
+#define BUTTON_ENABLED 0
 #endif
 
 // <q> BUTTON_HIGH_ACCURACY_ENABLED  - Enables GPIOTE high accuracy for buttons
@@ -7304,7 +7304,7 @@
 
 // <o> NRF_CLI_CMD_BUFF_SIZE - Maximum buffer size for a single command. 
 #ifndef NRF_CLI_CMD_BUFF_SIZE
-#define NRF_CLI_CMD_BUFF_SIZE 384
+#define NRF_CLI_CMD_BUFF_SIZE 256
 #endif
 
 // <q> NRF_CLI_ECHO_STATUS  - CLI echo status. If set, echo is ON.
@@ -7318,7 +7318,7 @@
  
 
 #ifndef NRF_CLI_WILDCARD_ENABLED
-#define NRF_CLI_WILDCARD_ENABLED 1
+#define NRF_CLI_WILDCARD_ENABLED 0
 #endif
 
 // <q> NRF_CLI_METAKEYS_ENABLED  - Enable additional control keys for CLI commands like ctrl+a, ctrl+e, ctrl+w, ctrl+u
@@ -7354,7 +7354,7 @@
  
 
 #ifndef NRF_CLI_VT100_COLORS_ENABLED
-#define NRF_CLI_VT100_COLORS_ENABLED 1
+#define NRF_CLI_VT100_COLORS_ENABLED 0
 #endif
 
 // <q> NRF_CLI_STATISTICS_ENABLED  - Enable CLI statistics.
