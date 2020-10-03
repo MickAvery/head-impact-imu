@@ -28,6 +28,32 @@ static void hello_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
 /**
  * @notapi
+ * @brief Set system datetime
+ */
+static void datetime_set_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    /* Printing help if needed */
+    if ((argc == 1) || nrf_cli_help_requested(p_cli))
+    {
+        nrf_cli_help_print(p_cli, NULL, 0);
+        return;
+    }
+}
+
+/**
+ * @notapi
+ * @brief Get system datetime
+ */
+static void datetime_get_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    
+}
+
+/**
+ * @notapi
  * @brief Print out status of system peripherals
  */
 static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
@@ -43,7 +69,7 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
  * @notapi
  * @brief System test for timer library
  */
-static void systest_timer(nrf_cli_t const* p_cli, size_t argc, char** argv)
+static void systest_datetime(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
@@ -52,20 +78,34 @@ static void systest_timer(nrf_cli_t const* p_cli, size_t argc, char** argv)
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n\nTODO\n\n");
 }
 
-/**
- * Register the subcommands, pair them to their command names using NRF5's API
- */
-NRF_CLI_CREATE_STATIC_SUBCMD_SET(systest_subcmds)
+/***************************************************************************************
+ * Register the systest subcommands, pair them to their command names using NRF5's API
+ ***************************************************************************************/
+
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(datetime_subcmds)
 {
-    /* NOTE: make sure subcommands are in alphabetical order */
-    NRF_CLI_CMD(timer, NULL,  "help string", systest_timer),
+    NRF_CLI_CMD(get, NULL, "help string", datetime_get_cmd),
+    NRF_CLI_CMD(set, NULL,
+        "Set system datetime.\n"
+        "Input is in format \"YYYY MM DD HH MM SS sss\"\n"
+        "where S is seconds and s is milliseconds",
+        datetime_set_cmd),
     NRF_CLI_SUBCMD_SET_END
 };
 
-/**
- * Register the functions, pair them to their command names using NRF5's API
- */
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(systest_subcmds)
+{
+    /* NOTE: make sure subcommands are in alphabetical order */
+    NRF_CLI_CMD(datetime, NULL,  "help string", systest_datetime),
+    NRF_CLI_SUBCMD_SET_END
+};
+
+/***************************************************************************************
+ * Register the commands, pair them to their command names using NRF5's API
+ ***************************************************************************************/
+
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
+NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
 NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysprop_cmd);
 NRF_CLI_CMD_REGISTER(systest, &systest_subcmds, "Test system peripherals", NULL);
 
@@ -98,7 +138,7 @@ void shell_init(void)
     uart_cfg.pseltxd = 13; /* TODO: set proper pin! */
     uart_cfg.pselrxd = 12; /* TODO: set proper pin! */
     uart_cfg.hwfc    = NRF_UART_HWFC_DISABLED;
-    uart_cfg.baudrate = NRF_UART_BAUDRATE_115200;
+    uart_cfg.baudrate = NRF_UART_BAUDRATE_921600;
     ret = nrf_cli_init(&cli_uart,
                        &uart_cfg,
                        false, /* colored prints disabled */
