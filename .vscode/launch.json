@@ -46,12 +46,9 @@
             "openOCDPreConfigLaunchCommands": ["telnet_port disabled"],
             "openOCDLaunchCommands": [
                 "gdb_flash_program enable", "gdb_breakpoint_override hard"
-                // "init", "reset init", "halt", "nrf5 mass_erase", "set WORKAREASIZE 0x4000",
-                // "program C:/Users/Mav/Documents/workspace/cpen491/head_impact_IMU-master/nrf_sdk/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex"
             ],
             "preLaunchCommands": [
-                // "init", "reset init", "halt", "nrf5 mass_erase", "set WORKAREASIZE 0x4000",
-                "mon reset init", "mon reset halt", "mon nrf5 mass_erase", "mon set WORKAREASIZE 0x4000",
+                "mon reset halt", "mon reset init", "mon nrf5 mass_erase", "mon set WORKAREASIZE 0x4000",
                 "mon program C:/Users/Mav/Documents/workspace/cpen491/head_impact_IMU-master/nrf_sdk/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex"
             ],
             "runToMain": true,
