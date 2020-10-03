@@ -12,7 +12,8 @@
 #include "nrf_drv_clock.h"
 
 /**
- * Implement functions here
+ * @notapi
+ * @brief The mother of all C programs 
  */
 static void hello_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
@@ -21,16 +22,54 @@ static void hello_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
         "\n"
-        "******************\n"
-        "\tHello World!\n"
-        "******************\n"
+        "************\n"
+        "Hello World!\n"
+        "************\n"
         "\n");
 }
+
+/**
+ * @notapi
+ * @brief Print out status of system peripherals
+ */
+static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    /* TODO: */
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n\nTODO\n\n");
+}
+
+/**
+ * @notapi
+ * @brief System test for timer library
+ */
+static void systest_timer(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    /* TODO: */
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n\nTODO\n\n");
+}
+
+/**
+ * Register the subcommands, pair them to their command names using NRF5's API
+ */
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(systest_subcmds)
+{
+    /* NOTE: make sure subcommands are in alphabetical order */
+    NRF_CLI_CMD(timer, NULL,  "help string", systest_timer),
+    NRF_CLI_SUBCMD_SET_END
+};
 
 /**
  * Register the functions, pair them to their command names using NRF5's API
  */
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
+NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysprop_cmd);
+NRF_CLI_CMD_REGISTER(systest, &systest_subcmds, "Test system peripherals", NULL);
 
 /**
  * UART configurations for CLI
