@@ -8,6 +8,7 @@
 #include "nrf.h"
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
+#include "datetime.h"
 
 /**
  * @brief The number of arguments that the datetime_set() command expects:
@@ -58,13 +59,17 @@ static void datetime_set_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         nrf_cli_help_print(p_cli, NULL, 0);
         return;
     } else {
-        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
-            "\n"
-            "TODO:\n"
-            "Set datetime : %s-%s-%s %s:%s:%s:%s\n"
-            "\n",
-            argv[SHELL_YEAR], argv[SHELL_MONTH], argv[SHELL_DAY],
-            argv[SHELL_HOUR], argv[SHELL_MIN], argv[SHELL_SEC], argv[SHELL_MSEC]);
+        datetime_t dt = {
+            (uint16_t)atoi(argv[SHELL_YEAR]),
+            (uint8_t)atoi(argv[SHELL_MONTH]),
+            (uint8_t)atoi(argv[SHELL_DAY]),
+            (uint8_t)atoi(argv[SHELL_HOUR]),
+            (uint8_t)atoi(argv[SHELL_MIN]),
+            (uint8_t)atoi(argv[SHELL_SEC]),
+            (uint16_t)atoi(argv[SHELL_MSEC])
+        };
+
+        datetime_set(&dt);
     }
 }
 
@@ -74,7 +79,19 @@ static void datetime_set_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
  */
 static void datetime_get_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
-    
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    datetime_t dt;
+
+    if(datetime_get(&dt) == DATETIME_OK) {
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+            "%04d-%02d-%02d %02d:%02d:%02d:%03d\n",
+            dt.year, dt.month, dt.day, dt.hr, dt.min, dt.sec, dt.msec);
+    } else {
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+            "\nUnable to get datetime information\n");
+    }
 }
 
 /**
