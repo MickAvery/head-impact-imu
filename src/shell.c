@@ -10,6 +10,23 @@
 #include "nrf_cli_uart.h"
 
 /**
+ * @brief The number of arguments that the datetime_set() command expects:
+ *        YYYY, MM, DD, HH, MM, SS, sss
+ */
+typedef enum
+{
+    SHELL_SET_CMD = 0, /*!< By default, the first string in argv is always the command string */
+    SHELL_YEAR,
+    SHELL_MONTH,
+    SHELL_DAY,
+    SHELL_HOUR,
+    SHELL_MIN,
+    SHELL_SEC,
+    SHELL_MSEC,
+    SHELL_DATETIME_NUMARGS
+} shell_dt_args_t;
+
+/**
  * @notapi
  * @brief The mother of all C programs 
  */
@@ -36,10 +53,18 @@ static void datetime_set_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
     /* Printing help if needed */
-    if ((argc == 1) || nrf_cli_help_requested(p_cli))
+    if ((argc < SHELL_DATETIME_NUMARGS) || nrf_cli_help_requested(p_cli))
     {
         nrf_cli_help_print(p_cli, NULL, 0);
         return;
+    } else {
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+            "\n"
+            "TODO:\n"
+            "Set datetime : %s-%s-%s %s:%s:%s:%s\n"
+            "\n",
+            argv[SHELL_YEAR], argv[SHELL_MONTH], argv[SHELL_DAY],
+            argv[SHELL_HOUR], argv[SHELL_MIN], argv[SHELL_SEC], argv[SHELL_MSEC]);
     }
 }
 
@@ -88,7 +113,8 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(datetime_subcmds)
     NRF_CLI_CMD(set, NULL,
         "Set system datetime.\n"
         "Input is in format \"YYYY MM DD HH MM SS sss\"\n"
-        "where S is seconds and s is milliseconds",
+        "  - where HH is in 24-hour format\n"
+        "  - where S is seconds and s is milliseconds\n",
         datetime_set_cmd),
     NRF_CLI_SUBCMD_SET_END
 };
