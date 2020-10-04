@@ -5,6 +5,7 @@
  */
 
 #include "datetime.h"
+#include "arm_math.h"
 #include "nrf.h"
 #include "nrf_drv_rtc.h"
 
@@ -17,6 +18,11 @@ const nrf_drv_rtc_t rtc = NRF_DRV_RTC_INSTANCE(0);
  * @brief RTC configuration
  */
 static nrf_drv_rtc_config_t rtc_config = NRF_DRV_RTC_DEFAULT_CONFIG;
+
+/**
+ * @brief Precise RTC period in ms
+ */
+static float32_t rtc_period = 0.0f;
 
 /**
  * @brief Tracks number of overflow events, significantly increasing the lifetime of the RTC passed the 24-bit RTC COUNTER register.
@@ -64,6 +70,7 @@ void datetime_init(void)
      *   f_rtc [kHz] = 32.768 / (PRESCALER + 1 )
      */
     rtc_config.prescaler = 32U; /* we want a tick with rate of 2 kHz, TODO: magic number */
+    rtc_period =  33.0f / 32.768f; /* TODO: magic number */
     datetime_state = DATETIME_UNSET;
     ret = nrf_drv_rtc_init(&rtc, &rtc_config, rtc_handler);
     APP_ERROR_CHECK(ret);
@@ -152,6 +159,7 @@ datetime_err_code_t datetime_get(datetime_t* datetime_out)
 
         /* get number of milliseconds since last time set */
         uint32_t carryover = (OVRFLW_MULTIPLIER * overflow_counter) + rtc_counter;
+        float32_t carryover_flt = (float32_t)(OVRFLW_MULTIPLIER * overflow_counter + rtc_counter) * rtc_period;
 
         /* sdjlkhfd */
         uint8_t overflow = 0;
@@ -160,16 +168,18 @@ datetime_err_code_t datetime_get(datetime_t* datetime_out)
             uint32_t divider = clock_dividers[i];
 
             /* determine how much to add to this time unit */
-            uint32_t time_addition = carryover % divider;
+            uint32_t time_addition = 0U;
+
+            time_addition = (i == DT_MSEC) ? ((uint32_t)carryover_flt % divider) : (carryover % divider) ;
 
             /* determine the carryover to the next time unit */
-            carryover = carryover / divider;
+            carryover = (i == DT_MSEC) ? ((uint32_t)carryover_flt / divider) : (carryover / divider);
 
             /* add to time, determine if there are any overflows */
             uint32_t new_time = 0U;
             switch(i) {
                 case DT_MSEC:
-                    new_time = datetime.msec + time_addition + overflow;
+                    new_time = datetime.msec + time_addition;
                     datetime_out->msec = new_time % divider;
                     break;
                 case DT_SEC:
