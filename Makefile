@@ -94,7 +94,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/toolchain/cmsis/include \
   $(SDK_ROOT)/components/libraries/util \
   $(SDK_ROOT)/components/libraries/hardfault \
-  ./ble_app/config \
   $(SDK_ROOT)/components/libraries/balloc \
   $(SDK_ROOT)/components/libraries/ringbuf \
   $(SDK_ROOT)/components/libraries/hardfault/nrf52 \
