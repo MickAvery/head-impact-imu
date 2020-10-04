@@ -6,39 +6,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: File corrente",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
-            "type": "cortex-debug",
-            "request": "launch",
-            "name": "Debug (pyOCD)",
-            "servertype": "pyocd",
-            "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}/ble_app/ble_app_cli_pcb/_build/nrf52832_xxaa.out",
-            "device": "nrf52832_xxaa",
-            "targetId": "nrf52",
-            "boardId": ""
-        },
-        {
-            "type": "cortex-debug",
-            "request": "launch",
-            "name": "Debug J-Link",
-            "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}/_build/nrf52832_xxaa.out",
-            "serverpath": "C:\\Program Files (x86)\\SEGGER\\JLink\\JLinkGDBServerCL",
-            "servertype": "jlink",
-            "device": "nrf52832_xxaa",
-            "interface": "swd",
-            "serialNumber": "", //if you have more than one J-Link probe add the serial number here 
-            "jlinkscript": "",
-            "runToMain": true,
-            "svdFile": "C:\\Program Files\\SEGGER\\Ozone\\Config\\CPU\\Cortex-M4F.svd"
-        },
-        {
             "type": "cortex-debug",
             "request": "launch",
             "name": "Debug OpenOCD",
@@ -70,6 +37,39 @@
                 "mon program C:/Users/Mav/Documents/workspace/cpen491/head_impact_IMU-master/nrf_sdk/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex"
             ],
             "runToMain": true,
+        },
+        {
+            "type": "cortex-debug",
+            "request": "launch",
+            "name": "Debug (pyOCD)",
+            "servertype": "pyocd",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceRoot}/ble_app/ble_app_cli_pcb/_build/nrf52832_xxaa.out",
+            "device": "nrf52832_xxaa",
+            "targetId": "nrf52",
+            "boardId": ""
+        },
+        {
+            "type": "cortex-debug",
+            "request": "launch",
+            "name": "Debug J-Link",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceRoot}/_build/nrf52832_xxaa.out",
+            "serverpath": "C:\\Program Files (x86)\\SEGGER\\JLink\\JLinkGDBServerCL",
+            "servertype": "jlink",
+            "device": "nrf52832_xxaa",
+            "interface": "swd",
+            "serialNumber": "", //if you have more than one J-Link probe add the serial number here 
+            "jlinkscript": "",
+            "runToMain": true,
+            "svdFile": "C:\\Program Files\\SEGGER\\Ozone\\Config\\CPU\\Cortex-M4F.svd"
+        },
+        {
+            "name": "Python: File corrente",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
         }
     ]
 }

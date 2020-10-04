@@ -10,6 +10,10 @@ Python version >= 3.7
 
 `pipenv shell`
 
+## Install Python packages to the virtual environment
+
+
+
 ## Run a script
 
 `pipenv run python .\script.py`

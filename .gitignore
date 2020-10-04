@@ -17,6 +17,5 @@ material/*
 .build
 .mbed
 projectfiles
-*.py*
 .vs/
 *.log
