@@ -86,7 +86,7 @@ static void datetime_get_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     if(datetime_get(&dt) == DATETIME_OK) {
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
-            "%04d-%02d-%02d %02d:%02d:%02d:%03d\n",
+            "%04d-%02d-%02d %02d:%02d:%02d.%03d\n",
             dt.year, dt.month, dt.day, dt.hr, dt.min, dt.sec, dt.msec);
     } else {
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
