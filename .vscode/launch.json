@@ -6,6 +6,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: File corrente",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
             "type": "cortex-debug",
             "request": "launch",
             "name": "Debug (pyOCD)",
@@ -22,14 +29,14 @@
             "name": "Debug J-Link",
             "cwd": "${workspaceRoot}",
             "executable": "${workspaceRoot}/_build/nrf52832_xxaa.out",
-            "serverpath": "C:\\Program Files (x86)\\SEGGER\\JLink\\JLinkGDBServerCL", 
+            "serverpath": "C:\\Program Files (x86)\\SEGGER\\JLink\\JLinkGDBServerCL",
             "servertype": "jlink",
             "device": "nrf52832_xxaa",
             "interface": "swd",
             "serialNumber": "", //if you have more than one J-Link probe add the serial number here 
-            "jlinkscript":"",
+            "jlinkscript": "",
             "runToMain": true,
-            "svdFile": "C:\\Program Files\\SEGGER\\Ozone\\Config\\CPU\\Cortex-M4F.svd" 
+            "svdFile": "C:\\Program Files\\SEGGER\\Ozone\\Config\\CPU\\Cortex-M4F.svd"
         },
         {
             "type": "cortex-debug",
@@ -41,17 +48,28 @@
             "interface": "swd",
             "servertype": "openocd",
             "svdFile": "C:/Program Files/SEGGER/Ozone/Config/CPU/Cortex-M4F.svd",
-            "searchDir": ["C:/OpenOCD-20200729-0.10.0/share/openocd/scripts/"],
-            "configFiles": ["interface/stlink.cfg", "target/nrf52.cfg"],
-            "openOCDPreConfigLaunchCommands": ["telnet_port disabled"],
+            "searchDir": [
+                "C:/OpenOCD-20200729-0.10.0/share/openocd/scripts/"
+            ],
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/nrf52.cfg"
+            ],
+            "openOCDPreConfigLaunchCommands": [
+                "telnet_port disabled"
+            ],
             "openOCDLaunchCommands": [
-                "gdb_flash_program enable", "gdb_breakpoint_override hard"
+                "gdb_flash_program enable",
+                "gdb_breakpoint_override hard"
             ],
             "preLaunchCommands": [
-                "mon reset halt", "mon reset init", "mon nrf5 mass_erase", "mon set WORKAREASIZE 0x4000",
+                "mon reset init",
+                "mon reset halt",
+                "mon nrf5 mass_erase",
+                "mon set WORKAREASIZE 0x4000",
                 "mon program C:/Users/Mav/Documents/workspace/cpen491/head_impact_IMU-master/nrf_sdk/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex"
             ],
             "runToMain": true,
         }
-        ]
-    }
+    ]
+}
