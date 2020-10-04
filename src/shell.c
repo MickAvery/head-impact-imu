@@ -23,7 +23,7 @@ typedef enum
     SHELL_HOUR,
     SHELL_MIN,
     SHELL_SEC,
-    SHELL_MSEC,
+    SHELL_USEC,
     SHELL_DATETIME_NUMARGS
 } shell_dt_args_t;
 
@@ -66,7 +66,7 @@ static void datetime_set_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
             (uint8_t)atoi(argv[SHELL_HOUR]),
             (uint8_t)atoi(argv[SHELL_MIN]),
             (uint8_t)atoi(argv[SHELL_SEC]),
-            (uint16_t)atoi(argv[SHELL_MSEC])
+            (uint32_t)atoi(argv[SHELL_USEC])
         };
 
         datetime_set(&dt);
@@ -86,8 +86,8 @@ static void datetime_get_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     if(datetime_get(&dt) == DATETIME_OK) {
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
-            "%04d-%02d-%02d %02d:%02d:%02d.%03d\n",
-            dt.year, dt.month, dt.day, dt.hr, dt.min, dt.sec, dt.msec);
+            "%04d-%02d-%02d %02d:%02d:%02d.%06d\n",
+            dt.year, dt.month, dt.day, dt.hr, dt.min, dt.sec, dt.usec);
     } else {
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
             "\nUnable to get datetime information\n");
@@ -129,7 +129,7 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(datetime_subcmds)
     NRF_CLI_CMD(get, NULL, "help string", datetime_get_cmd),
     NRF_CLI_CMD(set, NULL,
         "Set system datetime.\n"
-        "Input is in format \"YYYY MM DD HH MM SS sss\"\n"
+        "Input is in format \"YYYY MM DD HH MM SS ffffff\"\n"
         "  - where HH is in 24-hour format\n"
         "  - where S is seconds and s is milliseconds\n",
         datetime_set_cmd),
