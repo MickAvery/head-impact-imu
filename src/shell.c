@@ -157,11 +157,11 @@ NRF_CLI_CMD_REGISTER(systest, &systest_subcmds, "Test system peripherals", NULL)
  */
 static nrf_drv_uart_config_t uart_cfg = NRF_DRV_UART_DEFAULT_CONFIG;
 
-NRF_CLI_UART_DEF(cli_uart_transport, 0, 64, 16); /* TODO: magic numbers */
+NRF_CLI_UART_DEF(cli_uart_transport, 0, 64, 64); /* TODO: magic numbers */
 NRF_CLI_DEF(cli_uart,
             "SimplLab:~$ ",
             &cli_uart_transport.transport,
-            '\r',
+            '\n',
             4U); /* TODO: magic number */
 
 /******************
