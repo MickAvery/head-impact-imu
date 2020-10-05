@@ -69,8 +69,8 @@ void datetime_init(void)
     /* NOTE: frequency of RTC clock tick is determined by:
      *   f_rtc [kHz] = 32.768 / (PRESCALER + 1 )
      */
-    rtc_config.prescaler = 15U; /* we want a tick with rate of 1 kHz, TODO: magic number */
-    rtc_period =  16000.0f / 32.768f; /* TODO: magic number */ /* save RTC period in usec */
+    rtc_config.prescaler = 32U; /* we want a tick with rate of 1 kHz, TODO: magic number */
+    rtc_period =  33000.0f / 32.768f; /* TODO: magic number */ /* save RTC period in usec */
     datetime_state = DATETIME_UNSET;
     ret = nrf_drv_rtc_init(&rtc, &rtc_config, rtc_handler);
     APP_ERROR_CHECK(ret);
@@ -179,10 +179,12 @@ datetime_err_code_t datetime_get(datetime_t* datetime_out)
             /* determine how much to add to this time unit */
             uint32_t time_addition = 0U;
 
-            time_addition = (i == DT_USEC) ? ((uint32_t)carryover_flt % divider) : (carryover % divider) ;
+            /* carryover_flt can get to a point when it becomes greater than the max 32-bit integer, so use uin64_t types */
+            time_addition = (i == DT_USEC) ? (uint32_t)((uint64_t)carryover_flt % (uint64_t)divider) : (carryover % divider) ;
 
             /* determine the carryover to the next time unit */
-            carryover = (i == DT_USEC) ? ((uint32_t)carryover_flt / divider) : (carryover / divider);
+            /* carryover_flt can get to a point when it becomes greater than the max 32-bit integer, so use uin64_t types */
+            carryover = (i == DT_USEC) ? (uint32_t)((uint64_t)carryover_flt / (uint64_t)divider) : (carryover / divider);
 
             /* add to time, determine if there are any overflows */
             uint32_t new_time = 0U;
