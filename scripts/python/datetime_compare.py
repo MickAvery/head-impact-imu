@@ -14,7 +14,7 @@ print(
 ##
 # Serial communication setup
 ##
-ser = serial.Serial()
+ser = serial.Serial(timeout=1)
 ser.baudrate = 921600
 ser.port = 'COM9'
 ser.open()
@@ -61,7 +61,17 @@ with open("timedeltas.csv","w+") as my_csv:
         # get datetime from device
         ser.write('datetime get\n'.encode('ascii'))
         actual = ser.readline().decode('utf-8')
-        actual = re.search(r'(\d{4}(-){1}\d+(-){1}\d+ \d{2}(:){1}\d{2}(:){1}\d{2}(.){1}\d{6})', actual).group(1)
+        actual = re.search(r'(\d{4}(-){1}\d+(-){1}\d+ \d{2}(:){1}\d{2}(:){1}\d{2}(.){1}\d{6})', actual)
+
+        # if timeout occurred, flush buffer and continue
+        if actual == None:
+            ser.write('\n'.encode('ascii'))
+            sleep(0.001)
+            ser.flushInput()
+            print('Missed data')
+            continue
+
+        actual = actual.group(1)
 
         # parse datetime from device
         dt_expected = dt.now()
