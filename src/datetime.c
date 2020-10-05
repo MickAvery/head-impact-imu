@@ -28,18 +28,45 @@ static float32_t rtc_period = 0.0f;
  * @brief Tracks number of overflow events, significantly increasing the lifetime of the RTC passed the 24-bit RTC COUNTER register.
  *        This is multiplied with the multiplier that corresponds to the 24-bit counter to determine how many clock ticks have passed.
  */
-static uint32_t overflow_counter = 0U;
+static volatile uint32_t overflow_counter = 0U;
 #define OVRFLW_MULTIPLIER (0xffffffU)
 
 /**
  * @brief Module state
  */
 static datetime_state_t datetime_state = DATETIME_UNINIT;
+/**
+ * @brief This enum is used to help in iterating through the time units when calculating the new time (see datetime_get())
+ */
+typedef enum
+{
+    DT_USEC = 0,
+    DT_SEC,
+    DT_MIN,
+    DT_HR,
+    DT_DAY,
+    DT_MONTH,
+    DT_YEAR,
+    DT_PARAMS_MAX
+} datetime_params_t;
 
 /**
- * @brief Datetime info stored
+ * @brief These dividers are used to calculate the carryover from one time unit to another
  */
-datetime_t datetime = {0, 0, 0, 0, 0, 0, 0};
+static uint32_t clock_dividers[DT_PARAMS_MAX] = {
+    1000000U,   /*!< 1M usecs in a sec */
+    60U,        /*!< 60 secs in a min */
+    60U,        /*!< 60 mins in an hr */
+    24U,        /*!< 24 hrs in a day */
+    31U,        /*!< 31 days in a month TODO: programatically determine this */
+    12U,        /*!< 12 months in a year */
+    0xffffffffU /*!< Doesn't matter because year is the largest time unit */
+};
+
+/**
+ * @brief Datetime info stored, to be modified by datetime_set() and retrieved by datetime_get()
+ */
+static datetime_t datetime = {0, 0, 0, 0, 0, 0, 0};
 
 /******************
  * Event handlers
@@ -123,31 +150,6 @@ datetime_err_code_t datetime_reset(void)
 
     return ret;
 }
-
-typedef enum
-{
-    DT_USEC = 0,
-    DT_SEC,
-    DT_MIN,
-    DT_HR,
-    DT_DAY,
-    DT_MONTH,
-    DT_YEAR,
-    DT_PARAMS_MAX
-} datetime_params_t;
-
-/**
- * @brief These dividers are used to calculate the carryover from one time unit to another
- */
-static uint32_t clock_dividers[DT_PARAMS_MAX] = {
-    1000000U,   /*!< 1M usecs in a sec */
-    60U,        /*!< 60 secs in a min */
-    60U,        /*!< 60 mins in an hr */
-    24U,        /*!< 24 hrs in a day */
-    31U,        /*!< 31 days in a month TODO: programatically determine this */
-    12U,        /*!< 12 months in a year */
-    0xffffffffU /*!< Doesn't matter because year is the largest time unit */
-};
 
 /**
  * @brief Get datetime values
