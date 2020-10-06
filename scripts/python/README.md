@@ -12,7 +12,7 @@ Python version >= 3.7
 
 ## Install Python packages to the virtual environment
 
-
+`pipenv install <package>`
 
 ## Run a script
 

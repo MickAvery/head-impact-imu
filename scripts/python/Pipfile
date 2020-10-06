@@ -7,6 +7,9 @@ verify_ssl = true
 
 [packages]
 pyserial = "*"
+jupyter = "*"
+pandas = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.8"
