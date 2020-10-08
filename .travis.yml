@@ -1,0 +1,14 @@
+language: c
+
+branches:
+  only:
+      - master
+
+addons:
+  apt:
+    packages:
+      - libnewlib-arm-none-eabi
+      - gcc-arm-none-eabi
+
+script:
+  - make
