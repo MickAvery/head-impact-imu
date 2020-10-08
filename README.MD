@@ -1,4 +1,6 @@
 # Head Impact IMU Firmware
+[![Build Status](https://travis-ci.com/MickAvery/head-impact-imu.svg?token=y7e1R8bdiekpTEcRM39a&branch=master)](https://travis-ci.com/MickAvery/head-impact-imu)
+
 This is the project folder for the IMU firmware. It includes the nRF5 SDK 15.2.0 source files and the nrf52832_mdk development board config files. 
 
 ## Setting up breadboard development environment
