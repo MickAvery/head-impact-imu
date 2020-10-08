@@ -44,7 +44,7 @@
             "name": "Debug (pyOCD)",
             "servertype": "pyocd",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}/ble_app/ble_app_cli_pcb/_build/nrf52832_xxaa.out",
+            "executable": "${workspaceRoot}/_build/nrf52832_xxaa.out",
             "device": "nrf52832_xxaa",
             "targetId": "nrf52",
             "boardId": ""
