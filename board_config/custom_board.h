@@ -44,8 +44,8 @@
 extern "C" {
 #endif
 
-#if defined NRF52832_MDK
-#include "nrf52832_mdk.h"
+#if defined PIN_MAP_REV_2
+#include "pin_mappings_rev_2.h"
 #elif defined IMU_PCB_REV1
 #include "imu_pcb_rev1.h"
 #else

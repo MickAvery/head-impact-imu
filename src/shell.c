@@ -5,6 +5,7 @@
  */
 
 #include "shell.h"
+#include "custom_board.h"
 #include "nrf.h"
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
