@@ -11,6 +11,7 @@
 #include "app_timer.h"
 #include "datetime.h"
 #include "shell.h"
+#include "spi.h"
 
 /**
  * @brief Main firmware entry point
@@ -28,6 +29,7 @@ int main(void)
     APP_ERROR_CHECK(ret);
 
     /* initialize system modules */
+    spi_init();
     datetime_init();
     shell_init();
 

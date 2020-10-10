@@ -1,0 +1,8 @@
+DRIVERPATH = $(PROJ_DIR)/drivers
+
+include $(DRIVERPATH)/adxl372/adxl372.mk
+include $(DRIVERPATH)/spi/spi.mk
+
+DRIVERSRC = $(ADXL372SRC) $(SPISRC)
+
+DRIVERINC = $(ADXL372INC) $(SPIINC)
