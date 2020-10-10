@@ -15,7 +15,8 @@
 #include "adxl372.h"
 
 static const adxl372_cfg_t adxl372_cfg = {
-    ADXL372_ODR_6400HZ
+    ADXL372_ODR_6400HZ,
+    ADXL372_MODE_FULLBAND
 };
 
 /**

@@ -23,6 +23,17 @@ typedef enum
 } adxl372_odr_t;
 
 /**
+ * @brief Configurable driver modes
+ */
+typedef enum
+{
+    ADXL372_MODE_STANDBY = 0, /*!< Standby mode */
+    ADXL372_MODE_WAKEUP,      /*!< Wakeup mode */
+    ADXL372_MODE_INSTANT_ON,  /*!< Instant on mode */
+    ADXL372_MODE_FULLBAND     /*!< Full bandwidth measurement mode */
+} adxl372_mode_t;
+
+/**
  * @brief ADXL372 Driver error definitions
  */
 typedef enum
@@ -59,6 +70,7 @@ typedef float32_t adxl372_val_t;
 typedef struct
 {
     adxl372_odr_t odr;
+    adxl372_mode_t mode;
 } adxl372_cfg_t;
 
 #ifdef __cplusplus

@@ -16,7 +16,7 @@
 #define ADXL372_PARTID_ADDR            0x02U /*!< Address of Device ID Register [READ-ONLY] */
 #define ADXL372_PARTID_EXPECTED_VAL    0xFAU /*!< Expected value stored in Device ID register */
 
-#define ADXL372_STATUS_ADDR            0xA0U /*!< Address of Status register [READ-ONLY] */
+#define ADXL372_STATUS_ADDR            0x04U /*!< Address of Status register [READ-ONLY] */
 #define ADXL372_STATUS_DATA_RDY_MASK   0x01U /*!< Mask for DATA RDY bit in Status register */
 
 #define ADXL372_XDATA_H_ADDR           0x08U /*!< Address of X Data H Register [READ-ONLY] */
@@ -28,5 +28,8 @@
 
 #define ADXL372_TIMING_ADDR            0x3CU /*!< Address of Timing Register [R/W] */
 #define ADXL372_TIMING_ODR_MASK        0xE0U /*!< Mask for ODR bits in Timing register */
+
+#define ADXL372_POWER_CTL_ADDR         0x3FU /*!< Address of Power Control Register */
+#define ADXL372_POWER_CTL_MODE_MASK    0x03U /*!< Mask for MODE bits in Power Control Register */
 
 #endif /* ADXL372_REG_H */

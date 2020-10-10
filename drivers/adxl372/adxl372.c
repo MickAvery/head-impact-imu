@@ -74,6 +74,18 @@ static void configure_odr(adxl372_odr_t odr)
     write_reg(ADXL372_TIMING_ADDR, &tx, 1U);
 }
 
+/**
+ * @brief Configure device mode of operation
+ * 
+ * @param mode
+ */
+static void configure_mode(adxl372_mode_t mode)
+{
+    uint8_t tx = mode & ADXL372_POWER_CTL_MODE_MASK;
+
+    write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
+}
+
 /******************************
  * API
  ******************************/
@@ -94,6 +106,7 @@ void adxl372_init(const adxl372_cfg_t* cfg)
         /* SPI communication successful, let's configure the IMU */
         adxl372.cfg = cfg;
         configure_odr(cfg->odr);
+        configure_mode(cfg->mode);
 
         adxl372.state = ADXL372_STATE_ACTIVE;
     }
@@ -107,6 +120,14 @@ void adxl372_init(const adxl372_cfg_t* cfg)
 void adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
 {
     uint8_t buf[ADXL372_AXES*2U] = {0U};
+    uint8_t status = 0U;
+
+    /* wait for data ready */
+    do
+    {
+        read_reg(ADXL372_STATUS_ADDR, &status, 1U);
+    } while(!(status & ADXL372_STATUS_DATA_RDY_MASK));
+
     read_reg(ADXL372_XDATA_H_ADDR, buf, ADXL372_AXES*2);
 
     /* format data, since it was received in big-endian format (ARM is little endian) */

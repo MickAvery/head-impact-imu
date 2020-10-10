@@ -122,7 +122,13 @@ static void adxl372_print_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     while(rx != ctrl_c)
     {
-        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "TESTING\n");
+        adxl372_val_raw_t readings[ADXL372_AXES] = {0U};
+        adxl372_read_raw(readings);
+
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+            "%d\t%d\t%d\n",
+            readings[ADXL372_X], readings[ADXL372_Y], readings[ADXL372_Z]);
+
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
     }
 }
