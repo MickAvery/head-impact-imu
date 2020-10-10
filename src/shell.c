@@ -10,6 +10,7 @@
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
 #include "datetime.h"
+#include "adxl372.h"
 
 /**
  * @brief The number of arguments that the datetime_set() command expects:
@@ -104,8 +105,18 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
-    /* TODO: */
-    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n\nTODO\n\n");
+    bool adxl372_stat = false;
+
+    if(adxl372_status() == ADXL372_ERR_OK)
+        adxl372_stat = true;
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+        "\n"
+        "/********************\n"
+        " * SYSTEM PROPERTIES\n"
+        " ********************/\n"
+        " - ADXL372 - [%s]\n"
+        "\n", adxl372_stat ? "OK" : "FAILED");
 }
 
 /**
