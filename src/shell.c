@@ -163,7 +163,7 @@ NRF_CLI_DEF(cli_uart,
             "SimplLab:~$ ",
             &cli_uart_transport.transport,
             '\n',
-            4U); /* TODO: magic number */
+            4U); /* TODO: magic number, but this is log queue size */
 
 /******************
  * Start of API
@@ -179,9 +179,9 @@ void shell_init(void)
     /**
      * Configure the UART peripheral
      */
-    uart_cfg.pseltxd = 13; /* TODO: set proper pin! */
-    uart_cfg.pselrxd = 12; /* TODO: set proper pin! */
-    uart_cfg.hwfc    = NRF_UART_HWFC_DISABLED;
+    uart_cfg.pseltxd  = TX_PIN_NUMBER;
+    uart_cfg.pselrxd  = RX_PIN_NUMBER;
+    uart_cfg.hwfc     = NRF_UART_HWFC_DISABLED;
     uart_cfg.baudrate = NRF_UART_BAUDRATE_921600;
     ret = nrf_cli_init(&cli_uart,
                        &uart_cfg,
