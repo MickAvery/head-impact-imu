@@ -30,6 +30,18 @@ typedef enum
 } shell_dt_args_t;
 
 /**
+ * UART configurations for CLI
+ */
+static nrf_drv_uart_config_t uart_cfg = NRF_DRV_UART_DEFAULT_CONFIG;
+
+NRF_CLI_UART_DEF(cli_uart_transport, 0, 64, 64); /* TODO: magic numbers */
+NRF_CLI_DEF(cli_uart,
+            "SimplLab:~$ ",
+            &cli_uart_transport.transport,
+            '\n',
+            4U); /* TODO: magic number, but this is log queue size */
+
+/**
  * @notapi
  * @brief The mother of all C programs 
  */
@@ -98,6 +110,25 @@ static void datetime_get_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
 /**
  * @notapi
+ * @brief Continuously print out ADXL372 sensor readings
+ */
+static void adxl372_print_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    uint8_t rx = 0U;
+    uint8_t ctrl_c = 0x03U;
+
+    while(rx != ctrl_c)
+    {
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "TESTING\n");
+        nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
+    }
+}
+
+/**
+ * @notapi
  * @brief Print out status of system peripherals
  */
 static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
@@ -148,6 +179,12 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(datetime_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(imu_subcmds)
+{
+    NRF_CLI_CMD(adxl372, NULL, "Print out ADXL372 sensor readings", adxl372_print_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
 NRF_CLI_CREATE_STATIC_SUBCMD_SET(systest_subcmds)
 {
     /* NOTE: make sure subcommands are in alphabetical order */
@@ -161,20 +198,9 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(systest_subcmds)
 
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
+NRF_CLI_CMD_REGISTER(imu, &imu_subcmds, "Print IMU values", NULL);
 NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysprop_cmd);
 NRF_CLI_CMD_REGISTER(systest, &systest_subcmds, "Test system peripherals", NULL);
-
-/**
- * UART configurations for CLI
- */
-static nrf_drv_uart_config_t uart_cfg = NRF_DRV_UART_DEFAULT_CONFIG;
-
-NRF_CLI_UART_DEF(cli_uart_transport, 0, 64, 64); /* TODO: magic numbers */
-NRF_CLI_DEF(cli_uart,
-            "SimplLab:~$ ",
-            &cli_uart_transport.transport,
-            '\n',
-            4U); /* TODO: magic number, but this is log queue size */
 
 /******************
  * Start of API

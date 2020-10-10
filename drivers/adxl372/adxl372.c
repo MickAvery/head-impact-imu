@@ -41,18 +41,37 @@ static adxl_372_t adxl372 = {ADXL372_STATE_INACTIVE, NULL};
  * Helper functions
  ******************************/
 
-// static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
-// {
+static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
+{
+    uint8_t buf[32U] = {0U}; /* TODO: magic number */
+    uint8_t addr = (reg_addr << 1U);
 
-// }
+    /* format buffer to send */
+    buf[0] = addr;
+    memcpy(buf+1, tx, txn);
+
+    spi_transfer(SPI_INSTANCE_1, SPI_DEV_ADXL372, buf, txn+1, NULL, 0);
+}
 
 static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
 {
-    uint8_t buf[32] = {0U};
+    uint8_t buf[32U] = {0U}; /* TODO: magic number */
     uint8_t addr = (reg_addr << 1U) | 1U;
     spi_transfer(SPI_INSTANCE_1, SPI_DEV_ADXL372, &addr, 1U, buf, rxn + 1U);
 
     memcpy(rx, buf+1U, rxn);
+}
+
+/**
+ * @brief Configure driver to run at ODR specified
+ * 
+ * @param odr
+ */
+static void configure_odr(adxl372_odr_t odr)
+{
+    uint8_t tx = (odr << 5U) & ADXL372_TIMING_ODR_MASK;
+
+    write_reg(ADXL372_TIMING_ADDR, &tx, 1U);
 }
 
 /******************************
@@ -73,8 +92,27 @@ void adxl372_init(const adxl372_cfg_t* cfg)
     if(devid_ad == ADXL372_DEVID_AD_EXPECTED_VAL)
     {
         /* SPI communication successful, let's configure the IMU */
+        adxl372.cfg = cfg;
+        configure_odr(cfg->odr);
 
         adxl372.state = ADXL372_STATE_ACTIVE;
+    }
+}
+
+/**
+ * @brief Read raw linear acceleration data from sensor (values straight from registers)
+ * 
+ * @param readings - Buffer to store data
+ */
+void adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
+{
+    uint8_t buf[ADXL372_AXES*2U] = {0U};
+    read_reg(ADXL372_XDATA_H_ADDR, buf, ADXL372_AXES*2);
+
+    /* format data, since it was received in big-endian format (ARM is little endian) */
+    for(size_t i = 0U ; i < ADXL372_AXES*2 ; i+=2U)
+    {
+        readings[i/2U] = (((uint16_t)buf[i+1] << 8U) | (uint16_t)buf[i]);
     }
 }
 
