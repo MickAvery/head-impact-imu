@@ -8,11 +8,15 @@ PROJ_DIR := ./
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
   LINKER_SCRIPT  := ble_app_cli_gcc_nrf52.ld
 
+#include submakefiles
+include $(PROJ_DIR)/src/src.mk
+include $(PROJ_DIR)/drivers/drivers.mk
+
 # Source files common to all targets
 SRC_FILES += \
   main.c \
-  src/shell.c \
-  src/datetime.c \
+  $(PROJ_SRCS) \
+  $(DRIVERSRC) \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_flash.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \
@@ -21,7 +25,6 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_default_backends.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_frontend.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_str_formatter.c \
-  $(SDK_ROOT)/components/boards/boards.c \
   $(SDK_ROOT)/components/libraries/mpu/nrf_mpu.c \
   $(SDK_ROOT)/components/libraries/stack_guard/nrf_stack_guard.c \
   $(SDK_ROOT)/components/libraries/button/app_button.c \
@@ -58,10 +61,13 @@ SRC_FILES += \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_power.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_uart.c \
+  $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_spi.c \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd/nrf_nvic.c \
   $(SDK_ROOT)/modules/nrfx/hal/nrf_nvmc.c \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd/nrf_soc.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_clock.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spi.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_spim.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_power.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_power_clock.c \
@@ -69,7 +75,6 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_rtc.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uart.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_uarte.c \
-  $(SDK_ROOT)/components/libraries/bsp/bsp.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -80,6 +85,7 @@ INC_FOLDERS += \
   . \
   inc \
   board_config \
+  $(DRIVERINC) \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/components/libraries/cli \
   $(SDK_ROOT)/modules/nrfx/mdk \
@@ -98,7 +104,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/ringbuf \
   $(SDK_ROOT)/components/libraries/hardfault/nrf52 \
   $(SDK_ROOT)/components/libraries/cli/uart \
-  $(SDK_ROOT)/components/libraries/bsp \
   $(SDK_ROOT)/components/libraries/log \
   $(SDK_ROOT)/components/libraries/button \
   $(SDK_ROOT)/components/libraries/mpu \
@@ -112,7 +117,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/atomic_fifo \
   $(SDK_ROOT)/components/drivers_nrf/nrf_soc_nosd \
   $(SDK_ROOT)/components/libraries/atomic \
-  $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/libraries/memobj \
   $(SDK_ROOT)/external/fnmatch \
   $(SDK_ROOT)/integration/nrfx \
@@ -135,7 +139,8 @@ OPT = -O0 -g3
 # C flags common to all targets
 CFLAGS += $(OPT)
 CFLAGS += -DBOARD_CUSTOM
-CFLAGS += -DNRF52832_MDK
+# CFLAGS += -DPCB_REV_1
+CFLAGS += -DPCB_REV_2
 # CFLAGS += -DNRF_CLI
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 # CFLAGS += -DDEBUG
@@ -175,10 +180,11 @@ LDFLAGS += $(OPT)
 LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk -T$(LINKER_SCRIPT)
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+LDFLAGS += -u _printf_float
 # let linker dump unused sections
 LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
-LDFLAGS += --specs=nano.specs
+LDFLAGS += --specs=nano.specs -lc -lnosys
 
 nrf52832_xxaa: CFLAGS += -D__HEAP_SIZE=8192
 nrf52832_xxaa: CFLAGS += -D__STACK_SIZE=8192
@@ -211,7 +217,11 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 .PHONY: flash erase
 
-# Flash the program
+pyocdflash:
+	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
+	pyocd -t nrf52 -se _build/nrf52832_xxaa.hex
+
+# Flash the program using nRF Command Line Tools
 flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex --sectorerase

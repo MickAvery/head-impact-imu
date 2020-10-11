@@ -11,6 +11,14 @@
 #include "app_timer.h"
 #include "datetime.h"
 #include "shell.h"
+#include "spi.h"
+#include "adxl372.h"
+
+static const adxl372_cfg_t adxl372_cfg = {
+    ADXL372_ODR_6400HZ,
+    ADXL372_MODE_FULLBAND,
+    ADXL372_BW_3200HZ
+};
 
 /**
  * @brief Main firmware entry point
@@ -28,6 +36,8 @@ int main(void)
     APP_ERROR_CHECK(ret);
 
     /* initialize system modules */
+    spi_init();
+    adxl372_init(&adxl372_cfg);
     datetime_init();
     shell_init();
 
