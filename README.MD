@@ -81,7 +81,7 @@ The `makefile` is located in  `<your path >/head_impact_IMU/ble_app/armgcc/ .
 
 Go to your app config folder and run make:
 ``` sh
-$ cd ble_app/armgcc
+$ cd path/to/proj/root
 $ make flash
 ```
 The command `make` will compile the and link the source files. 
@@ -97,7 +97,7 @@ Preparing: _build/nrf52832_xxaa.bin
 DONE nrf52832_xxaa
 ```
 
- If you want to flash to your development board run `make pyocdflash` and you should see:
+If you want to flash to your development board run `make pyocdflash` and you should see:
 
 ```sh
  $ make pyocdflash
