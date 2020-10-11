@@ -111,9 +111,25 @@ static void datetime_get_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
 /**
  * @notapi
+ * @brief Calibrate ADXL372
+ */
+static void adxl372_calibrate_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    adxl372_err_t ret = adxl372_calibrate(NULL);
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+        "%s\n",
+        ret == ADXL372_ERR_OK ? "ADXL372 sensor calibrated" : "ADXL372 sensor calibration failed");
+}
+
+/**
+ * @notapi
  * @brief Continuously print out ADXL372 sensor readings
  */
-static void adxl372_print_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+static void adxl372_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
@@ -123,13 +139,6 @@ static void adxl372_print_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     while(rx != ctrl_c)
     {
-        // adxl372_val_t readings[ADXL372_AXES] = {0U};
-        // adxl372_read(readings);
-
-        // nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
-        //     "%d.%d\n",
-        //     (int32_t)readings[ADXL372_Z], (int32_t)(modf(readings[ADXL372_Z], NULL) * 100.0f));
-
         adxl372_val_raw_t readings[ADXL372_AXES] = {0U};
         adxl372_read_raw(readings);
 
@@ -195,9 +204,16 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(datetime_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(adxl372_subcmds)
+{
+    NRF_CLI_CMD(calibrate, NULL, "Calibrate ADXL372 High-g sensor", adxl372_calibrate_cmd),
+    NRF_CLI_CMD(stream, NULL, "Stream sensor data from ADXL372 High-g sensor", adxl372_stream_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
 NRF_CLI_CREATE_STATIC_SUBCMD_SET(imu_subcmds)
 {
-    NRF_CLI_CMD(adxl372, NULL, "Print out ADXL372 sensor readings", adxl372_print_cmd),
+    NRF_CLI_CMD(adxl372, &adxl372_subcmds, "ADXL372 subcommands", NULL),
     NRF_CLI_SUBCMD_SET_END
 };
 

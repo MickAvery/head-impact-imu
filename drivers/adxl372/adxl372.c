@@ -70,9 +70,12 @@ static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
  */
 static void configure_bandwidth(adxl372_bandwidth_t bandwidth)
 {
-    uint8_t tx = bandwidth & ADXL372_BANDWIDTH_MASK;
+    if(bandwidth < ADXL372_BW_DISABLE)
+    {
+        uint8_t tx = bandwidth & ADXL372_BANDWIDTH_MASK;
 
-    write_reg(ADXL372_MEASURE_ADDR, &tx, 1U);
+        write_reg(ADXL372_MEASURE_ADDR, &tx, 1U);
+    }
 }
 
 /**
@@ -91,11 +94,16 @@ static void configure_odr(adxl372_odr_t odr)
  * @brief Configure device mode of operation
  * 
  * @param mode
+ * @param lpf_disable - if true, LPF is disabled
  */
-static void configure_mode(adxl372_mode_t mode)
+static void configure_mode(adxl372_mode_t mode, bool lpf_disable)
 {
     uint8_t tx = mode & ADXL372_POWER_CTL_MODE_MASK;
-    // tx |= ADXL372_POWER_CTL_LPF_MASK;
+
+    if(lpf_disable)
+        tx |= ADXL372_POWER_CTL_LPF_MASK;
+
+    /* disable HPF */
     tx |= ADXL372_POWER_CTL_HPF_MASK;
 
     write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
@@ -136,7 +144,7 @@ void adxl372_init(const adxl372_cfg_t* cfg)
 
         configure_bandwidth(cfg->bandwidth);
         configure_odr(cfg->odr);
-        configure_mode(cfg->mode);
+        configure_mode(cfg->mode, cfg->bandwidth == ADXL372_BW_DISABLE);
 
         adxl372.state = ADXL372_STATE_ACTIVE;
     }
@@ -172,7 +180,7 @@ adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
             /* convert from 12-bit to 16-bit integer */
             readings[i/2U] /= 16;
             /* trim offset */
-            readings[i/2U] += adxl372.offsets[i];
+            readings[i/2U] -= adxl372.offsets[i/2U];
         }
     }
 
@@ -245,6 +253,8 @@ adxl372_err_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
 
             adxl372.offsets[i] = axes[i] - setpoint[i];
         }
+
+        ret = ADXL372_ERR_OK;
     }
 
     return ret;

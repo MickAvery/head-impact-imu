@@ -31,7 +31,9 @@ typedef enum
     ADXL372_BW_400HZ,     /*!< 400 Hz Bandwidth */
     ADXL372_BW_800HZ,     /*!< 800 Hz Bandwidth */
     ADXL372_BW_1600HZ,    /*!< 1600 Hz Bandwidth */
-    ADXL372_BW_3200HZ     /*!< 3200 Hz Bandwidth */
+    ADXL372_BW_3200HZ,    /*!< 3200 Hz Bandwidth */
+    ADXL372_BW_DISABLE,   /*!< Disable LPF */
+    ADXL372_BW_MAX = ADXL372_BW_DISABLE
 } adxl372_bandwidth_t;
 
 /**
@@ -70,11 +72,6 @@ typedef enum
  * @brief Type definition of a raw axis reading
  */
 typedef int16_t adxl372_val_raw_t;
-
-/**
- * @brief Type definition of an axis reading
- */
-typedef float32_t adxl372_val_t;
 
 /**
  * @brief Configurations for ADXL372 Driver
