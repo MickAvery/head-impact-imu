@@ -30,6 +30,7 @@ typedef struct
 {
     adxl372_state_t state;
     const adxl372_cfg_t* cfg;
+    adxl372_val_raw_t offsets[ADXL372_AXES];
 } adxl_372_t;
 
 /**
@@ -94,7 +95,7 @@ static void configure_odr(adxl372_odr_t odr)
 static void configure_mode(adxl372_mode_t mode)
 {
     uint8_t tx = mode & ADXL372_POWER_CTL_MODE_MASK;
-    tx |= ADXL372_POWER_CTL_LPF_MASK;
+    // tx |= ADXL372_POWER_CTL_LPF_MASK;
     tx |= ADXL372_POWER_CTL_HPF_MASK;
 
     write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
@@ -131,6 +132,8 @@ void adxl372_init(const adxl372_cfg_t* cfg)
         reset_dev();
 
         adxl372.cfg = cfg;
+        memset(adxl372.offsets, 0, sizeof(adxl372_val_raw_t)*ADXL372_AXES);
+
         configure_bandwidth(cfg->bandwidth);
         configure_odr(cfg->odr);
         configure_mode(cfg->mode);
@@ -143,27 +146,37 @@ void adxl372_init(const adxl372_cfg_t* cfg)
  * @brief Read raw linear acceleration data from sensor (values straight from registers)
  * 
  * @param readings - Buffer to store data
+ * @return adxl372_err_t - Error status if something goes wrong 
  */
-void adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
+adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
 {
-    uint8_t buf[ADXL372_AXES*2U] = {0U};
-    uint8_t status = 0U;
+    adxl372_err_t ret = ADXL372_ERR_UNINIT;
 
-    /* wait for data ready */
-    do
+    if(adxl372.state == ADXL372_STATE_ACTIVE)
     {
-        read_reg(ADXL372_STATUS_ADDR, &status, 1U);
-    } while(!(status & ADXL372_STATUS_DATA_RDY_MASK));
+        uint8_t buf[ADXL372_AXES*2U] = {0U};
+        uint8_t status = 0U;
 
-    read_reg(ADXL372_XDATA_H_ADDR, buf, ADXL372_AXES*2);
+        /* wait for data ready */
+        do
+        {
+            read_reg(ADXL372_STATUS_ADDR, &status, 1U);
+        } while(!(status & ADXL372_STATUS_DATA_RDY_MASK));
 
-    for(size_t i = 0U ; i < ADXL372_AXES*2 ; i+=2U)
-    {
-        /* format data, since it was received in big-endian format (ARM is little endian) */
-        readings[i/2U] = (buf[i] << 8U) | (buf[i+1] & 0xF0U);
-        /* convert from 12-bit to 16-bit integer */
-        readings[i/2U] /= 16;
+        read_reg(ADXL372_XDATA_H_ADDR, buf, ADXL372_AXES*2);
+
+        for(size_t i = 0U ; i < ADXL372_AXES*2 ; i+=2U)
+        {
+            /* format data, since it was received in big-endian format (ARM is little endian) */
+            readings[i/2U] = (buf[i] << 8U) | (buf[i+1] & 0xF0U);
+            /* convert from 12-bit to 16-bit integer */
+            readings[i/2U] /= 16;
+            /* trim offset */
+            readings[i/2U] += adxl372.offsets[i];
+        }
     }
+
+    return ret;
 }
 
 /**
@@ -188,4 +201,51 @@ adxl372_err_t adxl372_status(void)
     }
 
     return err;
+}
+
+#define NUM_CAL_AVG_N 128U /*!< When calibrating, this is the number of data points to read and average */
+// static inline int16_t word_avg(int16_t word) { return (word < 0) ? word*(-1) : word; }
+static adxl372_val_raw_t default_setpoint[ADXL372_AXES] = {0, 0, 10}; /*!< Default axis setpoints, units in LSB */
+
+/**
+ * @brief Calibrate sensor to correct offset
+ * 
+ * @param setpoint - Expected values at every axis
+ *                   If NULL then default setpoint is used where device is assumed
+ *                   to be at rest with the Z-axis completely perpendicular to the
+ *                   X-Y plane [0, 0, 1g]
+ * @return adxl372_err_t - Error status if something goes wrong
+ */
+adxl372_err_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
+{
+    adxl372_err_t ret = ADXL372_ERR_UNINIT;
+
+    /* if NULL, set setpoint to default */
+    setpoint  = (setpoint == NULL) ? default_setpoint : setpoint;
+
+    if(adxl372.state == ADXL372_STATE_ACTIVE)
+    {
+        adxl372_val_raw_t axes[ADXL372_AXES] = {0};
+
+        /* get datapoints */
+        for(size_t i = 0 ; i < NUM_CAL_AVG_N ; i++)
+        {
+            adxl372_val_raw_t vals[ADXL372_AXES];
+            adxl372_read_raw(vals);
+
+            axes[ADXL372_X] += vals[ADXL372_X];
+            axes[ADXL372_Y] += vals[ADXL372_Y];
+            axes[ADXL372_Z] += vals[ADXL372_Z];
+        }
+
+        /* get average, write offset to register */
+        for(size_t i = 0 ; i < ADXL372_AXES ; i++)
+        {
+            axes[i] /= NUM_CAL_AVG_N;
+
+            adxl372.offsets[i] = axes[i] - setpoint[i];
+        }
+    }
+
+    return ret;
 }

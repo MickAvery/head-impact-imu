@@ -102,7 +102,14 @@ void adxl372_init(const adxl372_cfg_t* cfg);
  * 
  * @param readings - Buffer to store data
  */
-void adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES]);
+
+/**
+ * @brief Read raw linear acceleration data from sensor (values straight from registers)
+ * 
+ * @param readings - Buffer to store data
+ * @return adxl372_err_t - Error status if something goes wrong 
+ */
+adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES]);
 
 /**
  * @brief Get status of ADXL372 driver
@@ -110,6 +117,17 @@ void adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES]);
  * @return adxl372_err_t - Driver error type, refer to @ref adxl372_err_t for details
  */
 adxl372_err_t adxl372_status(void);
+
+/**
+ * @brief Calibrate sensor to correct offset
+ * 
+ * @param setpoint - Expected values at every axis
+ *                   If NULL then default setpoint is used where device is assumed
+ *                   to be at rest with the Z-axis completely perpendicular to the
+ *                   X-Y plane [0, 0, 1g]
+ * @return adxl372_err_t - Error status if something goes wrong
+ */
+adxl372_err_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES]);
 
 #ifdef __cplusplus
 }
