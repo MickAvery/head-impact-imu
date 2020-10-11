@@ -227,6 +227,11 @@ flash: default
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
+# Merge application and softdevice
+merge: default
+	@echo Merging application and softdevice...
+	mergehex -m $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex -o ${CURDIR}/hex/$(PROJECT_NAME).hex
+
 erase:
 	nrfjprog -f nrf52 --eraseall
 
