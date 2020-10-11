@@ -11,7 +11,7 @@ Requirements:
 
 ## Getting Started
 
-### Downloading Git (For Windows Users Only)
+### Downloading Git - For Windows Users
 Download Git for Windows https://git-scm.com/downloads to clone this repository. We will use Git Bash terminal for building this project. 
 
 Clone this repo by using:
@@ -19,6 +19,10 @@ Clone this repo by using:
 git clone
 https://github.com/edmching/head_impact_IMU
 ```
+
+### Downloading Git - For Linux Users
+
+You're using Linux, you should already know this. You're on your own.
 
 ### Setting up GNU ARM Embedded Toolchain
 Download and install the latest version of [GNU Arm Embedded Toolchain ](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads). Then make sure to add the path to your toolchain to your OS "PATH" environment variable:
@@ -93,14 +97,14 @@ Preparing: _build/nrf52832_xxaa.bin
 DONE nrf52832_xxaa
 ```
 
- If you want to flash to your development board run `make flash` and you should see:
+ If you want to flash to your development board run `make pyocdflash` and you should see:
 
 ```sh
- $ make flash
+ $ make pyocdflash
 DONE nrf52832_xxaa
 Flashing: _build/nrf52832_xxaa.hex
-pyocd-flashtool -t nrf52 -se _build/nrf52832_xxaa.hex
-WARNING:pyocd.tools.flash_tool:pyocd-flashtool is deprecated; please use the new combined pyocd tool.
+pyocd -t nrf52 -se _build/nrf52832_xxaa.hex
+
 INFO:pyocd.board.board:Target type is nrf52
 INFO:pyocd.coresight.dap:DP IDR = 0x2ba01477 (v1 rev2)
 INFO:pyocd.coresight.ap:AP#0 IDR = 0x24770011 (AHB-AP var1 rev2)
@@ -120,14 +124,19 @@ INFO:pyocd.coresight.fpb:6 hardware breakpoints, 4 literal comparators
 [========================================]
 INFO:pyocd.flash.loader:Erased 0 bytes (0 sectors), programmed 0 bytes (0 pages), skipped 28672 bytes (7 pages) at 9.19 kB/s
 ```
+
+Alternatively, you can use the `Debug (pyOCD)` launch target on VSCode.
+
 ## Text Editor
 You may use any text editor you like, however we chose [Visual Studio Code](https://code.visualstudio.com/) since it provided a debugging environment. 
 We used the following extensions in VS Code:
 * [C/C++ IntelliSense](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
 * [Cortex-Debug](https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug)
 
-A `launch.json` file is included in .vscode folder for setting up the pyocd debugger and jlink debugger.
-`launch.json` is for debugging PCB firmware and `launch_pyocd.json` is for debugging breadboard firmware. If you wish to debug breadboard firmware you must rename the `launch_pyocd.json` to `launch.json` and vice versa.
+A `launch.json` file is included in .vscode folder for setting up the pyocd debugger and jlink debugger. Current launch targets include:
+* `Debug (pyOCD)` - Flash the board using pyOCD (only valid when using nRF52832-MDK)
+* `Debug J-Link` - Flash the board using a JLink Debugger and nRF Command Line Tools
+* `Debug OpenOCD` - Flash the board using an ST-Link Debugger and OpenOCD
 
 Another note is the jlink `launch.json` is set up for a linux user so you will have to change the path locations for "serverpath" and "svdFile" in the launch.json.
 
@@ -140,15 +149,32 @@ Another note is the jlink `launch.json` is set up for a linux user so you will h
 ```
 **See reference links at the end on a guide to setup your launch.json**
 
-## Receiving Data Serially
+## Command Line Interface
 
-Nearly all of the project code prints messages or data serially. In order to receive this data, an SSH client is required. We used [PuTTY](https://www.putty.org/).
+A command line interface (CLI) was implemented to provide a user interface for rapid testing. The commands have a hierarchical structure described below:
 
-Once you have downloaded PuTTy, you will need to set up the serial port. Make sure you know which serial port the device is using (i.e. COM9).
+```
+sysprop
+imu
+  - adxl372
+    - calbrate
+    - stream
+datetime
+  - get
+  - set
+```
 
-The default setup for the USB serial port is 115200 baud, 8 bits, 1 stop bit, no parity (115200-8-N-1) - you will need to input this information into your SSH client in order to communicate.
+For example, if you want to set the datetime then you type `datetime set YYYY MM DD HH MM SS ffffff`, and getting the device's datetime is `datetime get`.
 
-More information on using terminal with the development board can be found [here](https://wiki.makerdiary.com/nrf52832-mdk/getting-started/).
+The CLI is accessible through UART and the JLink RTT, setup is described below:
+
+### UART
+
+TODO
+
+### JLink RTT
+
+TODO
 
 ## Setting up PCB development environment
 Software Requirements:
@@ -233,7 +259,7 @@ J-Link>
 
 ```
 
-## Navigating the Repository
+## Navigating the Repository (OUT OF DATE AS OF OCTOBER 2020)
 
 ### head_impact_IMU
 
@@ -290,10 +316,6 @@ This directory contains the default *sdk_config.h* file. This file type is discu
 #### ble_app_cli
 
 This directory contains the code for the Bluetooth command line interface.
-
-## Adding Additional Code
-
-Each new code set requires a *sdk_config.h* file and *makefile* within its directory, in addition to the basic source code.
 
 ### sdk_config file
 
