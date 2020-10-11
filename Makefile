@@ -180,10 +180,11 @@ LDFLAGS += $(OPT)
 LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk -T$(LINKER_SCRIPT)
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+LDFLAGS += -u _printf_float
 # let linker dump unused sections
 LDFLAGS += -Wl,--gc-sections
 # use newlib in nano version
-LDFLAGS += --specs=nano.specs
+LDFLAGS += --specs=nano.specs -lc -lnosys
 
 nrf52832_xxaa: CFLAGS += -D__HEAP_SIZE=8192
 nrf52832_xxaa: CFLAGS += -D__STACK_SIZE=8192

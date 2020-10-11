@@ -26,10 +26,18 @@
 #define ADXL372_ZDATA_H_ADDR           0x0CU /*!< Address of Z Data H Register [READ-ONLY] */
 #define ADXL372_ZDATA_L_ADDR           0x0DU /*!< Address of Z Data L Register [READ-ONLY] */
 
-#define ADXL372_TIMING_ADDR            0x3CU /*!< Address of Timing Register [R/W] */
+#define ADXL372_TIMING_ADDR            0x3DU /*!< Address of Timing Register [R/W] */
 #define ADXL372_TIMING_ODR_MASK        0xE0U /*!< Mask for ODR bits in Timing register */
 
-#define ADXL372_POWER_CTL_ADDR         0x3FU /*!< Address of Power Control Register */
+#define ADXL372_MEASURE_ADDR           0x3EU /*!< Address of Measure register [READ?WROTE] */
+#define ADXL372_BANDWIDTH_MASK         0x07U /*!< Bandwidth mask in Measure register */
+
+#define ADXL372_POWER_CTL_ADDR         0x3FU /*!< Address of Power Control Register [READ/WRITE] */
+#define ADXL372_POWER_CTL_LPF_MASK     0x08U /*!< Mask for LPF_DISABLE bit in Power Control Register */
+#define ADXL372_POWER_CTL_HPF_MASK     0x04U /*!< Mask for HPF_DISABLE bit in Power Control Register */
 #define ADXL372_POWER_CTL_MODE_MASK    0x03U /*!< Mask for MODE bits in Power Control Register */
+
+#define ADXL372_RESET_ADDR             0x41U /*!< Address to Reset register to reset the device [READ/WRITE] */
+#define ADXL372_RESET_VAL              0x52U /*!< Value to write to Reset register */
 
 #endif /* ADXL372_REG_H */

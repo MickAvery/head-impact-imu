@@ -9,6 +9,7 @@
 #include "nrf.h"
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
+#include "nrf_delay.h"
 #include "datetime.h"
 #include "adxl372.h"
 
@@ -122,12 +123,21 @@ static void adxl372_print_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     while(rx != ctrl_c)
     {
+        // adxl372_val_t readings[ADXL372_AXES] = {0U};
+        // adxl372_read(readings);
+
+        // nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+        //     "%d.%d\n",
+        //     (int32_t)readings[ADXL372_Z], (int32_t)(modf(readings[ADXL372_Z], NULL) * 100.0f));
+
         adxl372_val_raw_t readings[ADXL372_AXES] = {0U};
         adxl372_read_raw(readings);
 
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
             "%d\t%d\t%d\n",
             readings[ADXL372_X], readings[ADXL372_Y], readings[ADXL372_Z]);
+
+        nrf_delay_ms(25U);
 
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
     }

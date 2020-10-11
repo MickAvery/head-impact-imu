@@ -63,6 +63,18 @@ static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
 }
 
 /**
+ * @brief Configure LPF bandwidth
+ * 
+ * @param bandwidth 
+ */
+static void configure_bandwidth(adxl372_bandwidth_t bandwidth)
+{
+    uint8_t tx = bandwidth & ADXL372_BANDWIDTH_MASK;
+
+    write_reg(ADXL372_MEASURE_ADDR, &tx, 1U);
+}
+
+/**
  * @brief Configure driver to run at ODR specified
  * 
  * @param odr
@@ -82,7 +94,18 @@ static void configure_odr(adxl372_odr_t odr)
 static void configure_mode(adxl372_mode_t mode)
 {
     uint8_t tx = mode & ADXL372_POWER_CTL_MODE_MASK;
+    tx |= ADXL372_POWER_CTL_LPF_MASK;
+    tx |= ADXL372_POWER_CTL_HPF_MASK;
 
+    write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
+}
+
+/**
+ * @brief Reset the device, place in standby mode
+ */
+static void reset_dev(void)
+{
+    uint8_t tx = ADXL372_RESET_VAL;
     write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
 }
 
@@ -104,7 +127,11 @@ void adxl372_init(const adxl372_cfg_t* cfg)
     if(devid_ad == ADXL372_DEVID_AD_EXPECTED_VAL)
     {
         /* SPI communication successful, let's configure the IMU */
+
+        reset_dev();
+
         adxl372.cfg = cfg;
+        configure_bandwidth(cfg->bandwidth);
         configure_odr(cfg->odr);
         configure_mode(cfg->mode);
 
@@ -130,10 +157,12 @@ void adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
 
     read_reg(ADXL372_XDATA_H_ADDR, buf, ADXL372_AXES*2);
 
-    /* format data, since it was received in big-endian format (ARM is little endian) */
     for(size_t i = 0U ; i < ADXL372_AXES*2 ; i+=2U)
     {
-        readings[i/2U] = (((uint16_t)buf[i+1] << 8U) | (uint16_t)buf[i]);
+        /* format data, since it was received in big-endian format (ARM is little endian) */
+        readings[i/2U] = (buf[i] << 8U) | (buf[i+1] & 0xF0U);
+        /* convert from 12-bit to 16-bit integer */
+        readings[i/2U] /= 16;
     }
 }
 

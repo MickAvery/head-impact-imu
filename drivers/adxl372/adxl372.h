@@ -23,6 +23,18 @@ typedef enum
 } adxl372_odr_t;
 
 /**
+ * @brief Configurable bandwidth for LPF
+ */
+typedef enum
+{
+    ADXL372_BW_200HZ = 0, /*!< 200 Hz Bandwidth */
+    ADXL372_BW_400HZ,     /*!< 400 Hz Bandwidth */
+    ADXL372_BW_800HZ,     /*!< 800 Hz Bandwidth */
+    ADXL372_BW_1600HZ,    /*!< 1600 Hz Bandwidth */
+    ADXL372_BW_3200HZ     /*!< 3200 Hz Bandwidth */
+} adxl372_bandwidth_t;
+
+/**
  * @brief Configurable driver modes
  */
 typedef enum
@@ -57,7 +69,7 @@ typedef enum
 /**
  * @brief Type definition of a raw axis reading
  */
-typedef uint16_t adxl372_val_raw_t;
+typedef int16_t adxl372_val_raw_t;
 
 /**
  * @brief Type definition of an axis reading
@@ -71,6 +83,7 @@ typedef struct
 {
     adxl372_odr_t odr;
     adxl372_mode_t mode;
+    adxl372_bandwidth_t bandwidth;
 } adxl372_cfg_t;
 
 #ifdef __cplusplus
