@@ -274,8 +274,8 @@ NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and 
 NRF_CLI_CMD_REGISTER(imu, &imu_subcmds, "Print IMU values", NULL);
 NRF_CLI_CMD_REGISTER(echo, NULL,
     "Configure CLI echo setting\n"
-    "\techo off - turn off CLI echo\n"
-    "\techo off - turn on CLI echo\n", echo_cmd);
+    "    echo off - turn off CLI echo\n"
+    "    echo off - turn on CLI echo\n", echo_cmd);
 NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysprop_cmd);
 NRF_CLI_CMD_REGISTER(systest, &systest_subcmds, "Test system peripherals", NULL);
 
