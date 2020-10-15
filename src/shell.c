@@ -4,6 +4,7 @@
  * @brief Shell interface for user commands
  */
 
+#include <string.h>
 #include "shell.h"
 #include "custom_board.h"
 #include "nrf.h"
@@ -37,7 +38,7 @@ static nrf_drv_uart_config_t uart_cfg = NRF_DRV_UART_DEFAULT_CONFIG;
 
 NRF_CLI_UART_DEF(cli_uart_transport, 0, 64, 64); /* TODO: magic numbers */
 NRF_CLI_DEF(cli_uart,
-            "SimplLab:~$ ",
+            "SimPLab:~$ ",
             &cli_uart_transport.transport,
             '\n',
             4U); /* TODO: magic number, but this is log queue size */
@@ -72,8 +73,9 @@ static void datetime_set_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     if ((argc < SHELL_DATETIME_NUMARGS) || nrf_cli_help_requested(p_cli))
     {
         nrf_cli_help_print(p_cli, NULL, 0);
-        return;
-    } else {
+    }
+    else
+    {
         datetime_t dt = {
             (uint16_t)atoi(argv[SHELL_YEAR]),
             (uint8_t)atoi(argv[SHELL_MONTH]),
@@ -144,11 +146,47 @@ static void adxl372_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
             "%d\t%d\t%d\n",
-            readings[ADXL372_X], readings[ADXL372_Y], readings[ADXL372_Z]);
+            readings[ADXL372_X]*100, readings[ADXL372_Y]*100, readings[ADXL372_Z]*100);
 
         nrf_delay_ms(25U);
 
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
+    }
+}
+
+/**
+ * @notapi
+ * @brief Enable/Disable CLI echo
+ */
+static void echo_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    bool command_unrecognized = true;
+    bool set = true;
+
+    if(argc >= 2)
+    {
+        if(strncmp(argv[1], "on", 2) == 0)
+        {
+            command_unrecognized = false;
+            set = true;
+        }
+        else if(strncmp(argv[1], "off", 3) == 0)
+        {
+            command_unrecognized = false;
+            set = false;
+        }
+    }
+
+    if(command_unrecognized)
+    {
+        nrf_cli_help_print(p_cli, NULL, 0);
+    }
+    else
+    {
+        p_cli->p_ctx->internal.flag.echo = set ? 1 : 0;
     }
 }
 
@@ -171,8 +209,11 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         "/********************\n"
         " * SYSTEM PROPERTIES\n"
         " ********************/\n"
-        " - ADXL372 - [%s]\n"
-        "\n", adxl372_stat ? "OK" : "FAILED");
+        "\n"
+        " > RTC     - [OK]\n"
+        " > ADXL372 - [%s]\n"
+        "\n\n",
+        adxl372_stat ? "OK" : "FAILED");
 }
 
 /**
@@ -231,6 +272,10 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(systest_subcmds)
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
 NRF_CLI_CMD_REGISTER(imu, &imu_subcmds, "Print IMU values", NULL);
+NRF_CLI_CMD_REGISTER(echo, NULL,
+    "Configure CLI echo setting\n"
+    "\techo off - turn off CLI echo\n"
+    "\techo off - turn on CLI echo\n", echo_cmd);
 NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysprop_cmd);
 NRF_CLI_CMD_REGISTER(systest, &systest_subcmds, "Test system peripherals", NULL);
 
