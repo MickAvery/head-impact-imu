@@ -10,18 +10,25 @@
 /**
  * @brief Before attempting to read any registers, set the USER BANK first
  */
-#define ICM20649_REG_BANK_SEL_ADDR       0x7FU /*!<  */
-#define ICM20649_REG_BANK_SEL_USR_BANK_0 0x00U /*!<  */
-#define ICM20649_REG_BANK_SEL_USR_BANK_1 0x10U /*!<  */
-#define ICM20649_REG_BANK_SEL_USR_BANK_2 0x20U /*!<  */
-#define ICM20649_REG_BANK_SEL_USR_BANK_3 0x30U /*!<  */
+#define ICM20649_REG_BANK_SEL_ADDR       0x7FU /*!< User Bank Select Address */
+
+/**
+ * @brief Values to write to REG_BANK_SEL
+ */
+typedef enum
+{
+    ICM20649_USR_BANK_0 = 0x00U, /*!< USR Bank 0 */
+    ICM20649_USR_BANK_1 = 0x10U, /*!< USR Bank 1 */
+    ICM20649_USR_BANK_2 = 0x20U, /*!< USR Bank 2 */
+    ICM20649_USR_BANK_3 = 0x30U  /*!< USR Bank 3 */
+} icm20649_usr_bank_t;
 
 /*************************************
  * @brief USER BANK 0 REGISTERS
  *************************************/
 
-#define ICM20649_WHO_AM_I_ADDR        0x00U
-#define ICM20649_WHO_AM_I_VAL         0xE1U
+#define ICM20649_WHO_AM_I_ADDR        0x00U /*!< WHO_AM_I register address */
+#define ICM20649_WHO_AM_I_VAL         0xE1U /*!< WHO_AM_I expected value */
 
 #define ICM20649_PWR_MGMT_1_ADDR      0x06U
 #define ICM20649_CLKSEL_MASK          0x07U
@@ -56,11 +63,11 @@
 #define ICM20649_GYRO_DLPCFG_MASK     0x38U
 #define ICM20649_GYRO_DLPCFG_SET(cfg) ((cfg << 3U) & ICM20649_GYRO_DLPCFG_MASK)
 
-#define ICM20649_ACCEL_CONFIG_ADDR    0x14U
-#define ICM20649_ACCEL_FCHOICE_MASK
-#define ICM20649_ACCEL_FS_SEL_MASK
-#define ICM20649_ACCEL_FS_SEL_SET
-#define ICM20649_ACCEL_DLPFCFG_MASK
-#define ICM20649_ACCEL_DLPFCFG_SET
+#define ICM20649_ACCEL_CONFIG_ADDR      0x14U
+#define ICM20649_ACCEL_FCHOICE_MASK     0x01U
+#define ICM20649_ACCEL_FS_SEL_MASK      0x06U
+#define ICM20649_ACCEL_FS_SEL_SET(fs)   ((fs << 1U) & ICM20649_ACCEL_FS_SEL_MASK)
+#define ICM20649_ACCEL_DLPFCFG_MASK     0x38U
+#define ICM20649_ACCEL_DLPFCFG_SET(cfg) ((cfg << 3U) & ICM20649_ACCEL_DLPFCFG_MASK)
 
 #endif /* ICM20649_REGS_H */
