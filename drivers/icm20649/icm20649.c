@@ -51,7 +51,7 @@ static icm20649_t icm20649_handle = {
 static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
 {
     uint8_t buf[32U] = {0U}; /* TODO: magic number */
-    uint8_t addr = (reg_addr << 1U) | 1U;
+    uint8_t addr = reg_addr | 0x80U;
     spi_transfer(SPI_INSTANCE_0, SPI_DEV_ICM20649, &addr, 1U, buf, rxn + 1U);
 
     (void)memcpy(rx, buf+1U, rxn);
