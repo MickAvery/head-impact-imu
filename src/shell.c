@@ -11,8 +11,10 @@
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
 #include "nrf_delay.h"
+#include "retcodes.h"
 #include "datetime.h"
 #include "adxl372.h"
+#include "icm20649.h"
 
 /**
  * @brief The number of arguments that the datetime_set() command expects:
@@ -30,6 +32,17 @@ typedef enum
     SHELL_USEC,
     SHELL_DATETIME_NUMARGS
 } shell_dt_args_t;
+
+/**
+ * @brief Status strings outputted by sysprop_cmd(), corresponds to @ref retcode_t
+ */
+static char* stat_strings[RET_CODES] = {
+    "OK",
+    "ERROR",
+    "DRIVER UNINITIALIZED",
+    "SERIAL COMMUNICATION ERROR",
+    "SELF-TEST ERROR"
+};
 
 /**
  * UART configurations for CLI
@@ -200,6 +213,7 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
     bool adxl372_stat = false;
+    retcode_t icm20649_stat = icm20649_test();
 
     if(adxl372_status() == ADXL372_ERR_OK)
         adxl372_stat = true;
@@ -210,10 +224,12 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         " * SYSTEM PROPERTIES\n"
         " ********************/\n"
         "\n"
-        " > RTC     - [OK]\n"
-        " > ADXL372 - [%s]\n"
+        " > RTC      - [OK]\n"
+        " > ADXL372  - [%s]\n"
+        " > ICM20649 - [%s]\n"
         "\n\n",
-        adxl372_stat ? "OK" : "FAILED");
+        adxl372_stat ? "OK" : "FAILED",
+        stat_strings[icm20649_stat]);
 }
 
 /**
