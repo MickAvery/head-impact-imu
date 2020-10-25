@@ -15,7 +15,7 @@
 typedef enum
 {
     SPI_INSTANCE_0 = 0, /*!< SPI Instance 0 */
-    SPI_INSTANCE_1,     /*!< SPI Instance 1 */
+    SPI_INSTANCE_2,     /*!< SPI Instance 1 */
     SPI_INSTANCE_MAX    /*!< Max number of SPI Instances */
 } spi_instance_t;
 

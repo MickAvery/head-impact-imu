@@ -12,19 +12,19 @@
  * @brief SPI instances used by system
  */
 static const nrf_drv_spi_t spi0 = NRF_DRV_SPI_INSTANCE(0);
-static const nrf_drv_spi_t spi1 = NRF_DRV_SPI_INSTANCE(1);
+static const nrf_drv_spi_t spi2 = NRF_DRV_SPI_INSTANCE(2);
 
 /**
  * @brief SPI instance configurations
  */
 static nrf_drv_spi_config_t spi0_cfg = NRF_DRV_SPI_DEFAULT_CONFIG;
-static nrf_drv_spi_config_t spi1_cfg = NRF_DRV_SPI_DEFAULT_CONFIG;
+static nrf_drv_spi_config_t spi2_cfg = NRF_DRV_SPI_DEFAULT_CONFIG;
 
 /**
  * @brief CS pin mappings
  */
 static const uint8_t cs_pins[SPI_DEV_MAX] = {
-    SPI0_ICM20649_CS_PIN, SPI1_ADXL372_CS_PIN
+    SPI0_ICM20649_CS_PIN, SPI2_ADXL372_CS_PIN
 };
 
 /*********************************
@@ -48,12 +48,12 @@ void spi_init(void)
     APP_ERROR_CHECK(ret);
 
     /* Initialize SPI-1 instance */
-    spi1_cfg.sck_pin   = SPI1_CLK_PIN;
-    spi1_cfg.mosi_pin  = SPI1_MOSI_PIN;
-    spi1_cfg.miso_pin  = SPI1_MISO_PIN;
-    spi1_cfg.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
-    spi1_cfg.frequency = NRF_DRV_SPI_FREQ_8M;
-    ret = nrf_drv_spi_init(&(spi1), &(spi1_cfg), NULL, NULL);
+    spi2_cfg.sck_pin   = SPI2_CLK_PIN;
+    spi2_cfg.mosi_pin  = SPI2_MOSI_PIN;
+    spi2_cfg.miso_pin  = SPI2_MISO_PIN;
+    spi2_cfg.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
+    spi2_cfg.frequency = NRF_DRV_SPI_FREQ_8M;
+    ret = nrf_drv_spi_init(&(spi2), &(spi2_cfg), NULL, NULL);
     APP_ERROR_CHECK(ret);
 
     /* Initialize CS GPIO pins */
@@ -82,7 +82,7 @@ void spi_transfer(
     ASSERT(instance < SPI_INSTANCE_MAX);
     ASSERT(dev < SPI_DEV_MAX);
 
-    nrf_drv_spi_t const * const spi = (instance == SPI_INSTANCE_0) ? &(spi0) : &(spi1);
+    nrf_drv_spi_t const * const spi = (instance == SPI_INSTANCE_0) ? &(spi0) : &(spi2);
     uint8_t pin = cs_pins[dev];
 
     /**
