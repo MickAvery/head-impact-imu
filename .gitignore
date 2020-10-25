@@ -19,3 +19,5 @@ material/*
 projectfiles
 .vs/
 *.log
+
+*__pycache__

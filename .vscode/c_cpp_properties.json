@@ -11,12 +11,17 @@
                 "_UNICODE",
                 "__UINT8_TYPE__=unsigned char",
                 "__INT8_TYPE__=char"
-                ],
-            "compilerPath": "/home/edm/Downloads/gcc-arm-none-eabi",
-            "compilerArgs": ["-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard"],
-            "cStandard": "c11",
+            ],
+            "compilerPath": "C:/ChibiStudio/tools/GNU Tools ARM Embedded/8.0 2018q4/bin/arm-none-eabi-gcc",
+            "compilerArgs": [
+                "-mcpu=cortex-m4",
+                "-mthumb",
+                "-mfloat-abi=hard"
+            ],
+            "cStandard": "c99",
             "cppStandard": "c++17",
-            "intelliSenseMode": "gcc-x64"
+            "intelliSenseMode": "gcc-arm",
+            "compileCommands": ""
         }
     ],
     "version": 4

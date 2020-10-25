@@ -143,6 +143,7 @@ CFLAGS += -DBOARD_CUSTOM
 CFLAGS += -DPCB_REV_2
 # CFLAGS += -DNRF_CLI
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
+CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 # CFLAGS += -DDEBUG
 # CFLAGS += -DDEBUG_NRF
 CFLAGS += -DFLOAT_ABI_HARD
@@ -226,6 +227,11 @@ flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
 	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex --sectorerase
 	nrfjprog -f nrf52 --reset
+
+# Merge application and softdevice
+merge: default
+	@echo Merging application and softdevice...
+	mergehex -m $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex -o ${CURDIR}/hex/$(PROJECT_NAME).hex
 
 erase:
 	nrfjprog -f nrf52 --eraseall

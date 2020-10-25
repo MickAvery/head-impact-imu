@@ -13,11 +13,22 @@
 #include "shell.h"
 #include "spi.h"
 #include "adxl372.h"
+#include "icm20649.h"
 
 static const adxl372_cfg_t adxl372_cfg = {
     ADXL372_ODR_6400HZ,
     ADXL372_MODE_FULLBAND,
     ADXL372_BW_3200HZ
+};
+
+static icm20649_cfg_t icm20649_cfg = {
+    ICM20649_GYRO_FS_2000dps,
+    false, /* disable gyro DLPF */
+
+    ICM20649_ACCEL_FS_30g,
+    false, /* enable gyro DLPF */
+
+    100 /* sensor read timeout in ms */
 };
 
 /**
@@ -38,6 +49,7 @@ int main(void)
     /* initialize system modules */
     spi_init();
     adxl372_init(&adxl372_cfg);
+    (void)icm20649_init(&icm20649_cfg);
     datetime_init();
     shell_init();
 

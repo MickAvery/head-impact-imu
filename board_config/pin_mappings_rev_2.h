@@ -39,8 +39,8 @@ extern "C" {
  * @brief I2C pin mappings
  *******************************/
 
-#define I2C_SDA                 15
-#define I2C_SCL                 16
+#define I2C_SDA                 23
+#define I2C_SCL                 24
 
 #ifdef __cplusplus
 }
