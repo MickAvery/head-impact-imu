@@ -8,8 +8,31 @@
 #define ICM20649_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "nrf.h"
 #include "retcodes.h"
+
+/**
+ * @brief 
+ */
+typedef enum
+{
+    ICM20649_ACCEL_X = 0,
+    ICM20649_ACCEL_Y,
+    ICM20649_ACCEL_Z,
+    ICM20649_ACCEL_AXES
+} icm20649_accel_axes_t;
+
+/**
+ * @brief 
+ */
+typedef enum
+{
+    ICM20649_GYRO_X = 0,
+    ICM20649_GYRO_Y,
+    ICM20649_GYRO_Z,
+    ICM20649_GYRO_AXES
+} icm20649_gyro_axes_t;
 
 /**
  * @brief Configurable accelerometer full scale settings
@@ -47,6 +70,8 @@ typedef struct
     /* accelerometer configs */
     icm20649_accel_fs_t accel_fs;
     bool accel_dlpf_en;
+
+    uint32_t timeout; /*!< sensor read timeout in ms */
 } icm20649_cfg_t;
 
 #ifdef __cplusplus
@@ -60,6 +85,15 @@ extern "C" {
  * @return retcode_t - Driver status
  */
 retcode_t icm20649_init(icm20649_cfg_t* cfg);
+
+/**
+ * @brief Read raw gyroscope and accelerometer sensor data (straight from registers)
+ * 
+ * @param gyro  - Buffer to store raw gyroscope readings
+ * @param accel - Buffer to store raw accelerometer readings
+ * @return retcode_t 
+ */
+retcode_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20649_ACCEL_AXES]);
 
 /**
  * @brief Test serial communication and initiate device self-test

@@ -17,6 +17,7 @@ typedef enum
     RET_DRV_UNINIT,   /*!< Driver uninitialized */
     RET_SERIAL_ERR,   /*!< Serial communication error */
     RET_SELFTEST_ERR, /*!< Device selftest failed */
+    RET_TIMEOUT,      /*!< Device timeout */
     RET_CODES         /*!< Max number of retcodes */
 } retcode_t;
 

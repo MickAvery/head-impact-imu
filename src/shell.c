@@ -169,6 +169,41 @@ static void adxl372_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
 /**
  * @notapi
+ * @brief Continuously print out ICM20649 sensor readings
+ */
+static void icm20649_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    uint8_t rx = 0U;
+    uint8_t ctrl_c = 0x03U;
+
+    while(rx != ctrl_c)
+    {
+        retcode_t ret;
+        int16_t accel[ICM20649_ACCEL_AXES] = {0};
+        int16_t gyro[ICM20649_GYRO_AXES] = {0};
+        ret = icm20649_read_raw(gyro, accel);
+
+        if(ret == RET_OK)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+                "%d\t%d\t%d\t%d\t%d\t%d\n",
+                accel[ICM20649_ACCEL_X], accel[ICM20649_ACCEL_Y], accel[ICM20649_ACCEL_Z],
+                gyro[ICM20649_GYRO_X], gyro[ICM20649_GYRO_Y], gyro[ICM20649_GYRO_Z]);
+        }
+        else
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "read timeout!\n");
+
+        nrf_delay_ms(25U);
+
+        nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
+    }
+}
+
+/**
+ * @notapi
  * @brief Enable/Disable CLI echo
  */
 static void echo_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
@@ -268,9 +303,17 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(adxl372_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(icm20649_subcmds)
+{
+    NRF_CLI_CMD(calibrate, NULL, "Calibrate ICM20649 sensor", NULL),
+    NRF_CLI_CMD(stream, NULL, "Stream sensor data from ICM20649 sensor", icm20649_stream_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
 NRF_CLI_CREATE_STATIC_SUBCMD_SET(imu_subcmds)
 {
     NRF_CLI_CMD(adxl372, &adxl372_subcmds, "ADXL372 subcommands", NULL),
+    NRF_CLI_CMD(icm20649, &icm20649_subcmds, "ICM20649 subcommands", NULL),
     NRF_CLI_SUBCMD_SET_END
 };
 

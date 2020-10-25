@@ -20,7 +20,8 @@ typedef enum
     ICM20649_USR_BANK_0 = 0x00U, /*!< USR Bank 0 */
     ICM20649_USR_BANK_1 = 0x10U, /*!< USR Bank 1 */
     ICM20649_USR_BANK_2 = 0x20U, /*!< USR Bank 2 */
-    ICM20649_USR_BANK_3 = 0x30U  /*!< USR Bank 3 */
+    ICM20649_USR_BANK_3 = 0x30U, /*!< USR Bank 3 */
+    ICM20649_USR_BANK_MAX
 } icm20649_usr_bank_t;
 
 /*************************************
@@ -30,10 +31,16 @@ typedef enum
 #define ICM20649_WHO_AM_I_ADDR        0x00U /*!< WHO_AM_I register address */
 #define ICM20649_WHO_AM_I_VAL         0xE1U /*!< WHO_AM_I expected value */
 
+#define ICM20649_USER_CTRL_ADDR       0x03U /*!< LP_CONFIG register address */
+
+#define ICM20649_LP_CONFIG_ADDR       0x05U /*!< LP_CONFIG register address */
+
 #define ICM20649_PWR_MGMT_1_ADDR      0x06U
 #define ICM20649_CLKSEL_MASK          0x07U
 #define ICM20649_CLKSEL_SET(clk)      (clk & ICM20649_CLKSEL_MASK)
 #define ICM20649_DEVICE_RESET_MASK    0x80U
+
+#define ICM20649_PWR_MGMT_2_ADDR      0x07U
 
 #define ICM20649_ACCEL_XOUT_H_ADDR    0x2DU
 #define ICM20649_ACCEL_XOUT_L_ADDR    0x2EU
@@ -49,8 +56,9 @@ typedef enum
 #define ICM20649_GYRO_ZOUT_H_ADDR     0x37U
 #define ICM20649_GYRO_ZOUT_L_ADDR     0x38U
 
-#define ICM20649_DATA_RDY_STATUS_ADDR 0x74U
-#define ICM20649_RAW_DATA_RDY_MASK    0x0FU
+#define ICM20649_DATA_RDY_STATUS_ADDR  0x74U
+#define ICM20649_DATA_RDY_MASK         0x0FU
+#define ICM20649_DATA_RDY_MASK_NO_FIFO 0x0EU
 
 /*************************************
  * @brief USER BANK 2 REGISTERS

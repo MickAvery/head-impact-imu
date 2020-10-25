@@ -26,7 +26,9 @@ static icm20649_cfg_t icm20649_cfg = {
     false, /* disable gyro DLPF */
 
     ICM20649_ACCEL_FS_30g,
-    false /* enable gyro DLPF */
+    false, /* enable gyro DLPF */
+
+    100 /* sensor read timeout in ms */
 };
 
 /**
