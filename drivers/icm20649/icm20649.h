@@ -13,25 +13,25 @@
 #include "retcodes.h"
 
 /**
- * @brief 
+ * @brief ICM20649 accelerometer axis indexes
  */
 typedef enum
 {
-    ICM20649_ACCEL_X = 0,
-    ICM20649_ACCEL_Y,
-    ICM20649_ACCEL_Z,
-    ICM20649_ACCEL_AXES
+    ICM20649_ACCEL_X = 0, /*!< X axis */
+    ICM20649_ACCEL_Y,     /*!< Y axis */
+    ICM20649_ACCEL_Z,     /*!< Z axis */
+    ICM20649_ACCEL_AXES   /*!< Max number of accelerometer axes */
 } icm20649_accel_axes_t;
 
 /**
- * @brief 
+ * @brief ICM20649 gyroscope axis indexes
  */
 typedef enum
 {
-    ICM20649_GYRO_X = 0,
-    ICM20649_GYRO_Y,
-    ICM20649_GYRO_Z,
-    ICM20649_GYRO_AXES
+    ICM20649_GYRO_X = 0, /*!< X axis */
+    ICM20649_GYRO_Y,     /*!< Y axis */
+    ICM20649_GYRO_Z,     /*!< Z axis */
+    ICM20649_GYRO_AXES   /*!< Max number of gyroscope axes */
 } icm20649_gyro_axes_t;
 
 /**
@@ -64,14 +64,14 @@ typedef enum
 typedef struct
 {
     /* gyroscope configs */
-    icm20649_gyro_fs_t gyro_fs;
-    bool gyro_dlpf_en;
+    icm20649_gyro_fs_t gyro_fs;   /*!< set gyroscope fullscale */
+    bool gyro_dlpf_en;            /*!< if true, gyroscope DLPF enabled */
 
     /* accelerometer configs */
-    icm20649_accel_fs_t accel_fs;
-    bool accel_dlpf_en;
+    icm20649_accel_fs_t accel_fs; /*!< set accelerometer fullscale */
+    bool accel_dlpf_en;           /*!< if true, accelerometer DLPF enabled */
 
-    uint32_t timeout; /*!< sensor read timeout in ms */
+    uint32_t timeout;             /*!< sensor read timeout in ms */
 } icm20649_cfg_t;
 
 #ifdef __cplusplus
