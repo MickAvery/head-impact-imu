@@ -9,6 +9,10 @@
 
 #define VCNL4040_SLAVE_ADDR           0x60U /*!< VCNL4040 I2C slave address */
 
+#define VCNL4040_LSB                  0U    /*!< Index LSB from register */
+#define VCNL4040_MSB                  1U    /*!< Index MSB from register */
+#define VCNL4040_REG_NUMBYTES         2U    /*!< Max number of bytes in each register */
+
 /**
  * CONF1 and CONF2 register address and bit definitions
  * 

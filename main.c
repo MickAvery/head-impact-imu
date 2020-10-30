@@ -15,6 +15,7 @@
 #include "i2c.h"
 #include "adxl372.h"
 #include "icm20649.h"
+#include "vcnl4040.h"
 
 /**
  * @brief ADXL372 config
@@ -36,6 +37,18 @@ static icm20649_cfg_t icm20649_cfg = {
     false, /* enable gyro DLPF */
 
     100 /* sensor read timeout in ms */
+};
+
+/**
+ * @brief VCNL4040 config
+ */
+static vcnl4040_cfg_t vcnl4040_cfg = {
+    .ps_duty              = VCNL4040_PS_DUTY_1_320,
+    .ps_it                = VCNL4040_PS_IT_8T,
+    .ps_out_bits          = VCNL4040_PS_HD_16_BITS,
+    .smart_persistence_en = VCNL4040_SMART_PERSISTENCE_ENABLE,
+    .led_curr             = VCNL4040_LED_CURRENT_200mA,
+    .timeout              = 100
 };
 
 /**
@@ -71,6 +84,7 @@ int main(void)
     (void)i2c_init();
     adxl372_init(&adxl372_cfg);
     (void)icm20649_init(&icm20649_cfg);
+    (void)vcnl4040_init(&vcnl4040_cfg);
     datetime_init();
     shell_init();
 

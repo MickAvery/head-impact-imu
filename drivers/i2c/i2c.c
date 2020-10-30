@@ -59,26 +59,32 @@ retcode_t i2c_transceive(i2c_addr_t slave_addr, uint8_t* txbuf, size_t txn, uint
     /**
      * attempt transmit
      **/
-    ret = nrf_drv_twi_tx(
-        &i2c_handler,
-        slave_addr,
-        (uint8_t const*)txbuf,
-        (uint8_t)txn,
-        repeated_start);
+    if(txbuf && (txn > 0))
+    {
+        ret = nrf_drv_twi_tx(
+            &i2c_handler,
+            slave_addr,
+            (uint8_t const*)txbuf,
+            (uint8_t)txn,
+            repeated_start);
 
-    if(ret != RET_OK)
-        return ret;
+        if(ret != RET_OK)
+            return ret;
+    }
 
     /**
      * attempt receive
      **/
-    ret = nrf_drv_twi_rx(&i2c_handler,
-        slave_addr,
-        (uint8_t*)rxbuf,
-        (uint8_t)rxn);
+    if(rxbuf && (rxn > 0))
+    {
+        ret = nrf_drv_twi_rx(&i2c_handler,
+            slave_addr,
+            (uint8_t*)rxbuf,
+            (uint8_t)rxn);
 
-    if(ret != RET_OK)
-        return ret;
+        if(ret != RET_OK)
+            return ret;
+    }
 
-    return ret;
+    return RET_OK;
 }

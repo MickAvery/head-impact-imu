@@ -39,10 +39,46 @@ static vcnl4040_t vcnl4040 =
 retcode_t vcnl4040_init(vcnl4040_cfg_t* cfg)
 {
     retcode_t ret = RET_ERR;
+    uint8_t tx[VCNL4040_REG_NUMBYTES] = {0U};
+    uint8_t conf1, conf2, conf3, ms;
 
-    /* TODO */
+    /* check input */
+    if(!cfg)
+        return ret;
 
-    return ret;
+    /**
+     * set CONF1 & CONF2
+     */
+    conf1 = VCNL4040_DUTY_SET(cfg->ps_duty) | VCNL4040_IT_SET(cfg->ps_it);
+    conf2 = VCNL4040_OUT_BITS_SET(cfg->ps_out_bits);
+    tx[VCNL4040_LSB] = conf1;
+    tx[VCNL4040_MSB] = conf2;
+
+    ret = i2c_transceive(VCNL4040_SLAVE_ADDR, tx, 2U, NULL, 0);
+
+    if(ret != RET_OK)
+        return ret;
+
+    /**
+     * set CONF3 & MS
+     */
+    conf3 = VCNL4040_SMART_PERS_SET(cfg->smart_persistence_en);
+    ms = VCNL4040_LED_I_SET(cfg->led_curr);
+    tx[VCNL4040_LSB] = conf3;
+    tx[VCNL4040_MSB] = ms;
+
+    ret = i2c_transceive(VCNL4040_SLAVE_ADDR, tx, 2U, NULL, 0);
+
+    if(ret != RET_OK)
+        return ret;
+
+    /**
+     * update driver state
+     */
+    vcnl4040.cfg = cfg;
+    vcnl4040.state = VCNL4040_STATE_RUNNING;
+
+    return RET_OK;
 }
 
 /**
@@ -79,7 +115,9 @@ retcode_t vcnl4040_test(void)
 
     if(ret != RET_OK)
         return ret;
-    else if((rx[0] != VCNL4040_ID_LSB) || (rx[1] != VCNL4040_ID_MSB))
+    else if(rx[VCNL4040_LSB] != VCNL4040_ID_LSB)
+        return RET_SERIAL_ERR;
+    else if(rx[VCNL4040_MSB] != VCNL4040_ID_MSB)
         return RET_SERIAL_ERR;
 
     /**
