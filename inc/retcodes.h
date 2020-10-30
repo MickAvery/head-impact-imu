@@ -23,4 +23,6 @@ typedef enum
     RET_CODES                   /*!< Max number of retcodes */
 } retcode_t;
 
+extern const char* retcodes_desc[RET_CODES];
+
 #endif /* RETCODES_H */

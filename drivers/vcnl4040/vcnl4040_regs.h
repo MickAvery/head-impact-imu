@@ -12,7 +12,7 @@
 /**
  * CONF1 and CONF2 register address and bit definitions
  * 
- * Write to this address expects 2 bytes, the first to CONF1 and the next to CONF2
+ * Writes to this address expects 2 bytes, the first to CONF1 and the next to CONF2
  */
 #define VCNL4040_PS_CONF1_CONF2_ADDR  0x03U /*!< VCNL4040 CONF1 and CONF2 register address */
 #define VCNL4040_DUTY_MASK            0xC0U /*!< PS IRED on / off duty ratio setting mask */
@@ -25,12 +25,19 @@
 /**
  * CONF3 and MS register address and bit definitions
  * 
- * Write to this address expects 2 bytes, the first to CONF3 and the next to MS
+ * Writes to this address expects 2 bytes, the first to CONF3 and the next to MS
  */
 #define VCNL4040_PS_CONF3_MS_ADDR     0x04U /*!< VCNL4040 CONF3 and MS register address */
 #define VCNL4040_SMART_PERS_FLAG      0x10U /*!< PS smart persistence mask */
 #define VCNL4040_SMART_PERS_SET(en)   ((en << 4) & VCNL4040_SMART_PERS_FLAG) /*!< enable/disable smart persistence */
 #define VCNL4040_LED_I_MASK           0x07U /*!< PS LED_I bits mask */
 #define VCNL4040_LED_I_SET(curr)      (curr & VCNL4040_LED_I_MASK) /*!< set LED current setting */
+
+/**
+ * Device ID register address
+ */
+#define VCNL4040_ID_ADDR              0x0CU /*!< VCNL4040 ID register address */
+#define VCNL4040_ID_LSB               0x86U /*!< expected ID LSB */
+#define VCNL4040_ID_MSB               0x01U /*!< expected ID MSB */
 
 #endif /* VCNL4040_REGS_H */
