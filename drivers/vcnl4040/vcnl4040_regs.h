@@ -9,9 +9,19 @@
 
 #define VCNL4040_SLAVE_ADDR           0x60U /*!< VCNL4040 I2C slave address */
 
-#define VCNL4040_LSB                  0U    /*!< Index LSB from register */
-#define VCNL4040_MSB                  1U    /*!< Index MSB from register */
-#define VCNL4040_REG_NUMBYTES         2U    /*!< Max number of bytes in each register */
+/**
+ * Use these macros when creating tx buffers
+ */
+#define VCNL4040_TX_CMD               0U /*!< Command index */
+#define VCNL4040_TX_LSB               1U /*!< LSB tx index */
+#define VCNL4040_TX_MSB               2U /*!< MSB tx index */
+#define VCNL4040_TX_NUMBYTES          3U /*!< Max number of tx bytes */
+
+/**
+ * Use these macros when indexing from rx buffer
+ */
+#define VCNL4040_RX_LSB               0U /*!< LSB rx index */
+#define VCNL4040_RX_MSB               1U /*!< MSB rx idnex */
 
 /**
  * CONF1 and CONF2 register address and bit definitions
@@ -36,6 +46,11 @@
 #define VCNL4040_SMART_PERS_SET(en)   ((en << 4) & VCNL4040_SMART_PERS_FLAG) /*!< enable/disable smart persistence */
 #define VCNL4040_LED_I_MASK           0x07U /*!< PS LED_I bits mask */
 #define VCNL4040_LED_I_SET(curr)      (curr & VCNL4040_LED_I_MASK) /*!< set LED current setting */
+
+/**
+ * PS data output register address
+ */
+#define VCNL4040_PS_DATA_ADDR         0x08U /*!< VCNL4040 PS Data output register address */
 
 /**
  * Device ID register address
