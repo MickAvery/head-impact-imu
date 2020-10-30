@@ -194,6 +194,38 @@ static void icm20649_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
 /**
  * @notapi
+ * @brief Continuously print out ICM20649 sensor readings
+ */
+static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    uint8_t rx = 0U;
+    uint8_t ctrl_c = 0x03U;
+
+    while(rx != ctrl_c)
+    {
+        retcode_t ret;
+        vcnl4040_data_t data;
+        ret = vcnl4040_read(&data);
+
+        if(ret == RET_OK)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+                "%d\n", data);
+        }
+        else
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "error!\n");
+
+        nrf_delay_ms(25U);
+
+        nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
+    }
+}
+
+/**
+ * @notapi
  * @brief Enable/Disable CLI echo
  */
 static void echo_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
@@ -290,10 +322,17 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(icm20649_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
-NRF_CLI_CREATE_STATIC_SUBCMD_SET(imu_subcmds)
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(vcnl4040_subcmds)
+{
+    NRF_CLI_CMD(stream, NULL, "Stream sensor data from VCNL4040 sensor", vcnl4040_stream_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(sensor_subcmds)
 {
     NRF_CLI_CMD(adxl372, &adxl372_subcmds, "ADXL372 subcommands", NULL),
     NRF_CLI_CMD(icm20649, &icm20649_subcmds, "ICM20649 subcommands", NULL),
+    NRF_CLI_CMD(vcnl4040, &vcnl4040_subcmds, "VCNL4040 subcommands", NULL),
     NRF_CLI_SUBCMD_SET_END
 };
 
@@ -303,7 +342,7 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(imu_subcmds)
 
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
-NRF_CLI_CMD_REGISTER(imu, &imu_subcmds, "Print IMU values", NULL);
+NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Print sensor values", NULL);
 NRF_CLI_CMD_REGISTER(echo, NULL,
     "Configure CLI echo setting\n"
     "    echo off - turn off CLI echo\n"
