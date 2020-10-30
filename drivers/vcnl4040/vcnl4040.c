@@ -18,12 +18,18 @@ typedef enum
     VCNL4040_STATE_RUNNING     /*!< VCNL4040 sensor running */
 } vcnl4040_state_t;
 
+/**
+ * @brief VCNL4040 driver instance definition
+ */
 typedef struct
 {
     vcnl4040_cfg_t* cfg;
     vcnl4040_state_t state;
 } vcnl4040_t;
 
+/**
+ * @brief VCNL4040 driver singleton
+ */
 static vcnl4040_t vcnl4040 =
 {
     .cfg   = NULL,
