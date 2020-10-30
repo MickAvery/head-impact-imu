@@ -23,24 +23,27 @@ extern "C" {
  *******************************/
 
 /* ICM206649 SPI pin mappings */
+#define SPI0_PERIPH           0
 #define SPI0_ICM20649_CS_PIN  3
 #define SPI0_MISO_PIN         9
 #define SPI0_MOSI_PIN         10
 #define SPI0_CLK_PIN          11
 
 /* ADXL372 and MT25QL256 shared SPI bus pin mappings */
-#define SPI1_ADXL372_CS_PIN      8
-#define SPI1_MT25QL256ABA_CS_PIN 15
-#define SPI1_MOSI_PIN            12
-#define SPI1_MISO_PIN            16
-#define SPI1_CLK_PIN             13
+#define SPI2_PERIPH              2
+#define SPI2_ADXL372_CS_PIN      8
+#define SPI2_MT25QL256ABA_CS_PIN 15
+#define SPI2_MOSI_PIN            12
+#define SPI2_MISO_PIN            16
+#define SPI2_CLK_PIN             13
 
 /*******************************
  * @brief I2C pin mappings
  *******************************/
 
-#define I2C_SDA                 23
-#define I2C_SCL                 24
+#define I2C1_PERIPH               1 /*!< I2C1 used */
+#define I2C1_SDA                 23
+#define I2C1_SCL                 24
 
 #ifdef __cplusplus
 }

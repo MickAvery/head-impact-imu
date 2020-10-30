@@ -16,8 +16,7 @@ Download Git for Windows https://git-scm.com/downloads to clone this repository.
 
 Clone this repo by using:
 ``` sh
-git clone
-https://github.com/edmching/head_impact_IMU
+git clone https://github.com/MickAvery/head-impact-imu
 ```
 
 ### Downloading Git - For Linux Users

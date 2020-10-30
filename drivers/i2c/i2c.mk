@@ -1,0 +1,5 @@
+I2C_PATH = $(DRIVERPATH)/i2c
+
+I2CSRC = $(I2C_PATH)/i2c.c
+
+I2CINC = $(I2C_PATH)

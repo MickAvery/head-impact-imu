@@ -51,14 +51,14 @@ static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
     buf[0] = addr;
     memcpy(buf+1, tx, txn);
 
-    spi_transfer(SPI_INSTANCE_1, SPI_DEV_ADXL372, buf, txn+1, NULL, 0);
+    spi_transfer(SPI_INSTANCE_2, SPI_DEV_ADXL372, buf, txn+1, NULL, 0);
 }
 
 static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
 {
     uint8_t buf[32U] = {0U}; /* TODO: magic number */
     uint8_t addr = (reg_addr << 1U) | 1U;
-    spi_transfer(SPI_INSTANCE_1, SPI_DEV_ADXL372, &addr, 1U, buf, rxn + 1U);
+    spi_transfer(SPI_INSTANCE_2, SPI_DEV_ADXL372, &addr, 1U, buf, rxn + 1U);
 
     memcpy(rx, buf+1U, rxn);
 }
