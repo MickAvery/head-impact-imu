@@ -29,6 +29,56 @@ retcode_t i2c_init(void)
     i2c_conf.sda = I2C1_SDA;
 
     ret = nrf_drv_twi_init(&i2c_handler, &i2c_conf, NULL, NULL);
+    if(ret != RET_OK)
+        return ret;
+
+    nrf_drv_twi_enable(&i2c_handler);
+    if(ret != RET_OK)
+        return ret;
+
+    return ret;
+}
+
+/**
+ * @brief Perform an I2C transfer, transmit followed by a receive
+ * 
+ * If txn is > 0, a transmit occurs. If rxn is > 0, a receive occurs.
+ * 
+ * @param slave_addr - slave device address
+ * @param txbuf      - transmit buffer
+ * @param txn        - number of bytes to transmit
+ * @param rxbuf      - receive buffer
+ * @param rxn        - number of bytes to receive
+ * @return retcode_t Driver status
+ */
+retcode_t i2c_transceive(i2c_addr_t slave_addr, uint8_t* txbuf, size_t txn, uint8_t* rxbuf, size_t rxn)
+{
+    retcode_t ret = RET_ERR;
+    bool repeated_start = rxbuf && (rxn > 0); /* set repeated start condition on transmit if read requested */
+
+    /**
+     * attempt transmit
+     **/
+    ret = nrf_drv_twi_tx(
+        &i2c_handler,
+        slave_addr,
+        (uint8_t const*)txbuf,
+        (uint8_t)txn,
+        repeated_start);
+
+    if(ret != RET_OK)
+        return ret;
+
+    /**
+     * attempt receive
+     **/
+    ret = nrf_drv_twi_rx(&i2c_handler,
+        slave_addr,
+        (uint8_t*)rxbuf,
+        (uint8_t)rxn);
+
+    if(ret != RET_OK)
+        return ret;
 
     return ret;
 }

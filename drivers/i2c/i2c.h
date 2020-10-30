@@ -7,7 +7,14 @@
 #ifndef I2C_H
 #define I2C_H
 
+#include <stdint.h>
+#include <stddef.h>
 #include "retcodes.h"
+
+/**
+ * @brief Slave address definition
+ */
+typedef uint8_t i2c_addr_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,6 +26,20 @@ extern "C" {
  * @return retcode_t Driver status, RET_OK if all's well
  */
 retcode_t i2c_init(void);
+
+/**
+ * @brief Perform an I2C transfer, transmit followed by a receive
+ * 
+ * If txn is > 0, a transmit occurs. If rxn is > 0, a receive occurs.
+ * 
+ * @param slave_addr - slave device address
+ * @param txbuf      - transmit buffer
+ * @param txn        - number of bytes to transmit
+ * @param rxbuf      - receive buffer
+ * @param rxn        - number of bytes to receive
+ * @return retcode_t Driver status
+ */
+retcode_t i2c_transceive(i2c_addr_t slave_addr, uint8_t* txbuf, size_t txn, uint8_t* rxbuf, size_t rxn);
 
 #ifdef __cplusplus
 }
