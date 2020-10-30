@@ -69,9 +69,6 @@ retcode_t vcnl4040_test(void)
 {
     retcode_t ret = RET_ERR;
 
-    /* TODO */
-    (void)vcnl4040;
-
     /**
      * read ID register to verify I2C communication
      */
