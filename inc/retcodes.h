@@ -7,18 +7,20 @@
 #ifndef RETCODES_H
 #define RETCODES_H
 
+#include "nrf_error.h"
+
 /**
  * @brief System return codes
  */
 typedef enum
 {
-    RET_OK = 0,       /*!< No errors reported, system ok */
-    RET_ERR,          /*!< Generic error */
-    RET_DRV_UNINIT,   /*!< Driver uninitialized */
-    RET_SERIAL_ERR,   /*!< Serial communication error */
-    RET_SELFTEST_ERR, /*!< Device selftest failed */
-    RET_TIMEOUT,      /*!< Device timeout */
-    RET_CODES         /*!< Max number of retcodes */
+    RET_OK  = NRF_SUCCESS,      /*!< No errors reported, system ok */
+    RET_ERR = NRF_ERROR_BUSY+1, /*!< Generic error */
+    RET_DRV_UNINIT,             /*!< Driver uninitialized */
+    RET_SERIAL_ERR,             /*!< Serial communication error */
+    RET_SELFTEST_ERR,           /*!< Device selftest failed */
+    RET_TIMEOUT,                /*!< Device timeout */
+    RET_CODES                   /*!< Max number of retcodes */
 } retcode_t;
 
 #endif /* RETCODES_H */

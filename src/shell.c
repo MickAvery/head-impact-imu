@@ -267,19 +267,6 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         stat_strings[icm20649_stat]);
 }
 
-/**
- * @notapi
- * @brief System test for timer library
- */
-static void systest_datetime(nrf_cli_t const* p_cli, size_t argc, char** argv)
-{
-    ASSERT(p_cli);
-    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
-
-    /* TODO: */
-    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n\nTODO\n\n");
-}
-
 /***************************************************************************************
  * Register the systest subcommands, pair them to their command names using NRF5's API
  ***************************************************************************************/
@@ -317,13 +304,6 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(imu_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
-NRF_CLI_CREATE_STATIC_SUBCMD_SET(systest_subcmds)
-{
-    /* NOTE: make sure subcommands are in alphabetical order */
-    NRF_CLI_CMD(datetime, NULL,  "help string", systest_datetime),
-    NRF_CLI_SUBCMD_SET_END
-};
-
 /***************************************************************************************
  * Register the commands, pair them to their command names using NRF5's API
  ***************************************************************************************/
@@ -336,7 +316,6 @@ NRF_CLI_CMD_REGISTER(echo, NULL,
     "    echo off - turn off CLI echo\n"
     "    echo off - turn on CLI echo\n", echo_cmd);
 NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysprop_cmd);
-NRF_CLI_CMD_REGISTER(systest, &systest_subcmds, "Test system peripherals", NULL);
 
 /******************
  * Start of API

@@ -11,8 +11,8 @@
 /**
  * @brief SPI instances used by system
  */
-static const nrf_drv_spi_t spi0 = NRF_DRV_SPI_INSTANCE(0);
-static const nrf_drv_spi_t spi2 = NRF_DRV_SPI_INSTANCE(2);
+static const nrf_drv_spi_t spi0 = NRF_DRV_SPI_INSTANCE(SPI0_PERIPH);
+static const nrf_drv_spi_t spi2 = NRF_DRV_SPI_INSTANCE(SPI2_PERIPH);
 
 /**
  * @brief SPI instance configurations
