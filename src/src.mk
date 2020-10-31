@@ -1,3 +1,7 @@
 SRC_PATH = $(PROJ_DIR)/src
 
-PROJ_SRCS = $(SRC_PATH)/datetime.c $(SRC_PATH)/shell.c $(SRC_PATH)/retcodes.c
+PROJ_SRCS = \
+$(SRC_PATH)/datetime.c \
+$(SRC_PATH)/shell.c    \
+$(SRC_PATH)/retcodes.c \
+$(SRC_PATH)/network.c
