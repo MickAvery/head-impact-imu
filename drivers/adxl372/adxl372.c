@@ -169,17 +169,32 @@ retcode_t adxl372_init(const adxl372_cfg_t* cfg)
     {
         /* SPI communication successful, let's configure the IMU */
 
-        reset_dev();
+        /**
+         * reset sensor registers
+         */
+        if((ret = reset_dev()) != RET_OK)
+            return ret;
 
         adxl372.cfg = cfg;
         memset(adxl372.offsets, 0, sizeof(adxl372_val_raw_t)*ADXL372_AXES);
 
-        configure_bandwidth(cfg->bandwidth);
-        configure_odr(cfg->odr);
-        configure_mode(cfg->mode, cfg->bandwidth == ADXL372_BW_DISABLE);
+        /**
+         * configure registers
+         */
+        if((ret = configure_bandwidth(cfg->bandwidth)) != RET_OK)
+            return ret;
 
+        if((ret = configure_odr(cfg->odr)) != RET_OK)
+            return ret;
+
+        ret = configure_mode(cfg->mode, cfg->bandwidth == ADXL372_BW_DISABLE);
+        if(ret != RET_OK)
+            return ret;
+
+        /**
+         * update driver state
+         */
         adxl372.state = ADXL372_STATE_ACTIVE;
-
         ret = RET_OK;
     }
 
