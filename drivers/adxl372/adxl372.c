@@ -4,6 +4,7 @@
  * @brief Driver for ADXL372 High-g IMU
  */
 
+#include <stdbool.h>
 #include <string.h>
 #include "adxl372.h"
 #include "adxl372_regs.h"

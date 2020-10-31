@@ -7,7 +7,8 @@
 #ifndef SPIDRV_H
 #define SPIDRV_H
 
-#include "nrf_drv_spi.h"
+#include <stddef.h>
+#include "retcodes.h"
 
 /**
  * @brief Defines available SPI instances
@@ -36,7 +37,7 @@ extern "C" {
 /**
  * @brief Initialize SPI instances
  */
-void spi_init(void);
+retcode_t spi_init(void);
 
 /**
  * @brief Trigger a transfer on the SPI bus
@@ -51,7 +52,7 @@ void spi_init(void);
 void spi_transfer(spi_instance_t instance, spi_devs_t dev, void* txbuf, size_t txn, void* rxbuf, size_t rxn);
 
 
-void spi_lock(spi_instance_t instance, spi_devs_t dev, const nrf_drv_spi_config_t* cfg);
+// void spi_lock(spi_instance_t instance, spi_devs_t dev, const nrf_drv_spi_config_t* cfg);
 
 #ifdef __cplusplus
 }

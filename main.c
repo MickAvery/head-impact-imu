@@ -81,7 +81,7 @@ int main(void)
     (void)sys_init();
 
     /* initialize system modules */
-    spi_init();
+    (void)spi_init();
     (void)i2c_init();
     adxl372_init(&adxl372_cfg);
     (void)icm20649_init(&icm20649_cfg);

@@ -10,6 +10,12 @@
 #include <stdint.h>
 #include "nrf_error.h"
 
+/**
+ * @brief Project-specific system-wide return code type
+ * 
+ * Expands the @ref ret_code_t codes that the nRF SDK provides in nrf_errors.h
+ * to provide additional project-specific error codes
+ */
 typedef uint32_t retcode_t;
 
 /**
@@ -26,6 +32,12 @@ typedef enum
     RET_CODES                   /*!< Max number of retcodes */
 } retcode_desc_t;
 
+/**
+ * @brief Error code description strings
+ * 
+ * Make sure to keep this up to date with new codes added
+ * in @ref retcode_desc_t
+ */
 extern const char* retcodes_desc[RET_CODES];
 
 #endif /* RETCODES_H */

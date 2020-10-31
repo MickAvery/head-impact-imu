@@ -6,6 +6,7 @@
 
 #include "spi.h"
 #include "custom_board.h"
+#include "nrf_drv_spi.h"
 #include "nrf_gpio.h"
 
 /**
@@ -34,9 +35,9 @@ static const uint8_t cs_pins[SPI_DEV_MAX] = {
 /**
  * @brief Initialize SPI instances
  */
-void spi_init(void)
+retcode_t spi_init(void)
 {
-    ret_code_t ret;
+    retcode_t ret = RET_ERR;
 
     /* Initialize SPI-0 instance */
     spi0_cfg.sck_pin   = SPI0_CLK_PIN;
@@ -45,7 +46,8 @@ void spi_init(void)
     spi0_cfg.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
     spi0_cfg.frequency = NRF_DRV_SPI_FREQ_4M;
     ret = nrf_drv_spi_init(&(spi0), &(spi0_cfg), NULL, NULL);
-    APP_ERROR_CHECK(ret);
+    if(ret != RET_OK)
+        return ret;
 
     /* Initialize SPI-1 instance */
     spi2_cfg.sck_pin   = SPI2_CLK_PIN;
@@ -54,7 +56,8 @@ void spi_init(void)
     spi2_cfg.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
     spi2_cfg.frequency = NRF_DRV_SPI_FREQ_8M;
     ret = nrf_drv_spi_init(&(spi2), &(spi2_cfg), NULL, NULL);
-    APP_ERROR_CHECK(ret);
+    if(ret != RET_OK)
+        return ret;
 
     /* Initialize CS GPIO pins */
     for(size_t i = 0 ; i < SPI_DEV_MAX ; i++)
@@ -62,6 +65,8 @@ void spi_init(void)
         nrf_gpio_cfg_output(cs_pins[i]);
         nrf_gpio_pin_set(cs_pins[i]);
     }
+
+    return RET_OK;
 }
 
 /**
