@@ -34,6 +34,8 @@ static const uint8_t cs_pins[SPI_DEV_MAX] = {
 
 /**
  * @brief Initialize SPI instances
+ * 
+ * @return retcode_t - Module status
  */
 retcode_t spi_init(void)
 {
@@ -78,14 +80,17 @@ retcode_t spi_init(void)
  * @param txn - number of bytes to transmit
  * @param rxbuf - buffer to receive bytes
  * @param rxn - number of bytes to store in rxbuf
+ * @return retcode_t - Module status
  */
-void spi_transfer(
+retcode_t spi_transfer(
     spi_instance_t instance, spi_devs_t dev,
     void* txbuf, size_t txn, void* rxbuf, size_t rxn)
 {
     ASSERT(txbuf != NULL && rxbuf != NULL);
     ASSERT(instance < SPI_INSTANCE_MAX);
     ASSERT(dev < SPI_DEV_MAX);
+
+    retcode_t ret = RET_ERR;
 
     nrf_drv_spi_t const * const spi = (instance == SPI_INSTANCE_0) ? &(spi0) : &(spi2);
     uint8_t pin = cs_pins[dev];
@@ -94,8 +99,8 @@ void spi_transfer(
      * Initiate transfer, manually reset and set CS pin
      */
     nrf_gpio_pin_clear(pin);
-    ret_code_t ret = nrf_drv_spi_transfer(spi, txbuf, txn, rxbuf, rxn);
+    ret = nrf_drv_spi_transfer(spi, txbuf, txn, rxbuf, rxn);
     nrf_gpio_pin_set(pin);
 
-    APP_ERROR_CHECK(ret);
+    return ret;
 }

@@ -43,7 +43,16 @@ static adxl_372_t adxl372 = {ADXL372_STATE_INACTIVE, NULL};
  * Helper functions
  ******************************/
 
-static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
+/**
+ * @notapi
+ * @brief Write to sensor register
+ * 
+ * @param reg_addr 
+ * @param tx 
+ * @param txn 
+ * @return retcode_t - Driver status
+ */
+static retcode_t write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
 {
     uint8_t buf[32U] = {0U}; /* TODO: magic number */
     uint8_t addr = (reg_addr << 1U);
@@ -52,43 +61,60 @@ static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
     buf[0] = addr;
     memcpy(buf+1, tx, txn);
 
-    spi_transfer(SPI_INSTANCE_2, SPI_DEV_ADXL372, buf, txn+1, NULL, 0);
-}
-
-static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
-{
-    uint8_t buf[32U] = {0U}; /* TODO: magic number */
-    uint8_t addr = (reg_addr << 1U) | 1U;
-    spi_transfer(SPI_INSTANCE_2, SPI_DEV_ADXL372, &addr, 1U, buf, rxn + 1U);
-
-    memcpy(rx, buf+1U, rxn);
+    return spi_transfer(SPI_INSTANCE_2, SPI_DEV_ADXL372, buf, txn+1, NULL, 0);
 }
 
 /**
+ * @notapi
+ * @brief Read from sensor register
+ * 
+ * @param reg_addr 
+ * @param rx 
+ * @param rxn 
+ * @return retcode_t - Driver status
+ */
+static retcode_t read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
+{
+    retcode_t ret;
+    uint8_t buf[32U] = {0U}; /* TODO: magic number */
+    uint8_t addr = (reg_addr << 1U) | 1U;
+    ret = spi_transfer(SPI_INSTANCE_2, SPI_DEV_ADXL372, &addr, 1U, buf, rxn + 1U);
+
+    memcpy(rx, buf+1U, rxn);
+
+    return ret;
+}
+
+/**
+ * @notapi
  * @brief Configure LPF bandwidth
  * 
  * @param bandwidth 
+ * @return retcode_t - Driver status
  */
-static void configure_bandwidth(adxl372_bandwidth_t bandwidth)
+static retcode_t configure_bandwidth(adxl372_bandwidth_t bandwidth)
 {
     if(bandwidth < ADXL372_BW_DISABLE)
     {
         uint8_t tx = bandwidth & ADXL372_BANDWIDTH_MASK;
 
-        write_reg(ADXL372_MEASURE_ADDR, &tx, 1U);
+        return write_reg(ADXL372_MEASURE_ADDR, &tx, 1U);
     }
+
+    return RET_OK;
 }
 
 /**
  * @brief Configure driver to run at ODR specified
  * 
  * @param odr
+ * @return retcode_t - Driver status
  */
-static void configure_odr(adxl372_odr_t odr)
+static retcode_t configure_odr(adxl372_odr_t odr)
 {
     uint8_t tx = (odr << 5U) & ADXL372_TIMING_ODR_MASK;
 
-    write_reg(ADXL372_TIMING_ADDR, &tx, 1U);
+    return write_reg(ADXL372_TIMING_ADDR, &tx, 1U);
 }
 
 /**
@@ -96,8 +122,9 @@ static void configure_odr(adxl372_odr_t odr)
  * 
  * @param mode
  * @param lpf_disable - if true, LPF is disabled
+ * @return retcode_t - Driver status
  */
-static void configure_mode(adxl372_mode_t mode, bool lpf_disable)
+static retcode_t configure_mode(adxl372_mode_t mode, bool lpf_disable)
 {
     uint8_t tx = mode & ADXL372_POWER_CTL_MODE_MASK;
 
@@ -107,16 +134,17 @@ static void configure_mode(adxl372_mode_t mode, bool lpf_disable)
     /* disable HPF */
     tx |= ADXL372_POWER_CTL_HPF_MASK;
 
-    write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
+    return write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
 }
 
 /**
  * @brief Reset the device, place in standby mode
+ * @return retcode_t - Driver status
  */
-static void reset_dev(void)
+static retcode_t reset_dev(void)
 {
     uint8_t tx = ADXL372_RESET_VAL;
-    write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
+    return write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
 }
 
 /******************************
@@ -127,14 +155,17 @@ static void reset_dev(void)
  * @brief Initialize ADXL372 Driver
  * 
  * @param cfg - Driver configurations
+ * @return retcode_t - Driver status
  */
-void adxl372_init(const adxl372_cfg_t* cfg)
+retcode_t adxl372_init(const adxl372_cfg_t* cfg)
 {
     /* Test SPI communication */
     uint8_t devid_ad = 0U;
-    read_reg(ADXL372_DEVID_AD_ADDR, &devid_ad, 1U);
+    retcode_t ret = read_reg(ADXL372_DEVID_AD_ADDR, &devid_ad, 1U);
 
-    if(devid_ad == ADXL372_DEVID_AD_EXPECTED_VAL)
+    if(devid_ad != ADXL372_DEVID_AD_EXPECTED_VAL)
+        ret = RET_SERIAL_ERR;
+    else if(ret == RET_OK)
     {
         /* SPI communication successful, let's configure the IMU */
 
@@ -148,7 +179,11 @@ void adxl372_init(const adxl372_cfg_t* cfg)
         configure_mode(cfg->mode, cfg->bandwidth == ADXL372_BW_DISABLE);
 
         adxl372.state = ADXL372_STATE_ACTIVE;
+
+        ret = RET_OK;
     }
+
+    return ret;
 }
 
 /**

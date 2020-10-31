@@ -36,6 +36,8 @@ extern "C" {
 
 /**
  * @brief Initialize SPI instances
+ * 
+ * @return retcode_t - Module status
  */
 retcode_t spi_init(void);
 
@@ -48,8 +50,9 @@ retcode_t spi_init(void);
  * @param txn - number of bytes to transmit
  * @param rxbuf - buffer to receive bytes
  * @param rxn - number of bytes to store in rxbuf
+ * @return retcode_t - Module status
  */
-void spi_transfer(spi_instance_t instance, spi_devs_t dev, void* txbuf, size_t txn, void* rxbuf, size_t rxn);
+retcode_t spi_transfer(spi_instance_t instance, spi_devs_t dev, void* txbuf, size_t txn, void* rxbuf, size_t rxn);
 
 
 // void spi_lock(spi_instance_t instance, spi_devs_t dev, const nrf_drv_spi_config_t* cfg);

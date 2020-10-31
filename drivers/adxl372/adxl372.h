@@ -8,6 +8,7 @@
 #define ADXL372_H
 
 #include "nrf.h"
+#include "retcodes.h"
 #include "arm_math.h"
 
 /**
@@ -91,14 +92,9 @@ extern "C" {
  * @brief Initialize ADXL372 Driver
  * 
  * @param cfg - Driver configurations
+ * @return retcode_t - Driver status
  */
-void adxl372_init(const adxl372_cfg_t* cfg);
-
-/**
- * @brief Read raw linear acceleration data from sensor (values straight from registers)
- * 
- * @param readings - Buffer to store data
- */
+retcode_t adxl372_init(const adxl372_cfg_t* cfg);
 
 /**
  * @brief Read raw linear acceleration data from sensor (values straight from registers)
