@@ -40,6 +40,14 @@ typedef struct
 static adxl_372_t adxl372 = {ADXL372_STATE_INACTIVE, NULL};
 
 /******************************
+ * Averaging configs for calibration.
+ * TODO: Maybe put these in a header file?
+ ******************************/
+
+#define NUM_CAL_AVG_N 128U /*!< When calibrating, this is the number of data points to read and average */
+static adxl372_val_raw_t default_setpoint[ADXL372_AXES] = {0, 0, 10}; /*!< Default axis setpoints, units in LSB */
+
+/******************************
  * Helper functions
  ******************************/
 
@@ -205,11 +213,11 @@ retcode_t adxl372_init(const adxl372_cfg_t* cfg)
  * @brief Read raw linear acceleration data from sensor (values straight from registers)
  * 
  * @param readings - Buffer to store data
- * @return adxl372_err_t - Error status if something goes wrong 
+ * @return retcode_t - Error status if something goes wrong 
  */
-adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
+retcode_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
 {
-    adxl372_err_t ret = ADXL372_ERR_UNINIT;
+    retcode_t ret = RET_DRV_UNINIT;
 
     if(adxl372.state == ADXL372_STATE_ACTIVE)
     {
@@ -219,10 +227,12 @@ adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
         /* wait for data ready */
         do
         {
-            read_reg(ADXL372_STATUS_ADDR, &status, 1U);
+            if((ret = read_reg(ADXL372_STATUS_ADDR, &status, 1U)) != RET_OK)
+                return ret;
         } while(!(status & ADXL372_STATUS_DATA_RDY_MASK));
 
-        read_reg(ADXL372_XDATA_H_ADDR, buf, ADXL372_AXES*2);
+        if((ret = read_reg(ADXL372_XDATA_H_ADDR, buf, ADXL372_AXES*2)) != RET_OK)
+            return ret;
 
         for(size_t i = 0U ; i < ADXL372_AXES*2 ; i+=2U)
         {
@@ -233,6 +243,8 @@ adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
             /* trim offset */
             readings[i/2U] -= adxl372.offsets[i/2U];
         }
+
+        ret = RET_OK;
     }
 
     return ret;
@@ -241,30 +253,27 @@ adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
 /**
  * @brief Get status of ADXL372 driver
  * 
- * @return adxl372_err_t - Driver error type, refer to @ref adxl372_err_t for details
+ * @return retcode_t - Driver error code, refer to @ref retcode_desc_t
  */
-adxl372_err_t adxl372_status(void)
+retcode_t adxl372_test(void)
 {
-    adxl372_err_t err = ADXL372_ERR_OK;
+    retcode_t ret = RET_ERR;
 
-    if(adxl372.state == ADXL372_STATE_INACTIVE)
-        err = ADXL372_ERR_UNINIT;
+    /* Test SPI communication */
+    uint8_t devid_ad = 0U;
+    ret = read_reg(ADXL372_DEVID_AD_ADDR, &devid_ad, 1U);
+
+    if(ret != RET_OK)
+        return ret;
+    else if(devid_ad != ADXL372_DEVID_AD_EXPECTED_VAL)
+        return RET_SERIAL_ERR;
+    else if(adxl372.state == ADXL372_STATE_INACTIVE)
+        return RET_DRV_UNINIT;
     else
-    {
-        /* Test SPI communication */
-        uint8_t devid_ad = 0U;
-        read_reg(ADXL372_DEVID_AD_ADDR, &devid_ad, 1U);
+        ret = RET_OK;
 
-        if(devid_ad != ADXL372_DEVID_AD_EXPECTED_VAL)
-            err = ADXL372_ERR_COMM;
-    }
-
-    return err;
+    return ret;
 }
-
-#define NUM_CAL_AVG_N 128U /*!< When calibrating, this is the number of data points to read and average */
-// static inline int16_t word_avg(int16_t word) { return (word < 0) ? word*(-1) : word; }
-static adxl372_val_raw_t default_setpoint[ADXL372_AXES] = {0, 0, 10}; /*!< Default axis setpoints, units in LSB */
 
 /**
  * @brief Calibrate sensor to correct offset
@@ -273,11 +282,11 @@ static adxl372_val_raw_t default_setpoint[ADXL372_AXES] = {0, 0, 10}; /*!< Defau
  *                   If NULL then default setpoint is used where device is assumed
  *                   to be at rest with the Z-axis completely perpendicular to the
  *                   X-Y plane [0, 0, 1g]
- * @return adxl372_err_t - Error status if something goes wrong
+ * @return retcode_t - Driver status
  */
-adxl372_err_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
+retcode_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
 {
-    adxl372_err_t ret = ADXL372_ERR_UNINIT;
+    retcode_t ret = RET_ERR;
 
     /* if NULL, set setpoint to default */
     setpoint  = (setpoint == NULL) ? default_setpoint : setpoint;
@@ -290,7 +299,10 @@ adxl372_err_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
         for(size_t i = 0 ; i < NUM_CAL_AVG_N ; i++)
         {
             adxl372_val_raw_t vals[ADXL372_AXES];
-            adxl372_read_raw(vals);
+            ret = adxl372_read_raw(vals);
+
+            if(ret != RET_OK)
+                return ret;
 
             axes[ADXL372_X] += vals[ADXL372_X];
             axes[ADXL372_Y] += vals[ADXL372_Y];
@@ -305,7 +317,7 @@ adxl372_err_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
             adxl372.offsets[i] = axes[i] - setpoint[i];
         }
 
-        ret = ADXL372_ERR_OK;
+        ret = RET_OK;
     }
 
     return ret;

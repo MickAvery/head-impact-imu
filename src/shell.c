@@ -269,12 +269,9 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
-    bool adxl372_stat = false;
+    retcode_t adxl372_stat = adxl372_test();
     retcode_t icm20649_stat = icm20649_test();
     retcode_t vcnl4040_stat = vcnl4040_test();
-
-    if(adxl372_status() == ADXL372_ERR_OK)
-        adxl372_stat = true;
 
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
         "\n"
@@ -287,7 +284,7 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         " > ICM20649 - [%s]\n"
         " > VCNL4040 - [%s]\n"
         "\n\n",
-        adxl372_stat ? "OK" : "FAILED",
+        retcodes_desc[adxl372_stat],
         retcodes_desc[icm20649_stat],
         retcodes_desc[vcnl4040_stat]);
 }

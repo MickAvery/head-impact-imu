@@ -102,14 +102,14 @@ retcode_t adxl372_init(const adxl372_cfg_t* cfg);
  * @param readings - Buffer to store data
  * @return adxl372_err_t - Error status if something goes wrong 
  */
-adxl372_err_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES]);
+retcode_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES]);
 
 /**
  * @brief Get status of ADXL372 driver
  * 
- * @return adxl372_err_t - Driver error type, refer to @ref adxl372_err_t for details
+ * @return retcode_t - Driver error code, refer to @ref retcode_desc_t
  */
-adxl372_err_t adxl372_status(void);
+retcode_t adxl372_test(void);
 
 /**
  * @brief Calibrate sensor to correct offset
@@ -120,7 +120,7 @@ adxl372_err_t adxl372_status(void);
  *                   X-Y plane [0, 0, 1g]
  * @return adxl372_err_t - Error status if something goes wrong
  */
-adxl372_err_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES]);
+retcode_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES]);
 
 #ifdef __cplusplus
 }
