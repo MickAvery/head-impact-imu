@@ -16,6 +16,7 @@
 #include "adxl372.h"
 #include "icm20649.h"
 #include "vcnl4040.h"
+#include "network.h"
 
 /**
  * @brief ADXL372 config
@@ -86,6 +87,7 @@ int main(void)
     (void)icm20649_init(&icm20649_cfg);
     (void)vcnl4040_init(&vcnl4040_cfg);
     datetime_init();
+    (void)network_init();
     shell_init();
 
     while(1)

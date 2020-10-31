@@ -12,7 +12,7 @@
 /**
  * @brief RTC isntance
  */
-const nrf_drv_rtc_t rtc = NRF_DRV_RTC_INSTANCE(0);
+const nrf_drv_rtc_t rtc = NRF_DRV_RTC_INSTANCE(2);
 
 /**
  * @brief RTC configuration
