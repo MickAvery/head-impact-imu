@@ -58,6 +58,7 @@
 
 #include <stdint.h>
 #include "nrf_error.h"
+#include "nrf_sdh_soc.h"
 #include "ble.h"
 #include "ble_gap.h"
 #include "ble_gattc.h"

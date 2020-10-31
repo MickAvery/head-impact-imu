@@ -7,7 +7,10 @@
 #ifndef RETCODES_H
 #define RETCODES_H
 
+#include <stdint.h>
 #include "nrf_error.h"
+
+typedef uint32_t retcode_t;
 
 /**
  * @brief System return codes
@@ -21,7 +24,7 @@ typedef enum
     RET_SELFTEST_ERR,           /*!< Device selftest failed */
     RET_TIMEOUT,                /*!< Device timeout */
     RET_CODES                   /*!< Max number of retcodes */
-} retcode_t;
+} retcode_desc_t;
 
 extern const char* retcodes_desc[RET_CODES];
 
