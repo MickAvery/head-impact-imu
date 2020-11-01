@@ -82,27 +82,27 @@ extern "C" {
  * @brief Initialize ICM20649 driver
  * 
  * @param cfg - Driver configurations
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-retcode_t icm20649_init(icm20649_cfg_t* cfg);
+sysret_t icm20649_init(icm20649_cfg_t* cfg);
 
 /**
  * @brief Read raw gyroscope and accelerometer sensor data (straight from registers)
  * 
  * @param gyro  - Buffer to store raw gyroscope readings
  * @param accel - Buffer to store raw accelerometer readings
- * @return retcode_t 
+ * @return sysret_t 
  */
-retcode_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20649_ACCEL_AXES]);
+sysret_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20649_ACCEL_AXES]);
 
 /**
  * @brief Test serial communication and initiate device self-test
  * 
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  * @retval RET_SERIAL_ERR - serial communication error
  * @retval RET_SELFTEST_ERR - device self-test failed
  */
-retcode_t icm20649_test(void);
+sysret_t icm20649_test(void);
 
 #ifdef __cplusplus
 }

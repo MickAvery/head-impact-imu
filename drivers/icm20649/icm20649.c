@@ -61,7 +61,7 @@ APP_TIMER_DEF(read_timeout_timer);
 static void timeout_handler(void* p_ctx)
 {
     /* when timer times out, set retcode */
-    *((retcode_t*)p_ctx) = RET_TIMEOUT;
+    *((sysret_t*)p_ctx) = RET_TIMEOUT;
 }
 
 /**************************************
@@ -167,9 +167,9 @@ static void config_gyro(icm20649_cfg_t* cfg)
  * @retval RET_OK - data ready to read
  * @retval RET_TIMEOUT - timeout reached when waiting for data ready
  */
-static retcode_t wait_data_rdy(void)
+static sysret_t wait_data_rdy(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
     uint8_t rx = 0U;
 
     /* start timer to detect timeout */
@@ -233,11 +233,11 @@ static bool check_who_am_i(void)
  * @brief Initialize ICM20649 driver
  * 
  * @param cfg - Driver configurations
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-retcode_t icm20649_init(icm20649_cfg_t* cfg)
+sysret_t icm20649_init(icm20649_cfg_t* cfg)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     if(!check_who_am_i())
         ret = RET_SERIAL_ERR;
@@ -294,11 +294,11 @@ retcode_t icm20649_init(icm20649_cfg_t* cfg)
  * 
  * @param gyro  - Buffer to store raw gyroscope readings
  * @param accel - Buffer to store raw accelerometer readings
- * @return retcode_t 
+ * @return sysret_t 
  */
-retcode_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20649_ACCEL_AXES])
+sysret_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20649_ACCEL_AXES])
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     if(icm20649_handle.state == ICM20649_STATE_RUNNING)
     {
@@ -333,13 +333,13 @@ retcode_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM2
 /**
  * @brief Test serial communication and initiate device self-test
  * 
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  * @retval RET_SERIAL_ERR - serial communication error
  * @retval RET_SELFTEST_ERR - device self-test failed
  */
-retcode_t icm20649_test(void)
+sysret_t icm20649_test(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     if(!check_who_am_i())
         ret = RET_SERIAL_ERR;

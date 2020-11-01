@@ -50,11 +50,11 @@ typedef struct
 extern "C" {
 #endif
 
-retcode_t datetime_init(void);
-retcode_t datetime_set(datetime_t* datetime_in);
-retcode_t datetime_reset(void);
-retcode_t datetime_get(datetime_t* datetime_out);
-retcode_t datetime_test(void);
+sysret_t datetime_init(void);
+sysret_t datetime_set(datetime_t* datetime_in);
+sysret_t datetime_reset(void);
+sysret_t datetime_get(datetime_t* datetime_out);
+sysret_t datetime_test(void);
 
 #ifdef __cplusplus
 }

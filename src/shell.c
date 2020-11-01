@@ -170,7 +170,7 @@ static void icm20649_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
     while(rx != ctrl_c)
     {
-        retcode_t ret;
+        sysret_t ret;
         int16_t accel[ICM20649_ACCEL_AXES] = {0};
         int16_t gyro[ICM20649_GYRO_AXES] = {0};
         ret = icm20649_read_raw(gyro, accel);
@@ -205,7 +205,7 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
     while(rx != ctrl_c)
     {
-        retcode_t ret;
+        sysret_t ret;
         vcnl4040_data_t data;
         ret = vcnl4040_read(&data);
 
@@ -268,10 +268,10 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
-    retcode_t datetime_stat = datetime_test();
-    retcode_t adxl372_stat = adxl372_test();
-    retcode_t icm20649_stat = icm20649_test();
-    retcode_t vcnl4040_stat = vcnl4040_test();
+    sysret_t datetime_stat = datetime_test();
+    sysret_t adxl372_stat = adxl372_test();
+    sysret_t icm20649_stat = icm20649_test();
+    sysret_t vcnl4040_stat = vcnl4040_test();
 
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
         "\n"
@@ -353,11 +353,11 @@ NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysp
 
 /**
  * @brief Initialize she CLI for user inputs
- * @return retcode_t - Module status
+ * @return sysret_t - Module status
  */
-retcode_t shell_init(void)
+sysret_t shell_init(void)
 {
-    retcode_t ret;
+    sysret_t ret;
 
     /**
      * Configure the UART peripheral

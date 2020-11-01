@@ -92,9 +92,9 @@ extern "C" {
  * @brief Initialize ADXL372 Driver
  * 
  * @param cfg - Driver configurations
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-retcode_t adxl372_init(const adxl372_cfg_t* cfg);
+sysret_t adxl372_init(const adxl372_cfg_t* cfg);
 
 /**
  * @brief Read raw linear acceleration data from sensor (values straight from registers)
@@ -102,14 +102,14 @@ retcode_t adxl372_init(const adxl372_cfg_t* cfg);
  * @param readings - Buffer to store data
  * @return adxl372_err_t - Error status if something goes wrong 
  */
-retcode_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES]);
+sysret_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES]);
 
 /**
  * @brief Get status of ADXL372 driver
  * 
- * @return retcode_t - Driver error code, refer to @ref retcode_desc_t
+ * @return sysret_t - Driver error code, refer to @ref retcode_desc_t
  */
-retcode_t adxl372_test(void);
+sysret_t adxl372_test(void);
 
 /**
  * @brief Calibrate sensor to correct offset
@@ -120,7 +120,7 @@ retcode_t adxl372_test(void);
  *                   X-Y plane [0, 0, 1g]
  * @return adxl372_err_t - Error status if something goes wrong
  */
-retcode_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES]);
+sysret_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES]);
 
 #ifdef __cplusplus
 }

@@ -58,9 +58,9 @@ static adxl372_val_raw_t default_setpoint[ADXL372_AXES] = {0, 0, 10}; /*!< Defau
  * @param reg_addr 
  * @param tx 
  * @param txn 
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-static retcode_t write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
+static sysret_t write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
 {
     uint8_t buf[32U] = {0U}; /* TODO: magic number */
     uint8_t addr = (reg_addr << 1U);
@@ -79,11 +79,11 @@ static retcode_t write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
  * @param reg_addr 
  * @param rx 
  * @param rxn 
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-static retcode_t read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
+static sysret_t read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
 {
-    retcode_t ret;
+    sysret_t ret;
     uint8_t buf[32U] = {0U}; /* TODO: magic number */
     uint8_t addr = (reg_addr << 1U) | 1U;
     ret = spi_transfer(SPI_INSTANCE_2, SPI_DEV_ADXL372, &addr, 1U, buf, rxn + 1U);
@@ -98,9 +98,9 @@ static retcode_t read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
  * @brief Configure LPF bandwidth
  * 
  * @param bandwidth 
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-static retcode_t configure_bandwidth(adxl372_bandwidth_t bandwidth)
+static sysret_t configure_bandwidth(adxl372_bandwidth_t bandwidth)
 {
     if(bandwidth < ADXL372_BW_DISABLE)
     {
@@ -116,9 +116,9 @@ static retcode_t configure_bandwidth(adxl372_bandwidth_t bandwidth)
  * @brief Configure driver to run at ODR specified
  * 
  * @param odr
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-static retcode_t configure_odr(adxl372_odr_t odr)
+static sysret_t configure_odr(adxl372_odr_t odr)
 {
     uint8_t tx = (odr << 5U) & ADXL372_TIMING_ODR_MASK;
 
@@ -130,9 +130,9 @@ static retcode_t configure_odr(adxl372_odr_t odr)
  * 
  * @param mode
  * @param lpf_disable - if true, LPF is disabled
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-static retcode_t configure_mode(adxl372_mode_t mode, bool lpf_disable)
+static sysret_t configure_mode(adxl372_mode_t mode, bool lpf_disable)
 {
     uint8_t tx = mode & ADXL372_POWER_CTL_MODE_MASK;
 
@@ -147,9 +147,9 @@ static retcode_t configure_mode(adxl372_mode_t mode, bool lpf_disable)
 
 /**
  * @brief Reset the device, place in standby mode
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-static retcode_t reset_dev(void)
+static sysret_t reset_dev(void)
 {
     uint8_t tx = ADXL372_RESET_VAL;
     return write_reg(ADXL372_POWER_CTL_ADDR, &tx, 1U);
@@ -163,13 +163,13 @@ static retcode_t reset_dev(void)
  * @brief Initialize ADXL372 Driver
  * 
  * @param cfg - Driver configurations
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-retcode_t adxl372_init(const adxl372_cfg_t* cfg)
+sysret_t adxl372_init(const adxl372_cfg_t* cfg)
 {
     /* Test SPI communication */
     uint8_t devid_ad = 0U;
-    retcode_t ret = read_reg(ADXL372_DEVID_AD_ADDR, &devid_ad, 1U);
+    sysret_t ret = read_reg(ADXL372_DEVID_AD_ADDR, &devid_ad, 1U);
 
     if(devid_ad != ADXL372_DEVID_AD_EXPECTED_VAL)
         ret = RET_SERIAL_ERR;
@@ -213,11 +213,11 @@ retcode_t adxl372_init(const adxl372_cfg_t* cfg)
  * @brief Read raw linear acceleration data from sensor (values straight from registers)
  * 
  * @param readings - Buffer to store data
- * @return retcode_t - Error status if something goes wrong 
+ * @return sysret_t - Error status if something goes wrong 
  */
-retcode_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
+sysret_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
 {
-    retcode_t ret = RET_DRV_UNINIT;
+    sysret_t ret = RET_DRV_UNINIT;
 
     if(adxl372.state == ADXL372_STATE_ACTIVE)
     {
@@ -253,11 +253,11 @@ retcode_t adxl372_read_raw(adxl372_val_raw_t readings[ADXL372_AXES])
 /**
  * @brief Get status of ADXL372 driver
  * 
- * @return retcode_t - Driver error code, refer to @ref retcode_desc_t
+ * @return sysret_t - Driver error code, refer to @ref retcode_desc_t
  */
-retcode_t adxl372_test(void)
+sysret_t adxl372_test(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     /* Test SPI communication */
     uint8_t devid_ad = 0U;
@@ -282,11 +282,11 @@ retcode_t adxl372_test(void)
  *                   If NULL then default setpoint is used where device is assumed
  *                   to be at rest with the Z-axis completely perpendicular to the
  *                   X-Y plane [0, 0, 1g]
- * @return retcode_t - Driver status
+ * @return sysret_t - Driver status
  */
-retcode_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
+sysret_t adxl372_calibrate(adxl372_val_raw_t setpoint[ADXL372_AXES])
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     /* if NULL, set setpoint to default */
     setpoint  = (setpoint == NULL) ? default_setpoint : setpoint;

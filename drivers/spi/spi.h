@@ -37,9 +37,9 @@ extern "C" {
 /**
  * @brief Initialize SPI instances
  * 
- * @return retcode_t - Module status
+ * @return sysret_t - Module status
  */
-retcode_t spi_init(void);
+sysret_t spi_init(void);
 
 /**
  * @brief Trigger a transfer on the SPI bus
@@ -50,9 +50,9 @@ retcode_t spi_init(void);
  * @param txn - number of bytes to transmit
  * @param rxbuf - buffer to receive bytes
  * @param rxn - number of bytes to store in rxbuf
- * @return retcode_t - Module status
+ * @return sysret_t - Module status
  */
-retcode_t spi_transfer(spi_instance_t instance, spi_devs_t dev, void* txbuf, size_t txn, void* rxbuf, size_t rxn);
+sysret_t spi_transfer(spi_instance_t instance, spi_devs_t dev, void* txbuf, size_t txn, void* rxbuf, size_t rxn);
 
 
 // void spi_lock(spi_instance_t instance, spi_devs_t dev, const nrf_drv_spi_config_t* cfg);

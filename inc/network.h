@@ -16,9 +16,9 @@ extern "C" {
 /**
  * @brief Initialize wireless network module
  * 
- * @return retcode_t Module status
+ * @return sysret_t Module status
  */
-retcode_t network_init(void);
+sysret_t network_init(void);
 
 #ifdef __cplusplus
 }

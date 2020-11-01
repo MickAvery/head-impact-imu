@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-retcode_t shell_init(void);
+sysret_t shell_init(void);
 void shell_process(void);
 
 #ifdef __cplusplus

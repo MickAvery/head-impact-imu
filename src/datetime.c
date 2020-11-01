@@ -87,7 +87,7 @@ static void rtc_handler(nrf_drv_rtc_int_type_t int_type)
 /**
  * @brief Initialize datetime library
  */
-retcode_t datetime_init(void)
+sysret_t datetime_init(void)
 {
     ASSERT(datetime_state == DATETIME_UNINIT);
 
@@ -104,9 +104,9 @@ retcode_t datetime_init(void)
  * @brief Set datetime and start RTC ticks
  * 
  * @param datetime_in datetime info to set
- * @return retcode_t Error code, what went wrong?
+ * @return sysret_t Error code, what went wrong?
  */
-retcode_t datetime_set(datetime_t* datetime_in)
+sysret_t datetime_set(datetime_t* datetime_in)
 {
     ASSERT(datetime_in != NULL);
 
@@ -137,11 +137,11 @@ retcode_t datetime_set(datetime_t* datetime_in)
 /**
  * @brief Reset datetime and stop RTC ticks
  * 
- * @return retcode_t Error code, what went wrong?
+ * @return sysret_t Error code, what went wrong?
  */
-retcode_t datetime_reset(void)
+sysret_t datetime_reset(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     /* TODO */
 
@@ -152,13 +152,13 @@ retcode_t datetime_reset(void)
  * @brief Get datetime values
  * 
  * @param datetime_out pointer to datetime struct to store datetime info
- * @return retcode_t Error code, what went wrong?
+ * @return sysret_t Error code, what went wrong?
  */
-retcode_t datetime_get(datetime_t* datetime_out)
+sysret_t datetime_get(datetime_t* datetime_out)
 {
     ASSERT(datetime_out != NULL);
 
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     if(datetime_state == DATETIME_SET)
     {
@@ -232,9 +232,9 @@ retcode_t datetime_get(datetime_t* datetime_out)
 /**
  * @brief Get status of Datetime module
  * 
- * @return retcode_t Module status
+ * @return sysret_t Module status
  */
-retcode_t datetime_test(void)
+sysret_t datetime_test(void)
 {
     if(datetime_state == DATETIME_UNSET)
         return RET_DRV_UNINIT;

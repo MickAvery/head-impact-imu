@@ -16,7 +16,7 @@
  * Expands the @ref ret_code_t codes that the nRF SDK provides in nrf_errors.h
  * to provide additional project-specific error codes
  */
-typedef uint32_t retcode_t;
+typedef uint32_t sysret_t;
 
 /**
  * @brief System return codes
@@ -33,7 +33,7 @@ typedef enum
 } retcode_desc_t;
 
 /**
- * @brief Use to check return values of type @ref retcode_t
+ * @brief Use to check return values of type @ref sysret_t
  * 
  * Project-specific handler to define action when return code
  * is anything but OK
