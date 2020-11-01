@@ -269,6 +269,7 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
+    retcode_t datetime_stat = datetime_test();
     retcode_t adxl372_stat = adxl372_test();
     retcode_t icm20649_stat = icm20649_test();
     retcode_t vcnl4040_stat = vcnl4040_test();
@@ -279,11 +280,12 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         " * SYSTEM PROPERTIES\n"
         " ********************/\n"
         "\n"
-        " > RTC      - [OK]\n"
+        " > RTC      - [%s]\n"
         " > ADXL372  - [%s]\n"
         " > ICM20649 - [%s]\n"
         " > VCNL4040 - [%s]\n"
         "\n\n",
+        retcodes_desc[datetime_stat],
         retcodes_desc[adxl372_stat],
         retcodes_desc[icm20649_stat],
         retcodes_desc[vcnl4040_stat]);

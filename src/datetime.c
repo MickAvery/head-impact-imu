@@ -5,9 +5,9 @@
  */
 
 #include "datetime.h"
-#include "arm_math.h"
 #include "nrf.h"
 #include "nrf_drv_rtc.h"
+#include "arm_math.h"
 
 /**
  * @brief RTC isntance
@@ -87,11 +87,9 @@ static void rtc_handler(nrf_drv_rtc_int_type_t int_type)
 /**
  * @brief Initialize datetime library
  */
-void datetime_init(void)
+retcode_t datetime_init(void)
 {
     ASSERT(datetime_state == DATETIME_UNINIT);
-
-    ret_code_t ret;
 
     /* NOTE: frequency of RTC clock tick is determined by:
      *   f_rtc [kHz] = 32.768 / (PRESCALER + 1 )
@@ -99,21 +97,20 @@ void datetime_init(void)
     rtc_config.prescaler = 32U; /* we want a tick with rate of 1 kHz, TODO: magic number */
     rtc_period =  33000.0f / 32.768f; /* TODO: magic number */ /* save RTC period in usec */
     datetime_state = DATETIME_UNSET;
-    ret = nrf_drv_rtc_init(&rtc, &rtc_config, rtc_handler);
-    APP_ERROR_CHECK(ret);
+    return nrf_drv_rtc_init(&rtc, &rtc_config, rtc_handler);
 }
 
 /**
  * @brief Set datetime and start RTC ticks
  * 
  * @param datetime_in datetime info to set
- * @return datetime_err_code_t datetime_err_code_t Error code, what went wrong?
+ * @return retcode_t Error code, what went wrong?
  */
-datetime_err_code_t datetime_set(datetime_t* datetime_in)
+retcode_t datetime_set(datetime_t* datetime_in)
 {
     ASSERT(datetime_in != NULL);
 
-    datetime_err_code_t ret = DATETIME_ERR;
+    datetime_err_code_t ret = RET_ERR;
 
     if(datetime_state == DATETIME_UNSET) {
         datetime.year = datetime_in->year;
@@ -131,7 +128,7 @@ datetime_err_code_t datetime_set(datetime_t* datetime_in)
         nrf_drv_rtc_enable(&rtc);
 
         datetime_state = DATETIME_SET;
-        ret = DATETIME_OK;
+        ret = RET_OK;
     }
 
     return ret;
@@ -140,11 +137,11 @@ datetime_err_code_t datetime_set(datetime_t* datetime_in)
 /**
  * @brief Reset datetime and stop RTC ticks
  * 
- * @return datetime_err_code_t Error code, what went wrong?
+ * @return retcode_t Error code, what went wrong?
  */
-datetime_err_code_t datetime_reset(void)
+retcode_t datetime_reset(void)
 {
-    datetime_err_code_t ret = DATETIME_ERR;
+    retcode_t ret = RET_ERR;
 
     /* TODO */
 
@@ -155,13 +152,13 @@ datetime_err_code_t datetime_reset(void)
  * @brief Get datetime values
  * 
  * @param datetime_out pointer to datetime struct to store datetime info
- * @return datetime_err_code_t datetime_err_code_t Error code, what went wrong?
+ * @return retcode_t Error code, what went wrong?
  */
-datetime_err_code_t datetime_get(datetime_t* datetime_out)
+retcode_t datetime_get(datetime_t* datetime_out)
 {
     ASSERT(datetime_out != NULL);
 
-    datetime_err_code_t ret = DATETIME_ERR;
+    retcode_t ret = RET_ERR;
 
     if(datetime_state == DATETIME_SET)
     {
@@ -226,8 +223,21 @@ datetime_err_code_t datetime_get(datetime_t* datetime_out)
             overflow = (new_time >= divider) ? 1U : 0U;
         }
 
-        ret = DATETIME_OK;
+        ret = RET_OK;
     }
 
     return ret;
+}
+
+/**
+ * @brief Get status of Datetime module
+ * 
+ * @return retcode_t Module status
+ */
+retcode_t datetime_test(void)
+{
+    if(datetime_state == DATETIME_UNSET)
+        return RET_DRV_UNINIT;
+    else
+        return RET_OK;
 }

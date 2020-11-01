@@ -86,7 +86,7 @@ int main(void)
     (void)adxl372_init(&adxl372_cfg);
     (void)icm20649_init(&icm20649_cfg);
     (void)vcnl4040_init(&vcnl4040_cfg);
-    datetime_init();
+    (void)datetime_init();
     (void)network_init();
     shell_init();
 
