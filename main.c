@@ -88,7 +88,7 @@ int main(void)
     (void)vcnl4040_init(&vcnl4040_cfg);
     (void)datetime_init();
     (void)network_init();
-    shell_init();
+    (void)shell_init();
 
     while(1)
     {

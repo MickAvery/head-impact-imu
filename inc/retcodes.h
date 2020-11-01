@@ -33,6 +33,16 @@ typedef enum
 } retcode_desc_t;
 
 /**
+ * @brief Use to check return values of type @ref retcode_t
+ * 
+ * Project-specific handler to define action when return code
+ * is anything but OK
+ */
+#define SYSRET_CHECK(ret) \
+    if(ret != RET_OK)     \
+        return ret;
+
+/**
  * @brief Error code description strings
  * 
  * Make sure to keep this up to date with new codes added

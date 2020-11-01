@@ -11,7 +11,6 @@
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
 #include "nrf_delay.h"
-#include "retcodes.h"
 #include "datetime.h"
 #include "adxl372.h"
 #include "icm20649.h"
@@ -354,10 +353,11 @@ NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysp
 
 /**
  * @brief Initialize she CLI for user inputs
+ * @return retcode_t - Module status
  */
-void shell_init(void)
+retcode_t shell_init(void)
 {
-    ret_code_t ret;
+    retcode_t ret;
 
     /**
      * Configure the UART peripheral
@@ -371,13 +371,15 @@ void shell_init(void)
                        false, /* colored prints disabled */
                        true,  /* CLI to be used as logger backend */
                        NRF_LOG_SEVERITY_INFO);
-    APP_ERROR_CHECK(ret);
+    SYSRET_CHECK(ret);
 
     /**
      * Start CLI System
      */
     ret = nrf_cli_start(&cli_uart);
-    APP_ERROR_CHECK(ret);
+    SYSRET_CHECK(ret);
+
+    return RET_OK;
 }
 
 /**
