@@ -7,12 +7,17 @@
 #include "retcodes.h"
 
 /**
- * @brief Error description strings
+ * @brief Error code description strings
+ * 
+ * Make sure to keep this up to date with new codes added
+ * in @ref retcode_desc_t
  */
 const char* retcodes_desc[RET_CODES] =
 {
+    /* Everything's OK */
     "SYS OK",
 
+    /* Error codes defined by nRF SDK */
     "NRF_ERROR_SVC_HANDLER_MISSING",
     "NRF_ERROR_SOFTDEVICE_NOT_ENABLED",
     "NRF_ERROR_INTERNAL",
@@ -31,6 +36,7 @@ const char* retcodes_desc[RET_CODES] =
     "NRF_ERROR_INVALID_ADDR",
     "NRF_ERROR_BUSY",
 
+    /* Project-specific error codes */
     "SYS UNKNOWN ERROR",
     "SYS DRIVER UNINITIALIZED",
     "SYS SERIAL COMMUNICATION ERROR",

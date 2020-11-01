@@ -18,11 +18,11 @@ static nrf_drv_twi_config_t i2c_conf = NRF_DRV_TWI_DEFAULT_CONFIG;
 /**
  * @brief Initialize I2C driver
  * 
- * @return retcode_t Driver status, RET_OK if all's well
+ * @return sysret_t Driver status, RET_OK if all's well
  */
-retcode_t i2c_init(void)
+sysret_t i2c_init(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     i2c_conf.frequency = NRF_DRV_TWI_FREQ_400K;
     i2c_conf.scl = I2C1_SCL;
@@ -49,11 +49,11 @@ retcode_t i2c_init(void)
  * @param txn        - number of bytes to transmit
  * @param rxbuf      - receive buffer
  * @param rxn        - number of bytes to receive
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t i2c_transceive(i2c_addr_t slave_addr, uint8_t* txbuf, size_t txn, uint8_t* rxbuf, size_t rxn)
+sysret_t i2c_transceive(i2c_addr_t slave_addr, uint8_t* txbuf, size_t txn, uint8_t* rxbuf, size_t rxn)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
     bool repeated_start = rxbuf && (rxn > 0); /* set repeated start condition on transmit if read requested */
 
     /**

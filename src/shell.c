@@ -11,7 +11,6 @@
 #include "nrf_cli.h"
 #include "nrf_cli_uart.h"
 #include "nrf_delay.h"
-#include "retcodes.h"
 #include "datetime.h"
 #include "adxl372.h"
 #include "icm20649.h"
@@ -171,7 +170,7 @@ static void icm20649_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
     while(rx != ctrl_c)
     {
-        retcode_t ret;
+        sysret_t ret;
         int16_t accel[ICM20649_ACCEL_AXES] = {0};
         int16_t gyro[ICM20649_GYRO_AXES] = {0};
         ret = icm20649_read_raw(gyro, accel);
@@ -206,7 +205,7 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
     while(rx != ctrl_c)
     {
-        retcode_t ret;
+        sysret_t ret;
         vcnl4040_data_t data;
         ret = vcnl4040_read(&data);
 
@@ -269,12 +268,10 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
-    bool adxl372_stat = false;
-    retcode_t icm20649_stat = icm20649_test();
-    retcode_t vcnl4040_stat = vcnl4040_test();
-
-    if(adxl372_status() == ADXL372_ERR_OK)
-        adxl372_stat = true;
+    sysret_t datetime_stat = datetime_test();
+    sysret_t adxl372_stat = adxl372_test();
+    sysret_t icm20649_stat = icm20649_test();
+    sysret_t vcnl4040_stat = vcnl4040_test();
 
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
         "\n"
@@ -282,12 +279,13 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         " * SYSTEM PROPERTIES\n"
         " ********************/\n"
         "\n"
-        " > RTC      - [OK]\n"
+        " > RTC      - [%s]\n"
         " > ADXL372  - [%s]\n"
         " > ICM20649 - [%s]\n"
         " > VCNL4040 - [%s]\n"
         "\n\n",
-        adxl372_stat ? "OK" : "FAILED",
+        retcodes_desc[datetime_stat],
+        retcodes_desc[adxl372_stat],
         retcodes_desc[icm20649_stat],
         retcodes_desc[vcnl4040_stat]);
 }
@@ -355,10 +353,11 @@ NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysp
 
 /**
  * @brief Initialize she CLI for user inputs
+ * @return sysret_t - Module status
  */
-void shell_init(void)
+sysret_t shell_init(void)
 {
-    ret_code_t ret;
+    sysret_t ret;
 
     /**
      * Configure the UART peripheral
@@ -372,13 +371,15 @@ void shell_init(void)
                        false, /* colored prints disabled */
                        true,  /* CLI to be used as logger backend */
                        NRF_LOG_SEVERITY_INFO);
-    APP_ERROR_CHECK(ret);
+    SYSRET_CHECK(ret);
 
     /**
      * Start CLI System
      */
     ret = nrf_cli_start(&cli_uart);
-    APP_ERROR_CHECK(ret);
+    SYSRET_CHECK(ret);
+
+    return RET_OK;
 }
 
 /**

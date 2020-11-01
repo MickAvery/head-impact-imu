@@ -172,11 +172,11 @@ static void on_advertising_event(ble_adv_evt_t ble_adv_evt)
  * @notapi
  * @brief Initialize BLE stack
  * 
- * @return retcode_t 
+ * @return sysret_t 
  */
-static retcode_t ble_stack_init(void)
+static sysret_t ble_stack_init(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
     uint32_t ram_start = 0U;
 
     if((ret = nrf_sdh_enable_request()) != RET_OK)
@@ -207,11 +207,11 @@ static retcode_t ble_stack_init(void)
  * @notapi
  * @brief Set GAP parameters
  * 
- * @return retcode_t 
+ * @return sysret_t 
  */
-static retcode_t gap_params_init(void)
+static sysret_t gap_params_init(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
     ble_gap_conn_sec_mode_t sec_mode;
     ble_gap_conn_params_t   gap_conn_params;
 
@@ -249,9 +249,9 @@ static retcode_t gap_params_init(void)
  * @notapi
  * @brief Initialize GATT library
  * 
- * @return retcode_t 
+ * @return sysret_t 
  */
-static retcode_t gatt_init(void)
+static sysret_t gatt_init(void)
 {
     return nrf_ble_gatt_init(&gatt_instance, NULL);
 }
@@ -260,11 +260,11 @@ static retcode_t gatt_init(void)
  * @notapi
  * @brief Initialize BLE services
  * 
- * @return retcode_t 
+ * @return sysret_t 
  */
-static retcode_t services_init(void)
+static sysret_t services_init(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     /* TODO */
     ret = RET_OK;
@@ -276,11 +276,11 @@ static retcode_t services_init(void)
  * @notapi
  * @brief Initialize BLE advertising functionality
  * 
- * @return retcode_t 
+ * @return sysret_t 
  */
-static retcode_t advertising_init(void)
+static sysret_t advertising_init(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
     ble_advertising_init_t init;
 
     (void)memset(&init, 0, sizeof(ble_advertising_init_t));
@@ -311,9 +311,9 @@ static retcode_t advertising_init(void)
  * @notapi
  * @brief Set BLE connection parameters
  * 
- * @return retcode_t 
+ * @return sysret_t 
  */
-static retcode_t connection_params_init(void)
+static sysret_t connection_params_init(void)
 {
     ble_conn_params_init_t cp_init = {
         .p_conn_params                  = NULL,
@@ -336,11 +336,11 @@ static retcode_t connection_params_init(void)
 /**
  * @brief Initialize wireless network module
  * 
- * @return retcode_t Module status
+ * @return sysret_t Module status
  */
-retcode_t network_init(void)
+sysret_t network_init(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     /**
      * Perform all necessary initializations

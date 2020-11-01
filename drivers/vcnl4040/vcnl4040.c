@@ -40,11 +40,11 @@ static vcnl4040_t vcnl4040 =
  * @brief Configure and initialize VCNL4040 driver
  * 
  * @param cfg Driver configuration
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t vcnl4040_init(vcnl4040_cfg_t* cfg)
+sysret_t vcnl4040_init(vcnl4040_cfg_t* cfg)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
     uint8_t tx[VCNL4040_TX_NUMBYTES] = {0U};
     uint8_t conf1, conf2, conf3, ms;
 
@@ -93,11 +93,11 @@ retcode_t vcnl4040_init(vcnl4040_cfg_t* cfg)
  * @brief Read data from VCNL4040 sensor
  * 
  * @param data - Buffer to store data
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t vcnl4040_read(vcnl4040_data_t* data)
+sysret_t vcnl4040_read(vcnl4040_data_t* data)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
     uint8_t tx;
 
     /* check input */
@@ -123,11 +123,11 @@ retcode_t vcnl4040_read(vcnl4040_data_t* data)
 /**
  * @brief Get driver state and test serial communication
  * 
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t vcnl4040_test(void)
+sysret_t vcnl4040_test(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     /**
      * read ID register to verify I2C communication

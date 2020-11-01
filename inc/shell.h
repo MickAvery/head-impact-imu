@@ -7,11 +7,13 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#include "retcodes.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void shell_init(void);
+sysret_t shell_init(void);
 void shell_process(void);
 
 #ifdef __cplusplus

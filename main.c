@@ -55,11 +55,11 @@ static vcnl4040_cfg_t vcnl4040_cfg = {
 /**
  * @brief Initialize hardware resources used throught the system
  * 
- * @return retcode_t RET_OK if all's well
+ * @return sysret_t RET_OK if all's well
  */
-static retcode_t sys_init(void)
+static sysret_t sys_init(void)
 {
-    retcode_t ret = RET_ERR;
+    sysret_t ret = RET_ERR;
 
     if((ret = nrf_drv_clock_init()) == RET_OK)
     {
@@ -81,14 +81,14 @@ int main(void)
     (void)sys_init();
 
     /* initialize system modules */
-    spi_init();
+    (void)spi_init();
     (void)i2c_init();
-    adxl372_init(&adxl372_cfg);
+    (void)adxl372_init(&adxl372_cfg);
     (void)icm20649_init(&icm20649_cfg);
     (void)vcnl4040_init(&vcnl4040_cfg);
-    datetime_init();
+    (void)datetime_init();
     (void)network_init();
-    shell_init();
+    (void)shell_init();
 
     while(1)
     {

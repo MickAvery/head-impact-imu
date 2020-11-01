@@ -23,9 +23,9 @@ extern "C" {
 /**
  * @brief Initialize I2C driver
  * 
- * @return retcode_t Driver status, RET_OK if all's well
+ * @return sysret_t Driver status, RET_OK if all's well
  */
-retcode_t i2c_init(void);
+sysret_t i2c_init(void);
 
 /**
  * @brief Perform an I2C transfer, transmit followed by a receive
@@ -37,9 +37,9 @@ retcode_t i2c_init(void);
  * @param txn        - number of bytes to transmit
  * @param rxbuf      - receive buffer
  * @param rxn        - number of bytes to receive
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t i2c_transceive(i2c_addr_t slave_addr, uint8_t* txbuf, size_t txn, uint8_t* rxbuf, size_t rxn);
+sysret_t i2c_transceive(i2c_addr_t slave_addr, uint8_t* txbuf, size_t txn, uint8_t* rxbuf, size_t rxn);
 
 #ifdef __cplusplus
 }

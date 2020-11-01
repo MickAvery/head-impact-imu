@@ -7,7 +7,7 @@
 #ifndef DATETIME_H
 #define DATETIME_H
 
-#include "nrf.h"
+#include "retcodes.h"
 
 /**
  * @brief Defines the states of the datetime module
@@ -36,13 +36,13 @@ typedef enum
  */
 typedef struct
 {
-    uint16_t year;  /*!<  */
-    uint8_t  month; /*!<  */
-    uint8_t  day;   /*!<  */
-    uint8_t  hr;    /*!<  */
-    uint8_t  min;   /*!<  */
-    uint8_t  sec;   /*!<  */
-    uint32_t usec;  /*!<  */
+    uint16_t year;  /*!< Year */
+    uint8_t  month; /*!< Month */
+    uint8_t  day;   /*!< Day */
+    uint8_t  hr;    /*!< Hour */
+    uint8_t  min;   /*!< Minute */
+    uint8_t  sec;   /*!< Second */
+    uint32_t usec;  /*!< Microsecond */
 } datetime_t;
 
 
@@ -50,10 +50,11 @@ typedef struct
 extern "C" {
 #endif
 
-void datetime_init(void);
-datetime_err_code_t datetime_set(datetime_t* datetime_in);
-datetime_err_code_t datetime_reset(void);
-datetime_err_code_t datetime_get(datetime_t* datetime_out);
+sysret_t datetime_init(void);
+sysret_t datetime_set(datetime_t* datetime_in);
+sysret_t datetime_reset(void);
+sysret_t datetime_get(datetime_t* datetime_out);
+sysret_t datetime_test(void);
 
 #ifdef __cplusplus
 }

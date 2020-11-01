@@ -93,24 +93,24 @@ extern "C" {
  * @brief Configure and initialize VCNL4040 driver
  * 
  * @param cfg Driver configuration
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t vcnl4040_init(vcnl4040_cfg_t* cfg);
+sysret_t vcnl4040_init(vcnl4040_cfg_t* cfg);
 
 /**
  * @brief Read data from VCNL4040 sensor
  * 
  * @param data - Buffer to store data
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t vcnl4040_read(vcnl4040_data_t* data);
+sysret_t vcnl4040_read(vcnl4040_data_t* data);
 
 /**
  * @brief Get driver state and test serial communication
  * 
- * @return retcode_t Driver status
+ * @return sysret_t Driver status
  */
-retcode_t vcnl4040_test(void);
+sysret_t vcnl4040_test(void);
 
 #ifdef __cplusplus
 }
