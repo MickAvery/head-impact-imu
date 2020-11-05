@@ -9,6 +9,7 @@
 #include "icm20649_regs.h"
 #include "spi.h"
 #include "app_timer.h"
+#include "nrf_assert.h"
 
 typedef uint8_t reg_addr_t;
 
@@ -238,6 +239,7 @@ static bool check_who_am_i(void)
  */
 sysret_t icm20649_init(icm20649_cfg_t* cfg)
 {
+    ASSERT(cfg);
     sysret_t ret = RET_ERR;
 
     if(!check_who_am_i())
@@ -300,6 +302,7 @@ sysret_t icm20649_init(icm20649_cfg_t* cfg)
  */
 sysret_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20649_ACCEL_AXES])
 {
+    ASSERT(gyro && accel);
     sysret_t ret = RET_ERR;
 
     if(icm20649_handle.state == ICM20649_STATE_RUNNING)

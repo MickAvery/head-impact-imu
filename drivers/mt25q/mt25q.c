@@ -9,6 +9,7 @@
 #include "mt25q_reg.h"
 #include "spi.h"
 #include "app_timer.h"
+#include "nrf_assert.h"
 
 /**
  * @brief Define SPI command type
@@ -203,6 +204,7 @@ static sysret_t check_id(void)
  */
 sysret_t mt25q_init(mt25q_cfg_t* cfg)
 {
+    ASSERT(cfg);
     sysret_t ret = RET_ERR;
 
     /* Enable 4-Byte addressing mode */
@@ -237,6 +239,8 @@ sysret_t mt25q_init(mt25q_cfg_t* cfg)
  */
 sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n)
 {
+    ASSERT(buf);
+
     sysret_t ret = RET_ERR;
 
     /* enable write for PROGRAM command */
@@ -266,6 +270,7 @@ sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n)
  */
 sysret_t mt25q_read(uint32_t address, uint8_t* buf, size_t n)
 {
+    ASSERT(buf);
     return spi_flash_transfer(
         SPI_INSTANCE_2, SPI_DEV_MT25Q,
         MT25Q_4B_READ_CMD, address,

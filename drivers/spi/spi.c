@@ -152,7 +152,6 @@ sysret_t spi_transfer(
     spi_instance_t instance, spi_devs_t dev,
     void* txbuf, size_t txn, void* rxbuf, size_t rxn)
 {
-    ASSERT(txbuf != NULL && rxbuf != NULL);
     ASSERT(instance < SPI_INSTANCE_MAX);
     ASSERT(dev < SPI_DEV_MAX);
 
@@ -198,7 +197,6 @@ sysret_t spi_flash_transfer(
     uint8_t cmd, uint32_t addr,
     void* txbuf, size_t txn, void* rxbuf, size_t rxn)
 {
-    ASSERT(txbuf != NULL && rxbuf != NULL);
     ASSERT(instance < SPI_INSTANCE_MAX);
     ASSERT(dev < SPI_DEV_MAX);
 
