@@ -153,11 +153,21 @@ OPT = -O0 -g3
 # Uncomment the line below to enable link time optimization
 #OPT += -flto
 
+# C flags that are specific to board revisions
+
+ifeq ($(REV), 1)
+  CFLAGS += -DPCB_REV_1
+else ifeq ($(REV), 2)
+  CFLAGS += -DPCB_REV_2
+else
+  $(error Invalid board revision)
+endif
+
 # C flags common to all targets
 CFLAGS += $(OPT)
 CFLAGS += -DBOARD_CUSTOM
 # CFLAGS += -DPCB_REV_1
-CFLAGS += -DPCB_REV_2
+# CFLAGS += -DPCB_REV_2
 # CFLAGS += -DNRF_CLI
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS

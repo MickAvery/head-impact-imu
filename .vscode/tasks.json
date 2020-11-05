@@ -6,7 +6,7 @@
         {
             "label": "make",
             "type": "shell",
-            "command": "make",
+            "command": "make REV=${input:rev}",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -15,8 +15,17 @@
         {
             "label": "clean",
             "type": "shell",
-            "command": "make clean",
+            "command": "make clean REV=1
+            ",
             "problemMatcher": []
         }
+    ],
+    "inputs": [
+        {
+            "id": "rev",
+            "description": "Revision:",
+            "default": "2",
+            "type": "promptString"
+        },
     ]
 }
