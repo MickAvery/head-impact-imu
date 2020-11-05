@@ -15,6 +15,7 @@
 #include "adxl372.h"
 #include "icm20649.h"
 #include "vcnl4040.h"
+#include "mt25q.h"
 
 /**
  * @brief The number of arguments that the datetime_set() command expects:
@@ -225,6 +226,18 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
 /**
  * @notapi
+ * @brief Flash test - write to every page in flash, read back and verify written value 
+ */
+static void flash_pp_test_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "TODO!\n");
+}
+
+/**
+ * @notapi
  * @brief Enable/Disable CLI echo
  */
 static void echo_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
@@ -272,6 +285,7 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     sysret_t adxl372_stat = adxl372_test();
     sysret_t icm20649_stat = icm20649_test();
     sysret_t vcnl4040_stat = vcnl4040_test();
+    sysret_t mt25q_stat = mt25q_test();
 
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
         "\n"
@@ -283,11 +297,13 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         " > ADXL372  - [%s]\n"
         " > ICM20649 - [%s]\n"
         " > VCNL4040 - [%s]\n"
+        " > MT25Q    - [%s]\n"
         "\n\n",
         retcodes_desc[datetime_stat],
         retcodes_desc[adxl372_stat],
         retcodes_desc[icm20649_stat],
-        retcodes_desc[vcnl4040_stat]);
+        retcodes_desc[vcnl4040_stat],
+        retcodes_desc[mt25q_stat]);
 }
 
 /***************************************************************************************
@@ -334,13 +350,20 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(sensor_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(flash_subcmds)
+{
+    NRF_CLI_CMD(pp_test, NULL, "Flash page program test", flash_pp_test_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
 /***************************************************************************************
  * Register the commands, pair them to their command names using NRF5's API
  ***************************************************************************************/
 
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
-NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Print sensor values", NULL);
+NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Sensor values and configurations", NULL);
+NRF_CLI_CMD_REGISTER(flash, &flash_subcmds, "Flash properties and testing", NULL);
 NRF_CLI_CMD_REGISTER(echo, NULL,
     "Configure CLI echo setting\n"
     "    echo off - turn off CLI echo\n"

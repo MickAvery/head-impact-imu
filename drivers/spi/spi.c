@@ -25,8 +25,61 @@ static nrf_drv_spi_config_t spi2_cfg = NRF_DRV_SPI_DEFAULT_CONFIG;
  * @brief CS pin mappings
  */
 static const uint8_t cs_pins[SPI_DEV_MAX] = {
-    SPI0_ICM20649_CS_PIN, SPI2_ADXL372_CS_PIN
+    SPI0_ICM20649_CS_PIN, SPI2_ADXL372_CS_PIN, SPI2_MT25Q_CS_PIN
 };
+
+/*********************************
+ * Helper functions
+ *********************************/
+
+/**
+ * @brief Lock SPI2 peripheral to specific sensor SPI bus
+ * 
+ * @note Why do we need this function?
+ * 
+ * A peculiar hardware design choice of REV1 is that even though the ADXL372 and MT25Q
+ * both use SPI2 with 9MHz, they're on different SPI busses (i.e. different pins).
+ * 
+ * Normally this wouldn't be an issue: just use SPI0, SPI1, and SPI2 right?
+ * 
+ * Well as it turns out, since we're already using I2C1 for the proximity sensor and
+ * the I2C1 configuration register is mapped to that of SPI1, using I2C1 means
+ * we lose the ability to use SPI1. We're left with SPI0 and SPI2 to share among
+ * three SPI busses. And since ADXL372 and MT25Q both want to use 9MHz, those
+ * two busses need to share the same SPI2 peripheral. Hence the need to "lock" SPI2
+ * to that specific IC.
+ * 
+ * @param dev - Device that wants to lock SPI2
+ * @return sysret_t - Driver status 
+ */
+static sysret_t spi2_lock(spi_devs_t dev)
+{
+    sysret_t ret = RET_OK;
+
+#ifdef PCB_REV_1
+    /* who currently holds lock SPI2 peripheral? (default=ADXL372) */
+    static spi_devs_t cur_dev_lock_owner = SPI_DEV_ADXL372;
+    
+    if(cur_dev_lock_owner != dev)
+    {
+        nrf_drv_spi_uninit(&spi2);
+
+        spi2_cfg.sck_pin   = (dev == SPI_DEV_ADXL372) ? SPI2_ADXL372_CLK_PIN  : SPI2_MT25Q_CLK_PIN;
+        spi2_cfg.mosi_pin  = (dev == SPI_DEV_ADXL372) ? SPI2_ADXL372_MOSI_PIN : SPI2_MT25Q_MOSI_PIN;
+        spi2_cfg.miso_pin  = (dev == SPI_DEV_ADXL372) ? SPI2_ADXL372_MISO_PIN : SPI2_MT25Q_MISO_PIN;
+        spi2_cfg.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
+        spi2_cfg.frequency = NRF_DRV_SPI_FREQ_8M;
+
+        ret = nrf_drv_spi_init(&spi2, &spi2_cfg, NULL, NULL);
+        SYSRET_CHECK(ret);
+
+        cur_dev_lock_owner = dev;
+    }
+
+#endif /* PCB_REV_1 */
+
+    return ret;
+}
 
 /*********************************
  * API
@@ -47,7 +100,7 @@ sysret_t spi_init(void)
     spi0_cfg.miso_pin  = SPI0_MISO_PIN;
     spi0_cfg.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
     spi0_cfg.frequency = NRF_DRV_SPI_FREQ_4M;
-    ret = nrf_drv_spi_init(&(spi0), &(spi0_cfg), NULL, NULL);
+    ret = nrf_drv_spi_init(&spi0, &spi0_cfg, NULL, NULL);
     if(ret != RET_OK)
         return ret;
 
@@ -57,7 +110,7 @@ sysret_t spi_init(void)
     spi2_cfg.miso_pin  = SPI2_MISO_PIN;
     spi2_cfg.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
     spi2_cfg.frequency = NRF_DRV_SPI_FREQ_8M;
-    ret = nrf_drv_spi_init(&(spi2), &(spi2_cfg), NULL, NULL);
+    ret = nrf_drv_spi_init(&spi2, &spi2_cfg, NULL, NULL);
     if(ret != RET_OK)
         return ret;
 
@@ -94,6 +147,15 @@ sysret_t spi_transfer(
 
     nrf_drv_spi_t const * const spi = (instance == SPI_INSTANCE_0) ? &(spi0) : &(spi2);
     uint8_t pin = cs_pins[dev];
+
+    /**
+     * @note see function doc above to know why we do this...
+     */
+    if(instance == SPI_INSTANCE_2)
+    {
+        ret = spi2_lock(dev);
+        SYSRET_CHECK(ret);
+    }
 
     /**
      * Initiate transfer, manually reset and set CS pin

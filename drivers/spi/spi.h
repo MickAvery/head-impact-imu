@@ -27,6 +27,7 @@ typedef enum
 {
     SPI_DEV_ICM20649 = 0, /*!< ICM20649 IMU */
     SPI_DEV_ADXL372,      /*!< ADXL372 IMU */
+    SPI_DEV_MT25Q,        /*!< MT25Q Flash Chip */
     SPI_DEV_MAX           /*!< Max number of devices using SPI busses */
 } spi_devs_t;
 
