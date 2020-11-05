@@ -32,7 +32,7 @@ extern "C" {
 /* ADXL372 and MT25QL256 shared SPI bus pin mappings */
 #define SPI2_PERIPH              2
 #define SPI2_ADXL372_CS_PIN      8
-#define SPI2_MT25QL256ABA_CS_PIN 15
+#define SPI2_MT25Q_CS_PIN        15
 #define SPI2_MOSI_PIN            12
 #define SPI2_MISO_PIN            16
 #define SPI2_CLK_PIN             13

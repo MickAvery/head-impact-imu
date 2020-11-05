@@ -24,4 +24,6 @@ before_script:
   - arm-none-eabi-gcc --version
 
 script:
-  - make
+  - make REV=1
+  - make clean REV=1
+  - make REV=2 

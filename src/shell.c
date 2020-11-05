@@ -15,6 +15,7 @@
 #include "adxl372.h"
 #include "icm20649.h"
 #include "vcnl4040.h"
+#include "mt25q.h"
 
 /**
  * @brief The number of arguments that the datetime_set() command expects:
@@ -225,6 +226,71 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
 /**
  * @notapi
+ * @brief Erase entire contents of flash 
+ */
+static void flash_erase_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Flash erase in progress...\n");
+    sysret_t ret = mt25q_bulk_erase();
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Flash erase status - [%s]\n", retcodes_desc[ret]);
+}
+
+/**
+ * @notapi
+ * @brief Flash test - write to every page in flash, read back and verify written value 
+ */
+static void flash_pp_test_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    uint32_t expected = 0xDEADBEEFU; /* write this to every page in flash */
+    
+    sysret_t ret;
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+        "\n"
+        "Flash PAGE PROGRAM test\n"
+        "- Write 0x%08X to every page in flash...\n"
+        "\n", expected);
+
+    for(size_t i = 0U ; i < FLASH_CAPACITY ; i += FLASH_PAGE_SIZE)
+    {
+        uint32_t tx = expected;
+        uint32_t rx = 0U;
+
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Page %d | Addr 0x%08X : ", i/FLASH_PAGE_SIZE, i);
+
+        ret = mt25q_page_program(i, (uint8_t*)&tx, sizeof(tx));
+        if(ret != RET_OK)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Write error... - [%s]\n", retcodes_desc[ret]);
+            break;
+        }
+
+        ret = mt25q_read(i, (uint8_t*)&rx, sizeof(rx));
+        if(ret != RET_OK)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Read error... - [%s]\n", retcodes_desc[ret]);
+            break;
+        }
+
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Write [0x%08X] | Read [0x%08X] ", expected, rx);
+
+        if(expected != rx)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "- WRITE/READ FAILED");
+        }
+
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n");
+    }
+}
+
+/**
+ * @notapi
  * @brief Enable/Disable CLI echo
  */
 static void echo_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
@@ -272,6 +338,7 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     sysret_t adxl372_stat = adxl372_test();
     sysret_t icm20649_stat = icm20649_test();
     sysret_t vcnl4040_stat = vcnl4040_test();
+    sysret_t mt25q_stat = mt25q_test();
 
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
         "\n"
@@ -283,11 +350,13 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         " > ADXL372  - [%s]\n"
         " > ICM20649 - [%s]\n"
         " > VCNL4040 - [%s]\n"
+        " > MT25Q    - [%s]\n"
         "\n\n",
         retcodes_desc[datetime_stat],
         retcodes_desc[adxl372_stat],
         retcodes_desc[icm20649_stat],
-        retcodes_desc[vcnl4040_stat]);
+        retcodes_desc[vcnl4040_stat],
+        retcodes_desc[mt25q_stat]);
 }
 
 /***************************************************************************************
@@ -334,13 +403,21 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(sensor_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(flash_subcmds)
+{
+    NRF_CLI_CMD(erase, NULL, "Erase whole flash", flash_erase_cmd),
+    NRF_CLI_CMD(pp_test, NULL, "Flash page program test", flash_pp_test_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
 /***************************************************************************************
  * Register the commands, pair them to their command names using NRF5's API
  ***************************************************************************************/
 
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
-NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Print sensor values", NULL);
+NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Sensor values and configurations", NULL);
+NRF_CLI_CMD_REGISTER(flash, &flash_subcmds, "Flash properties and testing", NULL);
 NRF_CLI_CMD_REGISTER(echo, NULL,
     "Configure CLI echo setting\n"
     "    echo off - turn off CLI echo\n"

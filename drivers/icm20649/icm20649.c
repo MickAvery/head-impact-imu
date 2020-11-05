@@ -9,6 +9,7 @@
 #include "icm20649_regs.h"
 #include "spi.h"
 #include "app_timer.h"
+#include "nrf_assert.h"
 
 typedef uint8_t reg_addr_t;
 
@@ -173,10 +174,11 @@ static sysret_t wait_data_rdy(void)
     uint8_t rx = 0U;
 
     /* start timer to detect timeout */
-    app_timer_start(
+    ret = app_timer_start(
         read_timeout_timer,
         APP_TIMER_TICKS(icm20649_handle.cfg->timeout),
         &ret);
+    SYSRET_CHECK(ret);
 
     /* set USR BANK */
     set_usr_bank(ICM20649_USR_BANK_0);
@@ -193,7 +195,7 @@ static sysret_t wait_data_rdy(void)
     } while(ret != RET_TIMEOUT);
 
     /* stop timer */
-    app_timer_stop(read_timeout_timer);
+    ret = app_timer_stop(read_timeout_timer);
 
     return ret;
 }
@@ -237,6 +239,7 @@ static bool check_who_am_i(void)
  */
 sysret_t icm20649_init(icm20649_cfg_t* cfg)
 {
+    ASSERT(cfg);
     sysret_t ret = RET_ERR;
 
     if(!check_who_am_i())
@@ -276,10 +279,11 @@ sysret_t icm20649_init(icm20649_cfg_t* cfg)
         config_gyro(cfg);
 
         /* configure timer to detect read timeout */
-        APP_ERROR_CHECK(app_timer_create(
+        ret = app_timer_create(
             &read_timeout_timer,
             APP_TIMER_MODE_SINGLE_SHOT,
-            timeout_handler));
+            timeout_handler);
+        SYSRET_CHECK(ret);
 
         /* update driver */
         icm20649_handle.state = ICM20649_STATE_RUNNING;
@@ -298,6 +302,7 @@ sysret_t icm20649_init(icm20649_cfg_t* cfg)
  */
 sysret_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20649_ACCEL_AXES])
 {
+    ASSERT(gyro && accel);
     sysret_t ret = RET_ERR;
 
     if(icm20649_handle.state == ICM20649_STATE_RUNNING)

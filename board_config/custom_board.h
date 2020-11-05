@@ -46,8 +46,8 @@ extern "C" {
 
 #if defined PCB_REV_2
 #include "pin_mappings_rev_2.h"
-#elif defined IMU_PCB_REV1
-#include "imu_pcb_rev1.h"
+#elif defined PCB_REV_1
+#include "pin_mappings_rev_1.h"
 #else
 #error "Board is not defined"
 #endif

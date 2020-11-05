@@ -16,6 +16,7 @@
 #include "adxl372.h"
 #include "icm20649.h"
 #include "vcnl4040.h"
+#include "mt25q.h"
 #include "network.h"
 
 /**
@@ -53,6 +54,13 @@ static vcnl4040_cfg_t vcnl4040_cfg = {
 };
 
 /**
+ * @brief MT25Q config
+ */
+static mt25q_cfg_t mt25q_cfg = {
+    .timeout_ms = 100
+};
+
+/**
  * @brief Initialize hardware resources used throught the system
  * 
  * @return sysret_t RET_OK if all's well
@@ -86,6 +94,7 @@ int main(void)
     (void)adxl372_init(&adxl372_cfg);
     (void)icm20649_init(&icm20649_cfg);
     (void)vcnl4040_init(&vcnl4040_cfg);
+    (void)mt25q_init(&mt25q_cfg);
     (void)datetime_init();
     (void)network_init();
     (void)shell_init();
