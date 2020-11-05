@@ -29,7 +29,7 @@
  */
 typedef struct
 {
-
+    uint32_t timeout_ms; /*!< Maximum available time in ms to wait for write to complete */
 } mt25q_cfg_t;
 
 #ifdef __cplusplus

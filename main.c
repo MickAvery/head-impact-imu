@@ -56,7 +56,9 @@ static vcnl4040_cfg_t vcnl4040_cfg = {
 /**
  * @brief MT25Q config
  */
-static mt25q_cfg_t mt25q_cfg;
+static mt25q_cfg_t mt25q_cfg = {
+    .timeout_ms = 100
+};
 
 /**
  * @brief Initialize hardware resources used throught the system
