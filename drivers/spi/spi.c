@@ -82,6 +82,19 @@ static sysret_t spi2_lock(spi_devs_t dev)
 }
 
 /*********************************
+ * helper functions
+ *********************************/
+
+/**
+ * @notapi
+ * @brief Switch integer byte order
+ */
+static uint32_t htonl(uint32_t in)
+{
+    return ((in & 0xFF000000U) >> 24) | ((in & 0x00FF0000U) >> 8) | ((in & 0x0000FF00U) << 8) | ((in & 0x000000FFU) << 24);
+}
+
+/*********************************
  * API
  *********************************/
 
@@ -162,6 +175,59 @@ sysret_t spi_transfer(
      */
     nrf_gpio_pin_clear(pin);
     ret = nrf_drv_spi_transfer(spi, txbuf, txn, rxbuf, rxn);
+    nrf_gpio_pin_set(pin);
+
+    return ret;
+}
+
+/**
+ * @brief Flash-specific SPI bus transfer, specifying address
+ * 
+ * @param instance - SPI bus to read from
+ * @param dev - Specify device to determine correct CS pin
+ * @param cmd - Command to send to flash chip
+ * @param addr - Address to reference from flash chip
+ * @param txbuf - bytes to transmit
+ * @param txn - number of bytes to transmit
+ * @param rxbuf - buffer to receive bytes
+ * @param rxn - number of bytes to store in rxbuf
+ * @return sysret_t - Module status
+ */
+sysret_t spi_flash_transfer(
+    spi_instance_t instance, spi_devs_t dev,
+    uint8_t cmd, uint32_t addr,
+    void* txbuf, size_t txn, void* rxbuf, size_t rxn)
+{
+    ASSERT(txbuf != NULL && rxbuf != NULL);
+    ASSERT(instance < SPI_INSTANCE_MAX);
+    ASSERT(dev < SPI_DEV_MAX);
+
+    sysret_t ret = RET_ERR;
+    addr = htonl(addr);
+
+    nrf_drv_spi_t const * const spi = (instance == SPI_INSTANCE_0) ? &(spi0) : &(spi2);
+    uint8_t pin = cs_pins[dev];
+
+    /**
+     * @note see function doc above to know why we do this...
+     */
+    if(instance == SPI_INSTANCE_2)
+    {
+        ret = spi2_lock(dev);
+        SYSRET_CHECK(ret);
+    }
+
+    /**
+     * Initiate transfer, manually reset and set CS pin
+     */
+    nrf_gpio_pin_clear(pin);
+    if((ret = nrf_drv_spi_transfer(spi, &cmd, 1U, NULL, 0U)) != RET_OK) {
+        /* failed to send command */
+    } else if((ret = nrf_drv_spi_transfer(spi, (uint8_t*)&addr, sizeof(addr), NULL, 0U)) != RET_OK) {
+        /* failed to send address */
+    } else if((ret = nrf_drv_spi_transfer(spi, txbuf, txn, rxbuf, rxn)) != RET_OK) {
+        /* failed to write/read to address */
+    }
     nrf_gpio_pin_set(pin);
 
     return ret;

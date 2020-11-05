@@ -247,7 +247,43 @@ static void flash_pp_test_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
-    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "TODO!\n");
+    uint32_t tx = 0xDEADBEEFU; /* write this to every page in flash */
+    uint32_t rx = 0U;
+    sysret_t ret;
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+        "\n"
+        "Flash PAGE PROGRAM test\n"
+        "- Write 0x%08X to every page in flash...\n"
+        "\n", tx);
+    
+    for(size_t i = 0U ; i < FLASH_CAPACITY ; i += FLASH_PAGE_SIZE)
+    {
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Page %d | Addr 0x%08X : ", i/FLASH_PAGE_SIZE, i);
+
+        ret = mt25q_page_program(i, (uint8_t*)&tx, sizeof(tx));
+        if(ret != RET_OK)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Write error... - [%s]\n", retcodes_desc[ret]);
+            break;
+        }
+
+        ret = mt25q_read(i, (uint8_t*)&rx, sizeof(rx));
+        if(ret != RET_OK)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Read error... - [%s]\n", retcodes_desc[ret]);
+            break;
+        }
+
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Write [0x%08X] | Read [0x%08X] ", tx, rx);
+
+        if(tx != rx)
+        {
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "- WRITE/READ FAILED");
+        }
+
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n");
+    }
 }
 
 /**

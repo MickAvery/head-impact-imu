@@ -22,7 +22,9 @@
 #define MT25Q_WRITE_ENABLE_CMD         0x06U /*!< Command to set write enable latch */
 #define MT25Q_WRITE_DISABLE_CMD        0x04U /*!< Command to clear write enable latch */
 
-#define MT25Q_PAGE_PROG_CMD
+#define MT25Q_4B_READ_CMD              0x13U /*!< Command for 4-Byte read, allowing to use entire 256Mb/32MB capacity */
+
+#define MT25Q_4B_PAGE_PROG_CMD         0x12U /*!< Command for 4-Byte page program, allowing to use entire 256Mb/32MB capacity */
 
 #define MT25Q_BULK_ERASE_CMD           0xC7U /*!< Command to perfrom BULK ERASE */
 

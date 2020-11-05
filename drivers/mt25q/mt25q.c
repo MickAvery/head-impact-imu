@@ -82,7 +82,7 @@ static void timeout_handler(void* p_ctx)
  */
 static sysret_t write_reg(cmd_t command, void* tx, size_t txn)
 {
-    uint8_t buf[32U] = {0U}; /* TODO: magic number */
+    uint8_t buf[1U + 4U + FLASH_PAGE_SIZE] = {0U}; /*  */
 
     /* format buffer to send */
     buf[0] = command;
@@ -243,6 +243,16 @@ sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n)
     ret = write_enable();
     SYSRET_CHECK(ret);
 
+    ret = spi_flash_transfer(
+        SPI_INSTANCE_2, SPI_DEV_MT25Q,
+        MT25Q_4B_PAGE_PROG_CMD, address,
+        buf, n,
+        NULL, 0U);
+    SYSRET_CHECK(ret);
+
+    /* wait for PROGRAM to complete */
+    ret = wait_for_write_complete(WRITE_PROG);
+
     return ret;
 }
 
@@ -256,11 +266,11 @@ sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n)
  */
 sysret_t mt25q_read(uint32_t address, uint8_t* buf, size_t n)
 {
-    sysret_t ret = RET_ERR;
-
-    /* TODO */
-
-    return ret;
+    return spi_flash_transfer(
+        SPI_INSTANCE_2, SPI_DEV_MT25Q,
+        MT25Q_4B_READ_CMD, address,
+        NULL, 0U,
+        buf, n+1);
 }
 
 /**

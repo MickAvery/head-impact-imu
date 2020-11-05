@@ -17,6 +17,7 @@
 #define FLASH_4KB_SUBSECTOR_SIZE  4096U  /*!< 4KB subsector size in bytes */
 #define FLASH_32KB_SUBSECTOR_SIZE 32768U /*!< 32KB subsector size in bytes */
 #define FLASH_SECTOR_SIZE         65536U /*!< Sector size in bytes */
+#define FLASH_CAPACITY            (1024U * 1024U * 32U) /*!< Flash capacity in bytes (32MB) */
 #define BULK_ERASE_TIME_MS        ((77U + 8U) * 1000U) /*!< Typical bulk erase time in ms based on datasheet, +10% */
 
 /**

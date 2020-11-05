@@ -55,8 +55,23 @@ sysret_t spi_init(void);
  */
 sysret_t spi_transfer(spi_instance_t instance, spi_devs_t dev, void* txbuf, size_t txn, void* rxbuf, size_t rxn);
 
-
-// void spi_lock(spi_instance_t instance, spi_devs_t dev, const nrf_drv_spi_config_t* cfg);
+/**
+ * @brief Flash-specific SPI bus transfer, specifying address
+ * 
+ * @param instance - SPI bus to read from
+ * @param dev - Specify device to determine correct CS pin
+ * @param cmd - Command to send to flash chip
+ * @param addr - Address to reference from flash chip
+ * @param txbuf - bytes to transmit
+ * @param txn - number of bytes to transmit
+ * @param rxbuf - buffer to receive bytes
+ * @param rxn - number of bytes to store in rxbuf
+ * @return sysret_t - Module status
+ */
+sysret_t spi_flash_transfer(
+    spi_instance_t instance, spi_devs_t dev,
+    uint8_t cmd, uint32_t addr,
+    void* txbuf, size_t txn, void* rxbuf, size_t rxn);
 
 #ifdef __cplusplus
 }
