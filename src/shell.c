@@ -9,6 +9,7 @@
 #include "custom_board.h"
 #include "nrf.h"
 #include "nrf_cli.h"
+#include "nrf_cli_rtt.h"
 #include "nrf_cli_uart.h"
 #include "nrf_delay.h"
 #include "datetime.h"
@@ -43,6 +44,16 @@ NRF_CLI_UART_DEF(cli_uart_transport, 0, 64, 64); /* TODO: magic numbers */
 NRF_CLI_DEF(cli_uart,
             "SimPLab:~$ ",
             &cli_uart_transport.transport,
+            '\n',
+            4U); /* TODO: magic number, but this is log queue size */
+
+/**
+ * RTT configurations for CLI
+ */
+NRF_CLI_RTT_DEF(cli_rtt_transport);
+NRF_CLI_DEF(cli_rtt,
+            "SimPLab:~$ ",
+            &cli_rtt_transport.transport,
             '\n',
             4U); /* TODO: magic number, but this is log queue size */
 
@@ -451,8 +462,20 @@ sysret_t shell_init(void)
     SYSRET_CHECK(ret);
 
     /**
+     * Configure RTT peripheral 
+     * 
+     */
+    ret = nrf_cli_init(&cli_rtt,
+                       NULL,
+                       false, /* colored prints disabled */
+                       true,  /* CLI to be used as logger backend */
+                       NRF_LOG_SEVERITY_INFO);
+    SYSRET_CHECK(ret);
+
+    /**
      * Start CLI System
      */
+    ret = nrf_cli_start(&cli_rtt);
     ret = nrf_cli_start(&cli_uart);
     SYSRET_CHECK(ret);
 
@@ -464,5 +487,6 @@ sysret_t shell_init(void)
  */
 void shell_process(void)
 {
+    nrf_cli_process(&cli_rtt);
     nrf_cli_process(&cli_uart);
 }
