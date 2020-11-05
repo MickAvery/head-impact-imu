@@ -17,6 +17,7 @@
 #define FLASH_4KB_SUBSECTOR_SIZE  4096U  /*!< 4KB subsector size in bytes */
 #define FLASH_32KB_SUBSECTOR_SIZE 32768U /*!< 32KB subsector size in bytes */
 #define FLASH_SECTOR_SIZE         65536U /*!< Sector size in bytes */
+#define BULK_ERASE_TIME_MS        ((77U + 8U) * 1000U) /*!< Typical bulk erase time in ms based on datasheet, +10% */
 
 /**
  * @brief MT25Q driver configurations
@@ -45,7 +46,7 @@ extern "C" {
 sysret_t mt25q_init(mt25q_cfg_t* cfg);
 
 /**
- * @brief Program bytes from buf into flash page starting at address
+ * @brief Program n bytes from buf into flash page starting at address
  * 
  * @note It is the caller's responsibility to make sure that all bytes written
  *       to page at the starting address all fall within the page's boundaries.
@@ -54,9 +55,20 @@ sysret_t mt25q_init(mt25q_cfg_t* cfg);
  * 
  * @param address - Starting address to write to
  * @param buf - Bytes to write
+ * @param n - Number of bytes to write
  * @return sysret_t - Driver status
  */
-sysret_t mt25q_page_program(uint32_t address, uint8_t* buf);
+sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n);
+
+/**
+ * @brief Read from flash starting at address
+ * 
+ * @param address - Address to read from
+ * @param buf - Buffer to store bytes
+ * @param n - Number of bytes to read
+ * @return sysret_t - Driver status
+ */
+sysret_t mt25q_read(uint32_t address, uint8_t* buf, size_t n);
 
 /**
  * @brief Set device bits to 0xFF. Needless to say this is irreversible.

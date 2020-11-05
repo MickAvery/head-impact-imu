@@ -226,6 +226,20 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
 /**
  * @notapi
+ * @brief Erase entire contents of flash 
+ */
+static void flash_erase_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Flash erase in progress...\n");
+    sysret_t ret = mt25q_bulk_erase();
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Flash erase status - [%s]\n", retcodes_desc[ret]);
+}
+
+/**
+ * @notapi
  * @brief Flash test - write to every page in flash, read back and verify written value 
  */
 static void flash_pp_test_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
@@ -352,6 +366,7 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(sensor_subcmds)
 
 NRF_CLI_CREATE_STATIC_SUBCMD_SET(flash_subcmds)
 {
+    NRF_CLI_CMD(erase, NULL, "Erase whole flash", flash_erase_cmd),
     NRF_CLI_CMD(pp_test, NULL, "Flash page program test", flash_pp_test_cmd),
     NRF_CLI_SUBCMD_SET_END
 };
