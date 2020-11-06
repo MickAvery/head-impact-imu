@@ -19,6 +19,12 @@
 #include "mt25q.h"
 
 /**
+ * @brief Default delay between sensor stream readouts in ms
+ * 
+ */
+static uint32_t default_stream_delay_ms = 0U;
+
+/**
  * @brief The number of arguments that the datetime_set() command expects:
  *        YYYY, MM, DD, HH, MM, SS, sss
  */
@@ -152,17 +158,32 @@ static void adxl372_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     uint8_t rx = 0U;
     uint8_t ctrl_c = 0x03U;
+    uint32_t delay = default_stream_delay_ms;
+
+    /* determine if user specified custom delay */
+    if(argc > 1)
+        delay = (uint32_t)atoi(argv[1]);
 
     while(rx != ctrl_c)
     {
         adxl372_val_raw_t readings[ADXL372_AXES] = {0U};
-        adxl372_read_raw(readings);
+        datetime_t dt;
 
+        (void)datetime_get(&dt);
+        (void)adxl372_read_raw(readings);
+
+        /* print datetime */
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+            "%02d:%02d:%02d.%03d\t",
+            dt.hr, dt.min, dt.sec, dt.usec/1000U);
+
+        /* print sensor values */
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
             "%d\t%d\t%d\n",
             readings[ADXL372_X]*100, readings[ADXL372_Y]*100, readings[ADXL372_Z]*100);
 
-        nrf_delay_ms(25U);
+        if(delay > 0)
+            nrf_delay_ms(delay);
 
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
     }
