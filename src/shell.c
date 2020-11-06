@@ -195,7 +195,7 @@ static void icm20649_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
                 gyro[ICM20649_GYRO_X], gyro[ICM20649_GYRO_Y], gyro[ICM20649_GYRO_Z]);
         }
         else
-            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "read timeout!\n");
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Error - [%s]\n", retcodes_desc[ret]);
 
         nrf_delay_ms(25U);
 

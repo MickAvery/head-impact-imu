@@ -51,7 +51,7 @@ static icm20649_t icm20649_handle = {
 /**
  * @brief timer handle
  */
-APP_TIMER_DEF(read_timeout_timer);
+APP_TIMER_DEF(gp_timer);
 
 /**
  * @notapi
@@ -173,15 +173,15 @@ static sysret_t wait_data_rdy(void)
     sysret_t ret = RET_ERR;
     uint8_t rx = 0U;
 
+    /* set USR BANK */
+    set_usr_bank(ICM20649_USR_BANK_0);
+
     /* start timer to detect timeout */
     ret = app_timer_start(
-        read_timeout_timer,
+        gp_timer,
         APP_TIMER_TICKS(icm20649_handle.cfg->timeout),
         &ret);
     SYSRET_CHECK(ret);
-
-    /* set USR BANK */
-    set_usr_bank(ICM20649_USR_BANK_0);
 
     do
     {
@@ -195,20 +195,9 @@ static sysret_t wait_data_rdy(void)
     } while(ret != RET_TIMEOUT);
 
     /* stop timer */
-    ret = app_timer_stop(read_timeout_timer);
+    (void)app_timer_stop(gp_timer);
 
     return ret;
-}
-
-/**
- * @notapi
- * @brief Reset device and restore default settings
- */
-static void reset_dev(void)
-{
-    uint8_t tx = ICM20649_DEVICE_RESET_MASK;
-    set_usr_bank(ICM20649_USR_BANK_0);
-    write_reg(ICM20649_PWR_MGMT_1_ADDR, &tx, 1U);
 }
 
 /**
@@ -250,9 +239,6 @@ sysret_t icm20649_init(icm20649_cfg_t* cfg)
 
         icm20649_handle.cfg = cfg;
 
-        /* reset device */
-        reset_dev();
-
         /* set usr bank */
         set_usr_bank(ICM20649_USR_BANK_0);
 
@@ -280,7 +266,7 @@ sysret_t icm20649_init(icm20649_cfg_t* cfg)
 
         /* configure timer to detect read timeout */
         ret = app_timer_create(
-            &read_timeout_timer,
+            &gp_timer,
             APP_TIMER_MODE_SINGLE_SHOT,
             timeout_handler);
         SYSRET_CHECK(ret);
@@ -309,25 +295,23 @@ sysret_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20
     {
         /* wait for data ready */
         ret = wait_data_rdy();
+        SYSRET_CHECK(ret);
 
-        if(ret == RET_OK)
+        /* set USR BANK to read from correct regs */
+        set_usr_bank(ICM20649_USR_BANK_0);
+
+        /* read from sensor output regs */
+        read_reg(ICM20649_GYRO_XOUT_H_ADDR, gyro, ICM20649_GYRO_AXES*2U);
+        read_reg(ICM20649_ACCEL_XOUT_H_ADDR, accel, ICM20649_ACCEL_AXES*2U);
+
+        /* switch byte order */
+        for(size_t i = 0U ; i < ICM20649_GYRO_AXES ; i++)
         {
-            /* set USR BANK to read from correct regs */
-            set_usr_bank(ICM20649_USR_BANK_0);
-
-            /* read from sensor output regs */
-            read_reg(ICM20649_GYRO_XOUT_H_ADDR, gyro, ICM20649_GYRO_AXES*2U);
-            read_reg(ICM20649_ACCEL_XOUT_H_ADDR, accel, ICM20649_ACCEL_AXES*2U);
-
-            /* switch byte order */
-            for(size_t i = 0U ; i < ICM20649_GYRO_AXES ; i++)
-            {
-                gyro[i] = ((gyro[i] & 0x00FFU) << 8U) | ((gyro[i] & 0xFF00U) >> 8U);
-                accel[i] = ((accel[i] & 0x00FFU) << 8U) | ((accel[i] & 0xFF00U) >> 8U);
-            }
-
-            ret = RET_OK;
+            gyro[i] = ((gyro[i] & 0x00FFU) << 8U) | ((gyro[i] & 0xFF00U) >> 8U);
+            accel[i] = ((accel[i] & 0x00FFU) << 8U) | ((accel[i] & 0xFF00U) >> 8U);
         }
+
+        ret = RET_OK;
     }
     else
         ret = RET_DRV_UNINIT;
