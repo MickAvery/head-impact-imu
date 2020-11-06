@@ -47,9 +47,10 @@ C:\Program Files (x86)\GnuWin32\bin
 Check to see it works by using 
 
 ``` sh
-$ make
-make: *** No targets specified and no makefile found.  Stop.
+$ make REV=x
  ```
+
+where `x` is either `1` or `2`.
 
 ### Setting up pyOCD
 [pyOCD](https://github.com/mbedmicro/pyOCD) is an open source Python library for programming and debugging for ARM Cortex-M devices.
@@ -154,10 +155,17 @@ A command line interface (CLI) was implemented to provide a user interface for r
 
 ```
 sysprop
-imu
+sensor
   - adxl372
     - calbrate
     - stream
+  - icm20649
+    - stream
+  - vcnl4040
+    - stream
+flash
+  - erase
+  - pp_test
 datetime
   - get
   - set
@@ -169,11 +177,28 @@ The CLI is accessible through UART and the JLink RTT, setup is described below:
 
 ### UART
 
-TODO
+When working with the development boards, hook up your RS232/UART dongle to these pins
+
+|    | REV1 | REV2 |
+|---:|:----:|:----:|
+| RX |  23  |  19  |
+| TX |  24  |  20  |
 
 ### JLink RTT
 
-TODO
+Open the `JLinkRTTViewer` GUI (comes with the nRF Command Line Tools, see below), and follow these configurations:
+
+|                              |              |
+|:----------------------------:|:------------:|
+| **Connection to J-Link**     | USB          |
+| **Specify Target Device**    | NRF52        |
+| **target Interface & Speed** | SWD, 4000KHz |
+
+Make sure you're in **Terminal 0**, which should be one of the tabs.
+
+Go to **Input > Sending...**, and choose **Send on Enter**.
+
+You'll now have access to the CLI through JLink RTT.
 
 ## Setting up PCB development environment
 Software Requirements:
@@ -260,14 +285,6 @@ J-Link>
 
 ## Navigating the Repository (OUT OF DATE AS OF OCTOBER 2020)
 
-### head_impact_IMU
-
-This is the repo's root directory. You can access everything you need starting from here. If you need to edit this README file, you can find it here.
-There are also three main sub-directories: 
-* nrf_sdk
-* board_config
-* ble_app
-
 ### nrf_sdk
 
 This directory contains part of the Nordic Semiconductor Software Development Kit (SDK). The full version is an extremely detailed guide for developing applications on the NRF52832 microcontroller used by the project.
@@ -276,45 +293,9 @@ The partial version contained here consists mainly of toolchain resources (as yo
 
 [The full SDK](https://www.nordicsemi.com/Software-and-tools/Software/nRF5-SDK) contains various examples, most of which are irrelevant to this project, and so are not included here. Nordic Semiconductor also has an online[Infocenter](https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v15.0.0%2Fexamples.html) that provides more detailed information on the SDK and its various modules.
 
-### board_config
-
-This directory contains board configuration files for both currently implemented platforms: PCB Revision 1 (*imu_pcb_rev1*) and the breadboard + MCU development (*nrf52832_mdk*).
-
-These files describe the pin mapping for each of these specific platforms - they are fairly different, so make sure you know which platform you are using and that the code you are running aligns with that platform. One of these files will be #included at the top of the code you are running.
-
-**Note:** running code on a different platform than it was written for is not always as easy as changing these #included files, especially when SPI drivers are involved. PCB Revision 1 uses different SPI drivers than the breadboard set-up - refer to the commented driver files for more information.
-
-A template (*custom_board*) is included so that pin mapping can be done for future platforms.
-
-### ble_app
-
-This directory contains all of the code developed so far for the IMU project. All new code should be added to one of the sub-directories located here (or in a new sub-directory).
-
-#### test
-
-This directory contains all of the test code written throughout to project (which is the bulk of the code). Each sub-directory contains code to test a specific component of the IMU. For example, the *adxl372_test* directory contains all of the code relevant to communicate with and receive measurements from the ADXL372 accelerometer. Running code such as this ensures the functionality of each peripheral, and can be used as reference when integrating multiple peripherals together.
-
-Each sub-directory contains source code (.c, .h) that, in general, initializes a single, specific peripheral, configures it, and prints messages or data to serial to showcase its functionality. Additionally, each sub-directory includes a makefile and sdk_config file, which are discussed later.
-
-It is highly recommnded that any substantive new code begin its life here, prior to being introduced to any integrated code.
-
-#### integration
-
-The code located here brings the device peripherals together and offers integrated functionality. The *sensors_integration* code was developed for the breadboard platform, while the *imu_pcb_rev1* was developed for PCB Revision 1.
-
-#### drivers
-
-This directory contains the driver files that are called by the SPI and I2C peripherals. Note that the two current platforms utilize different SPI drivers - see the driver file comments for more information.
-
-These files are **NOT** intended to be run on their own, and therefore do not have dedicated makefiles or config files - their functions are heavily used throughout the test and integration code sets.
-
 #### config
 
 This directory contains the default *sdk_config.h* file. This file type is discussed in more detail later.
-
-#### ble_app_cli
-
-This directory contains the code for the Bluetooth command line interface.
 
 ### sdk_config file
 
@@ -327,8 +308,6 @@ Nordic Semiconductors supplies more information on these configuration files [he
 ### makefile
 
 A makefile is required so that the make command can compile and link your program. This allows the make command to create the source files required for running code on the device. All of the source files and folders common to the make target need to be included in the makefile in order for the program to be compiled succesfully.
-
-Once again, creating a copy of a current makefile and modifying it for your use is the easiest way of creating a new makefile. 
 
 The GNU make manual can be found [here](https://www.gnu.org/software/make/manual/make.html)
 
