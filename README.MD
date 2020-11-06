@@ -188,6 +188,7 @@ When working with the development boards, hook up your RS232/UART dongle to thes
 
 Open the `JLinkRTTViewer` GUI (comes with the nRF Command Line Tools, see below), and follow these configurations:
 
+|                              |              |
 |:----------------------------:|:------------:|
 | **Connection to J-Link**     | USB          |
 | **Specify Target Device**    | NRF52        |
