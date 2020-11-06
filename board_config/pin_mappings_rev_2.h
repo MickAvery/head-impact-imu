@@ -15,8 +15,8 @@ extern "C" {
  * @brief UART pin mappings
  *******************************/
 
-#define RX_PIN_NUMBER  19
-#define TX_PIN_NUMBER  20
+#define RX_PIN_NUMBER  23
+#define TX_PIN_NUMBER  24
 
 /*******************************
  * @brief SPI pin mappings
@@ -42,8 +42,8 @@ extern "C" {
  *******************************/
 
 #define I2C1_PERIPH               1 /*!< I2C1 used */
-#define I2C1_SDA                 23
-#define I2C1_SCL                 24
+#define I2C1_SDA                 20
+#define I2C1_SCL                 19
 
 #ifdef __cplusplus
 }
