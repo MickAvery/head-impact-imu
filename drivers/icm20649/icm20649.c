@@ -51,7 +51,7 @@ static icm20649_t icm20649_handle = {
 /**
  * @brief timer handle
  */
-APP_TIMER_DEF(read_timeout_timer);
+APP_TIMER_DEF(gp_timer);
 
 /**
  * @notapi
@@ -77,13 +77,15 @@ static void timeout_handler(void* p_ctx)
  * @param rx       - Buffer to write to
  * @param rxn      - Number of bytes to read
  */
-static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
+static sysret_t read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
 {
+    sysret_t ret = RET_ERR;
     uint8_t buf[32U] = {0U}; /* TODO: magic number */
     uint8_t addr = reg_addr | 0x80U;
-    spi_transfer(SPI_INSTANCE_0, SPI_DEV_ICM20649, &addr, 1U, buf, rxn + 1U);
+    ret = spi_transfer(SPI_INSTANCE_0, SPI_DEV_ICM20649, &addr, 1U, buf, rxn + 1U);
 
     (void)memcpy(rx, buf+1U, rxn);
+    return ret;
 }
 
 /**
@@ -94,7 +96,7 @@ static void read_reg(reg_addr_t reg_addr, void* rx, size_t rxn)
  * @param tx       - Bytes to write
  * @param txn      - Number of bytes to write
  */
-static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
+static sysret_t write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
 {
     uint8_t buf[32U] = {0U}; /* TODO: magic number */
 
@@ -102,7 +104,7 @@ static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
     buf[0] = reg_addr;
     memcpy(buf+1, tx, txn);
 
-    spi_transfer(SPI_INSTANCE_0, SPI_DEV_ICM20649, buf, txn+1, NULL, 0);
+    return spi_transfer(SPI_INSTANCE_0, SPI_DEV_ICM20649, buf, txn+1, NULL, 0);
 }
 
 /**
@@ -111,16 +113,21 @@ static void write_reg(reg_addr_t reg_addr, void* tx, size_t txn)
  * 
  * @param usr_bank - USER BANK to select
  */
-static void set_usr_bank(icm20649_usr_bank_t usr_bank)
+static sysret_t set_usr_bank(icm20649_usr_bank_t usr_bank)
 {
+    sysret_t ret = RET_OK;
     static icm20649_usr_bank_t current_usr_bank = ICM20649_USR_BANK_MAX;
 
     if(usr_bank != current_usr_bank)
     {
         uint8_t tx = (uint8_t)usr_bank;
-        write_reg(ICM20649_REG_BANK_SEL_ADDR, &tx, 1U);
-        current_usr_bank = usr_bank;
+        ret = write_reg(ICM20649_REG_BANK_SEL_ADDR, &tx, 1U);
+
+        if(ret == RET_OK)
+            current_usr_bank = usr_bank;
     }
+
+    return ret;
 }
 
 /**
@@ -129,17 +136,19 @@ static void set_usr_bank(icm20649_usr_bank_t usr_bank)
  * 
  * @param cfg - Config settings
  */
-static void config_accel(icm20649_cfg_t* cfg)
+static sysret_t config_accel(icm20649_cfg_t* cfg)
 {
+    sysret_t ret = RET_ERR;
     uint8_t tx = 0U;
 
-    set_usr_bank(ICM20649_USR_BANK_2);
+    ret = set_usr_bank(ICM20649_USR_BANK_2);
+    SYSRET_CHECK(ret);
 
     /* TODO: handle DLPF configs */
 
     /* set fullscale */
     tx = ICM20649_ACCEL_FS_SEL_SET(cfg->accel_fs);
-    write_reg(ICM20649_ACCEL_CONFIG_ADDR, &tx, 1U);
+    return write_reg(ICM20649_ACCEL_CONFIG_ADDR, &tx, 1U);
 }
 
 /**
@@ -148,17 +157,19 @@ static void config_accel(icm20649_cfg_t* cfg)
  * 
  * @param cfg - Config settings
  */
-static void config_gyro(icm20649_cfg_t* cfg)
+static sysret_t config_gyro(icm20649_cfg_t* cfg)
 {
+    sysret_t ret = RET_ERR;
     uint8_t tx = 0U;
 
-    set_usr_bank(ICM20649_USR_BANK_2);
+    ret = set_usr_bank(ICM20649_USR_BANK_2);
+    SYSRET_CHECK(ret);
 
     /* TODO: handle DLPF configs */
 
     /* set fullscale */
     tx = ICM20649_GYRO_FS_SEL_SET(cfg->gyro_fs);
-    write_reg(ICM20649_GYRO_CONFIG_1_ADDR, &tx, 1U);
+    return write_reg(ICM20649_GYRO_CONFIG_1_ADDR, &tx, 1U);
 }
 
 /**
@@ -173,21 +184,24 @@ static sysret_t wait_data_rdy(void)
     sysret_t ret = RET_ERR;
     uint8_t rx = 0U;
 
+    /* set USR BANK */
+    ret = set_usr_bank(ICM20649_USR_BANK_0);
+    SYSRET_CHECK(ret);
+
     /* start timer to detect timeout */
     ret = app_timer_start(
-        read_timeout_timer,
+        gp_timer,
         APP_TIMER_TICKS(icm20649_handle.cfg->timeout),
         &ret);
     SYSRET_CHECK(ret);
 
-    /* set USR BANK */
-    set_usr_bank(ICM20649_USR_BANK_0);
-
     do
     {
-        read_reg(ICM20649_DATA_RDY_STATUS_ADDR, &rx, 1U);
+        ret = read_reg(ICM20649_DATA_RDY_STATUS_ADDR, &rx, 1U);
 
-        if((rx & ICM20649_DATA_RDY_MASK_NO_FIFO) > 0U)
+        if(ret != RET_OK)
+            break;
+        else if((rx & ICM20649_DATA_RDY_MASK_NO_FIFO) > 0U)
         {
             ret = RET_OK;
             break;
@@ -195,20 +209,9 @@ static sysret_t wait_data_rdy(void)
     } while(ret != RET_TIMEOUT);
 
     /* stop timer */
-    ret = app_timer_stop(read_timeout_timer);
+    (void)app_timer_stop(gp_timer);
 
     return ret;
-}
-
-/**
- * @notapi
- * @brief Reset device and restore default settings
- */
-static void reset_dev(void)
-{
-    uint8_t tx = ICM20649_DEVICE_RESET_MASK;
-    set_usr_bank(ICM20649_USR_BANK_0);
-    write_reg(ICM20649_PWR_MGMT_1_ADDR, &tx, 1U);
 }
 
 /**
@@ -221,8 +224,8 @@ static void reset_dev(void)
 static bool check_who_am_i(void)
 {
     uint8_t whoami = 0U;
-    set_usr_bank(ICM20649_USR_BANK_0);
-    read_reg(ICM20649_WHO_AM_I_ADDR, &whoami, 1U);
+    (void)set_usr_bank(ICM20649_USR_BANK_0);
+    (void)read_reg(ICM20649_WHO_AM_I_ADDR, &whoami, 1U);
 
     return whoami == ICM20649_WHO_AM_I_VAL;
 }
@@ -250,37 +253,41 @@ sysret_t icm20649_init(icm20649_cfg_t* cfg)
 
         icm20649_handle.cfg = cfg;
 
-        /* reset device */
-        reset_dev();
-
         /* set usr bank */
-        set_usr_bank(ICM20649_USR_BANK_0);
+        ret = set_usr_bank(ICM20649_USR_BANK_0);
+        SYSRET_CHECK(ret);
 
         /* set USER_CTRL, disable all */
         tx = 0x00U;
-        write_reg(ICM20649_USER_CTRL_ADDR, &tx, 1U);
+        ret = write_reg(ICM20649_USER_CTRL_ADDR, &tx, 1U);
+        SYSRET_CHECK(ret);
 
         /* set LP_CONFIG, disable duty cycle modes */
         tx = 0x00U;
-        write_reg(ICM20649_LP_CONFIG_ADDR, &tx, 1U);
+        ret = write_reg(ICM20649_LP_CONFIG_ADDR, &tx, 1U);
+        SYSRET_CHECK(ret);
 
         /* clock select */
         tx = ICM20649_CLKSEL_SET(0x01U); /* From datasheet : CLKSEL[2:0] should be set to 1~5 to achieve full gyroscope performance */
-        write_reg(ICM20649_PWR_MGMT_1_ADDR, &tx, 1U);
+        ret = write_reg(ICM20649_PWR_MGMT_1_ADDR, &tx, 1U);
+        SYSRET_CHECK(ret);
 
         /* enable sensors */
         tx = 0U;
-        write_reg(ICM20649_PWR_MGMT_2_ADDR, &tx, 1U);
+        ret = write_reg(ICM20649_PWR_MGMT_2_ADDR, &tx, 1U);
+        SYSRET_CHECK(ret);
 
         /* configure accelerometer */
-        config_accel(cfg);
+        ret = config_accel(cfg);
+        SYSRET_CHECK(ret);
 
         /* configure gyroscope */
-        config_gyro(cfg);
+        ret = config_gyro(cfg);
+        SYSRET_CHECK(ret);
 
         /* configure timer to detect read timeout */
         ret = app_timer_create(
-            &read_timeout_timer,
+            &gp_timer,
             APP_TIMER_MODE_SINGLE_SHOT,
             timeout_handler);
         SYSRET_CHECK(ret);
@@ -309,25 +316,26 @@ sysret_t icm20649_read_raw(int16_t gyro[ICM20649_GYRO_AXES], int16_t accel[ICM20
     {
         /* wait for data ready */
         ret = wait_data_rdy();
+        SYSRET_CHECK(ret);
 
-        if(ret == RET_OK)
+        /* set USR BANK to read from correct regs */
+        set_usr_bank(ICM20649_USR_BANK_0);
+
+        /* read from sensor output regs */
+        ret = read_reg(ICM20649_GYRO_XOUT_H_ADDR, gyro, ICM20649_GYRO_AXES*2U);
+        SYSRET_CHECK(ret);
+
+        ret = read_reg(ICM20649_ACCEL_XOUT_H_ADDR, accel, ICM20649_ACCEL_AXES*2U);
+        SYSRET_CHECK(ret);
+
+        /* switch byte order */
+        for(size_t i = 0U ; i < ICM20649_GYRO_AXES ; i++)
         {
-            /* set USR BANK to read from correct regs */
-            set_usr_bank(ICM20649_USR_BANK_0);
-
-            /* read from sensor output regs */
-            read_reg(ICM20649_GYRO_XOUT_H_ADDR, gyro, ICM20649_GYRO_AXES*2U);
-            read_reg(ICM20649_ACCEL_XOUT_H_ADDR, accel, ICM20649_ACCEL_AXES*2U);
-
-            /* switch byte order */
-            for(size_t i = 0U ; i < ICM20649_GYRO_AXES ; i++)
-            {
-                gyro[i] = ((gyro[i] & 0x00FFU) << 8U) | ((gyro[i] & 0xFF00U) >> 8U);
-                accel[i] = ((accel[i] & 0x00FFU) << 8U) | ((accel[i] & 0xFF00U) >> 8U);
-            }
-
-            ret = RET_OK;
+            gyro[i] = ((gyro[i] & 0x00FFU) << 8U) | ((gyro[i] & 0xFF00U) >> 8U);
+            accel[i] = ((accel[i] & 0x00FFU) << 8U) | ((accel[i] & 0xFF00U) >> 8U);
         }
+
+        ret = RET_OK;
     }
     else
         ret = RET_DRV_UNINIT;
