@@ -19,6 +19,12 @@
 #include "mt25q.h"
 
 /**
+ * @brief Default delay between sensor stream readouts in ms
+ * 
+ */
+static uint32_t default_stream_delay_ms = 0U;
+
+/**
  * @brief The number of arguments that the datetime_set() command expects:
  *        YYYY, MM, DD, HH, MM, SS, sss
  */
@@ -152,17 +158,32 @@ static void adxl372_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 
     uint8_t rx = 0U;
     uint8_t ctrl_c = 0x03U;
+    uint32_t delay = default_stream_delay_ms;
+
+    /* determine if user specified custom delay */
+    if(argc > 1)
+        delay = (uint32_t)atoi(argv[1]);
 
     while(rx != ctrl_c)
     {
         adxl372_val_raw_t readings[ADXL372_AXES] = {0U};
-        adxl372_read_raw(readings);
+        datetime_t dt;
 
+        (void)datetime_get(&dt);
+        (void)adxl372_read_raw(readings);
+
+        /* print datetime */
+        nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+            "%02d:%02d:%02d.%03d\t",
+            dt.hr, dt.min, dt.sec, dt.usec/1000U);
+
+        /* print sensor values */
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
             "%d\t%d\t%d\n",
             readings[ADXL372_X]*100, readings[ADXL372_Y]*100, readings[ADXL372_Z]*100);
 
-        nrf_delay_ms(25U);
+        if(delay > 0)
+            nrf_delay_ms(delay);
 
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
     }
@@ -179,25 +200,41 @@ static void icm20649_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
     uint8_t rx = 0U;
     uint8_t ctrl_c = 0x03U;
+    uint32_t delay = default_stream_delay_ms;
+
+    /* determine if user specified custom delay */
+    if(argc > 1)
+        delay = (uint32_t)atoi(argv[1]);
 
     while(rx != ctrl_c)
     {
-        sysret_t ret;
         int16_t accel[ICM20649_ACCEL_AXES] = {0};
         int16_t gyro[ICM20649_GYRO_AXES] = {0};
-        ret = icm20649_read_raw(gyro, accel);
+        datetime_t dt;
 
-        if(ret == RET_OK)
+        sysret_t dt_ret = datetime_get(&dt);
+        sysret_t sensor_ret = icm20649_read_raw(gyro, accel);
+
+        if(dt_ret == RET_OK && sensor_ret == RET_OK)
         {
+            /* print datetime */
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+                "%02d:%02d:%02d.%03d\t",
+                dt.hr, dt.min, dt.sec, dt.usec/1000U);
+
+            /* print sensor values */
             nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
                 "%d\t%d\t%d\t%d\t%d\t%d\n",
                 accel[ICM20649_ACCEL_X], accel[ICM20649_ACCEL_Y], accel[ICM20649_ACCEL_Z],
                 gyro[ICM20649_GYRO_X], gyro[ICM20649_GYRO_Y], gyro[ICM20649_GYRO_Z]);
         }
         else
-            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Error - [%s]\n", retcodes_desc[ret]);
+            nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+                "Error : datetime [%s] sensor [%s]\n",
+                retcodes_desc[dt_ret], retcodes_desc[sensor_ret]);
 
-        nrf_delay_ms(25U);
+        if(delay > 0)
+            nrf_delay_ms(delay);
 
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
     }
@@ -214,6 +251,11 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
     uint8_t rx = 0U;
     uint8_t ctrl_c = 0x03U;
+    uint32_t delay = default_stream_delay_ms;
+
+    /* determine if user specified custom delay */
+    if(argc > 1)
+        delay = (uint32_t)atoi(argv[1]);
 
     while(rx != ctrl_c)
     {
@@ -229,7 +271,8 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
         else
             nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "error!\n");
 
-        nrf_delay_ms(25U);
+        if(delay > 0)
+            nrf_delay_ms(delay);
 
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
     }
