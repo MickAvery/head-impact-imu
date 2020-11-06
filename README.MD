@@ -177,12 +177,17 @@ The CLI is accessible through UART and the JLink RTT, setup is described below:
 
 ### UART
 
-When working with the development boards, hook up your RS232/UART dongle to these pins
+The following MCU pins correspond with UART RX and TX pins:
 
-|    | REV1 | REV2 |
-|---:|:----:|:----:|
-| RX |  23  |  19  |
-| TX |  24  |  20  |
+|    | PIN# |
+|---:|:----:|
+| RX |  23  |
+| TX |  24  |
+
+Keep in mind that when using an RS232/UART dongle, you need to hook up the dongle's `TX` pin with the MCU's `RX` pin and the dongle's `RX` pin with the MCU's `TX` pin:
+
+`RS232 TX` -> `Device RX`
+`RS232 RX` -> `Device TX`
 
 ### JLink RTT
 
