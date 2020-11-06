@@ -187,6 +187,7 @@ The following MCU pins correspond with UART RX and TX pins:
 Keep in mind that when using an RS232/UART dongle, you need to hook up the dongle's `TX` pin with the MCU's `RX` pin and the dongle's `RX` pin with the MCU's `TX` pin:
 
 `RS232 TX` -> `Device RX`
+
 `RS232 RX` -> `Device TX`
 
 ### JLink RTT
