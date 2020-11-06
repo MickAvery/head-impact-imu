@@ -251,6 +251,11 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
     uint8_t rx = 0U;
     uint8_t ctrl_c = 0x03U;
+    uint32_t delay = default_stream_delay_ms;
+
+    /* determine if user specified custom delay */
+    if(argc > 1)
+        delay = (uint32_t)atoi(argv[1]);
 
     while(rx != ctrl_c)
     {
@@ -266,7 +271,8 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
         else
             nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "error!\n");
 
-        nrf_delay_ms(25U);
+        if(delay > 0)
+            nrf_delay_ms(delay);
 
         nrf_drv_uart_rx(&cli_uart_transport_uart, &rx, 1U);
     }
