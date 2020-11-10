@@ -48,6 +48,8 @@ extern "C" {
 #include "pin_mappings_rev_2.h"
 #elif defined PCB_REV_1
 #include "pin_mappings_rev_1.h"
+#elif defined BOARD_MDK
+#include "pin_mappings_mdk.h"
 #else
 #error "Board is not defined"
 #endif
