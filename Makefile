@@ -159,6 +159,8 @@ ifeq ($(REV), 1)
   CFLAGS += -DPCB_REV_1
 else ifeq ($(REV), 2)
   CFLAGS += -DPCB_REV_2
+else ifeq ($(REV), MDK)
+  CFLAGS += -DBOARD_MDK
 else
   $(error Invalid board revision)
 endif
