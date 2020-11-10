@@ -15,8 +15,7 @@
         {
             "label": "clean",
             "type": "shell",
-            "command": "make clean REV=1
-            ",
+            "command": "make clean REV=1",
             "problemMatcher": []
         }
     ],
@@ -25,7 +24,8 @@
             "id": "rev",
             "description": "Revision:",
             "default": "2",
-            "type": "promptString"
+            "type": "pickString",
+            "options": ["1", "2", "MDK"]
         },
     ]
 }
