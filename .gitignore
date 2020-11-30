@@ -21,3 +21,4 @@ projectfiles
 *.log
 
 *__pycache__
+*Pipfile.lock
