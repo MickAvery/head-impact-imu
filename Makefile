@@ -251,7 +251,7 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 pyocdflash:
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
-	pyocd -t nrf52 -se _build/nrf52832_xxaa.hex
+	pyocd flash -t NRF52 -e chip _build/nrf52832_xxaa.hex
 
 # Flash the program using nRF Command Line Tools
 flash: default
