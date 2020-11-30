@@ -179,16 +179,27 @@ The CLI is accessible through UART and the JLink RTT, setup is described below:
 
 The following MCU pins correspond with UART RX and TX pins:
 
-|    | PIN# |
-|---:|:----:|
-| RX |  23  |
-| TX |  24  |
+|    | REV 1/2 | MDK |
+|---:|:-------:|:---:|
+| RX |    23   |  17 |
+| TX |    24   |  18 |
 
 Keep in mind that when using an RS232/UART dongle, you need to hook up the dongle's `TX` pin with the MCU's `RX` pin and the dongle's `RX` pin with the MCU's `TX` pin:
 
 `RS232 TX` -> `Device RX`
 
 `RS232 RX` -> `Device TX`
+
+Your terminal emulator should then have the following settings for a serial terminal:
+
+|                    Setting | Valud     |
+|---------------------------:|:----------|
+|                       Baud | 921600    |
+|                       Data | 8-bit     |
+|                     Patiry | None      |
+|                  Stop bits | 1-bit     |
+|               Flow Control | None      |
+| Newline (receive+transmit) | LF (or \n)| 
 
 ### JLink RTT
 
