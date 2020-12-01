@@ -60,7 +60,9 @@ SRC_FILES += \
   $(SDK_ROOT)/components/softdevice/common/nrf_sdh_soc.c \
   $(SDK_ROOT)/components/ble/nrf_ble_gatt/nrf_ble_gatt.c \
   $(SDK_ROOT)/components/ble/ble_advertising/ble_advertising.c \
+  $(SDK_ROOT)/components/ble/ble_link_ctx_manager/ble_link_ctx_manager.c \
   $(SDK_ROOT)/components/ble/common/ble_advdata.c \
+  $(SDK_ROOT)/components/ble/ble_services/ble_nus/ble_nus.c \
   $(SDK_ROOT)/components/ble/common/ble_conn_params.c \
   $(SDK_ROOT)/components/ble/common/ble_conn_state.c \
   $(SDK_ROOT)/components/ble/common/ble_srv_common.c \
@@ -103,6 +105,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/ble/common \
   $(SDK_ROOT)/components/ble/nrf_ble_gatt \
   $(SDK_ROOT)/components/ble/ble_advertising \
+  $(SDK_ROOT)/components/ble/ble_link_ctx_manager \
+  $(SDK_ROOT)/components/ble/ble_services/ble_nus \
   $(SDK_ROOT)/components/libraries/cli/cdc_acm \
   $(SDK_ROOT)/components/libraries/queue \
   $(SDK_ROOT)/components/libraries/pwr_mgmt \

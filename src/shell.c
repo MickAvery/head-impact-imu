@@ -465,7 +465,7 @@ sysret_t shell_init(void)
                        &uart_cfg,
                        false, /* colored prints disabled */
                        true,  /* CLI to be used as logger backend */
-                       NRF_LOG_SEVERITY_INFO);
+                       NRF_LOG_SEVERITY_DEBUG);
     SYSRET_CHECK(ret);
 
     /**
@@ -476,7 +476,7 @@ sysret_t shell_init(void)
                        NULL,
                        false, /* colored prints disabled */
                        true,  /* CLI to be used as logger backend */
-                       NRF_LOG_SEVERITY_INFO);
+                       NRF_LOG_SEVERITY_DEBUG);
     SYSRET_CHECK(ret);
 
     /**
