@@ -20,6 +20,12 @@ extern "C" {
  */
 sysret_t network_init(void);
 
+/**
+ * @brief Process BLE CLI
+ * @note  This function is meant to only be called in shell.c
+ */
+void network_cli_process(void);
+
 #ifdef __cplusplus
 }
 #endif

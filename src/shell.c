@@ -17,6 +17,7 @@
 #include "icm20649.h"
 #include "vcnl4040.h"
 #include "mt25q.h"
+#include "network.h"
 
 /**
  * @brief Default delay between sensor stream readouts in ms
@@ -496,4 +497,5 @@ void shell_process(void)
 {
     nrf_cli_process(&cli_rtt);
     nrf_cli_process(&cli_uart);
+    network_cli_process();
 }

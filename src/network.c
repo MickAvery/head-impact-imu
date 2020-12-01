@@ -11,6 +11,7 @@
 #include "nrf_sdh.h"
 #include "nrf_sdh_ble.h"
 #include "nrf_ble_gatt.h"
+#include "nrf_cli_ble_uart.h"
 #include "nrf_log.h"
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
@@ -42,8 +43,8 @@
 #define MAX_CONN_PARAMS_UPDATE_COUNT    3                      /*!< Number of attempts before giving up the connection parameter negotiation. */
 
 BLE_NUS_DEF(nus_instance, NRF_SDH_BLE_TOTAL_LINK_COUNT); /*!< BLE NUS service instance. */
-NRF_BLE_GATT_DEF(gatt_instance);           /*!< GATT module instance */
-BLE_ADVERTISING_DEF(advertising_instance); /*!< Advertising module instance */
+NRF_BLE_GATT_DEF(gatt_instance);                         /*!< GATT module instance */
+BLE_ADVERTISING_DEF(advertising_instance);               /*!< Advertising module instance */
 
 static uint16_t conn_handle = BLE_CONN_HANDLE_INVALID; /*!< Handle of the current connection. */
 
@@ -57,6 +58,30 @@ static ble_uuid_t advertised_uuids[] =
     {BLE_APPEARANCE_GENERIC_OUTDOOR_SPORTS_ACT, BLE_UUID_TYPE_BLE},
     {BLE_UUID_NUS_SERVICE, BLE_UUID_TYPE_BLE}
 };
+
+/**
+ * BLE configuration for CLI
+ */
+NRF_CLI_BLE_UART_DEF(cli_ble_transport, &gatt_instance, 64, 32); /* TODO: magic numbers */
+NRF_CLI_DEF(cli_ble,
+            "SimPLab:~$ ",
+            &cli_ble_transport.transport,
+            '\n',
+            16U); /* TODO: magic number, but this is log queue size */
+
+/**
+ * @brief Module states definitions
+ */
+typedef enum
+{
+    NETWORK_UNINIT = 0,            /*!< Network uninitialized */
+    NETWORK_INIT,                  /*!< Module initialized but unconnected */
+    NETWORK_CONNECTED,             /*!< Module connected */
+    NETWORK_CONNECTED_COMM_STARTED /*!< Module connected and communicating */
+} network_state_t;
+
+/* Module state */
+static network_state_t network_state = NETWORK_UNINIT;
 
 /************************************************
  * EVENT HANDLERS
@@ -76,13 +101,35 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
     switch(p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
+        {
             NRF_LOG_DEBUG("BLE CONNECTED");
+
+            /* Initialize Nordic UART Service (NUS) */
+
             conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+
+            nrf_cli_ble_uart_config_t config = { .conn_handle = conn_handle };
+
+            err = nrf_cli_init(&cli_ble, &config,
+                                    false, /* colored prints disabled */
+                                    true,  /* CLI to be used as logger backend */
+                                    NRF_LOG_SEVERITY_DEBUG);
+            APP_ERROR_CHECK(err);
+
+            network_state = NETWORK_CONNECTED;
             break;
+        }
 
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_DEBUG("BLE DISCONNECTED");
+
+            /* Uninitialize Nordic UART Service (NUS) */
+
             conn_handle = BLE_CONN_HANDLE_INVALID;
+            (void)nrf_cli_stop(&cli_ble);
+            (void)nrf_cli_uninit(&cli_ble);
+
+            network_state = NETWORK_INIT;
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
@@ -150,20 +197,6 @@ static void on_connect_params_event_handler(ble_conn_params_evt_t* p_evt)
 static void conn_params_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
-}
-
-/**
- * @notapi
- * @brief NUS data event handler
- * @param p_evt
- */
-static void nus_data_handler(ble_nus_evt_t * p_evt)
-{
-    if (p_evt->type == BLE_NUS_EVT_RX_DATA)
-    {
-        NRF_LOG_DEBUG("Received data from BLE NUS. Writing data on UART.");
-        NRF_LOG_HEXDUMP_DEBUG(p_evt->params.rx_data.p_data, p_evt->params.rx_data.length);
-    }
 }
 
 /**
@@ -283,13 +316,7 @@ static sysret_t gatt_init(void)
  */
 static sysret_t services_init(void)
 {
-    ble_nus_init_t nus_init;
-
-    /* Initialize NUS */
-    memset(&nus_init, 0, sizeof(nus_init));
-    nus_init.data_handler = nus_data_handler;
-
-    return ble_nus_init(&nus_instance, &nus_init);
+    return nrf_cli_ble_uart_service_init();
 }
 
 /**
@@ -386,5 +413,32 @@ sysret_t network_init(void)
     ret = ble_advertising_start(&advertising_instance, BLE_ADV_MODE_FAST);
     SYSRET_CHECK(ret);
 
+    network_state = NETWORK_INIT;
     return RET_OK;
+}
+
+/**
+ * @brief Process BLE CLI
+ * @note  This function is meant to only be called in shell.c
+ */
+void network_cli_process(void)
+{
+    switch(network_state)
+    {
+        case NETWORK_CONNECTED:
+            if(cli_ble_transport.p_cb->service_started)
+            {
+                nrf_cli_start(&cli_ble);
+                network_state = NETWORK_CONNECTED_COMM_STARTED;
+            }
+
+            break;
+
+        case NETWORK_CONNECTED_COMM_STARTED:
+            nrf_cli_process(&cli_ble);
+            break;
+
+        default:
+            break;
+    }
 }
