@@ -31,7 +31,7 @@ class Device:
         self.ser.open()
 
         # Turn echo off, helps micro service rapid incoming characters
-        self.ser.write('echo off\n'.encode('ascii'))
+        self.ser.write('cli echo off\n'.encode('ascii'))
 
     def update_datetime(self):
         """
@@ -55,5 +55,5 @@ class Device:
         None
         """
         # Turn echo back on
-        self.ser.write('echo on\n'.encode('ascii'))
+        self.ser.write('cli echo on\n'.encode('ascii'))
         self.ser.close()

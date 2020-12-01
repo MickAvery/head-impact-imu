@@ -192,7 +192,7 @@ Keep in mind that when using an RS232/UART dongle, you need to hook up the dongl
 
 Your terminal emulator should then have the following settings for a serial terminal:
 
-|                    Setting | Valud     |
+|                    Setting | Value     |
 |---------------------------:|:----------|
 |                       Baud | 921600    |
 |                       Data | 8-bit     |

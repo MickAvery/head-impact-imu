@@ -5,6 +5,8 @@
  */
 
 #include "nrf.h"
+#include "nrf_delay.h"
+#include "nrf_log.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 #include "nrf_drv_clock.h"
@@ -88,16 +90,23 @@ int main(void)
     /* initialize system hardware */
     (void)sys_init();
 
+    /**
+     * Why the delay?
+     * To give enough time for the sensors' power-on sequences
+     */
+    nrf_delay_ms(1000);
+
     /* initialize system modules */
-    (void)spi_init();
-    (void)i2c_init();
-    (void)adxl372_init(&adxl372_cfg);
-    (void)icm20649_init(&icm20649_cfg);
-    (void)vcnl4040_init(&vcnl4040_cfg);
-    (void)mt25q_init(&mt25q_cfg);
-    (void)datetime_init();
-    (void)network_init();
-    (void)shell_init();
+    sysret_t shell_status =  shell_init();
+    NRF_LOG_INFO("SHELL    - [%s]", retcodes_desc[shell_status]);
+    NRF_LOG_INFO("SPI      - [%s]", retcodes_desc[spi_init()]);
+    NRF_LOG_INFO("I2C      - [%s]", retcodes_desc[i2c_init()]);
+    NRF_LOG_INFO("ADXL372  - [%s]", retcodes_desc[adxl372_init(&adxl372_cfg)]);
+    NRF_LOG_INFO("ICM20649 - [%s]", retcodes_desc[icm20649_init(&icm20649_cfg)]);
+    NRF_LOG_INFO("VCNL4040 - [%s]", retcodes_desc[vcnl4040_init(&vcnl4040_cfg)]);
+    NRF_LOG_INFO("MT25Q    - [%s]", retcodes_desc[mt25q_init(&mt25q_cfg)]);
+    NRF_LOG_INFO("Datetime - [%s]", retcodes_desc[datetime_init()]);
+    NRF_LOG_INFO("Network  - [%s]", retcodes_desc[network_init()]);
 
     while(1)
     {

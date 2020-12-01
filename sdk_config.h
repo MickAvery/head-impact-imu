@@ -543,7 +543,7 @@
  
 
 #ifndef NRF_MPU_CLI_CMDS
-#define NRF_MPU_CLI_CMDS 1
+#define NRF_MPU_CLI_CMDS 0
 #endif
 
 // </e>
@@ -6824,7 +6824,7 @@
  
 
 #ifndef NRF_BALLOC_CLI_CMDS
-#define NRF_BALLOC_CLI_CMDS 1
+#define NRF_BALLOC_CLI_CMDS 0
 #endif
 
 // </e>
@@ -7146,7 +7146,7 @@
  
 
 #ifndef NRF_QUEUE_CLI_CMDS
-#define NRF_QUEUE_CLI_CMDS 1
+#define NRF_QUEUE_CLI_CMDS 0
 #endif
 
 // </e>
@@ -7202,7 +7202,7 @@
  
 
 #ifndef TASK_MANAGER_CLI_CMDS
-#define TASK_MANAGER_CLI_CMDS 1
+#define TASK_MANAGER_CLI_CMDS 0
 #endif
 
 // <o> TASK_MANAGER_CONFIG_MAX_TASKS - Maximum number of tasks which can be created 
@@ -7396,7 +7396,7 @@
  
 
 #ifndef NRF_LOG_BACKEND_FLASH_CLI_CMDS
-#define NRF_LOG_BACKEND_FLASH_CLI_CMDS 1
+#define NRF_LOG_BACKEND_FLASH_CLI_CMDS 0
 #endif
 
 // <e> NRF_LOG_BACKEND_FLASHLOG_ENABLED - Enable flashlog backend.
@@ -7496,7 +7496,7 @@
 // <e> NRF_LOG_BACKEND_UART_ENABLED - nrf_log_backend_uart - Log UART backend
 //==========================================================
 #ifndef NRF_LOG_BACKEND_UART_ENABLED
-#define NRF_LOG_BACKEND_UART_ENABLED 1
+#define NRF_LOG_BACKEND_UART_ENABLED 0
 #endif
 // <o> NRF_LOG_BACKEND_UART_TX_PIN - UART TX pin 
 #ifndef NRF_LOG_BACKEND_UART_TX_PIN
@@ -7622,7 +7622,7 @@
 // <i> Log data is buffered and can be processed in idle.
 
 #ifndef NRF_LOG_DEFERRED
-#define NRF_LOG_DEFERRED 1
+#define NRF_LOG_DEFERRED 0
 #endif
 
 // <q> NRF_LOG_FILTERS_ENABLED  - Enable dynamic filtering of logs.
@@ -7720,7 +7720,7 @@
 // <i> Function for getting the timestamp is provided by the user
 //==========================================================
 #ifndef NRF_LOG_USES_TIMESTAMP
-#define NRF_LOG_USES_TIMESTAMP 1
+#define NRF_LOG_USES_TIMESTAMP 0
 #endif
 // <o> NRF_LOG_TIMESTAMP_DEFAULT_FREQUENCY - Default frequency of the timestamp (in Hz) or 0 to use app_timer frequency. 
 #ifndef NRF_LOG_TIMESTAMP_DEFAULT_FREQUENCY

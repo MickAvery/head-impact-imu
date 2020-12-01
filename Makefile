@@ -18,10 +18,6 @@ SRC_FILES += \
   $(PROJ_SRCS) \
   $(DRIVERSRC) \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
-  $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_flash.c \
-  $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \
-  $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \
-  $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_uart.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_default_backends.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_frontend.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_str_formatter.c \
@@ -168,7 +164,6 @@ endif
 # C flags common to all targets
 CFLAGS += $(OPT)
 CFLAGS += -DBOARD_CUSTOM
-# CFLAGS += -DNRF_CLI
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DCONFIG_NFCT_PINS_AS_GPIOS
 # CFLAGS += -DDEBUG
@@ -196,10 +191,9 @@ ASMFLAGS += -g3
 ASMFLAGS += -mcpu=cortex-m4
 ASMFLAGS += -mthumb -mabi=aapcs
 ASMFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-ASMFLAGS += -DBOARD_PCA10040
 ASMFLAGS += -DCONFIG_GPIO_AS_PINRESET
-ASMFLAGS += -DDEBUG
-ASMFLAGS += -DDEBUG_NRF
+# ASMFLAGS += -DDEBUG
+# ASMFLAGS += -DDEBUG_NRF
 ASMFLAGS += -DFLOAT_ABI_HARD
 ASMFLAGS += -DNRF52
 ASMFLAGS += -DNRF52832_XXAA

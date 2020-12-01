@@ -51,7 +51,7 @@ NRF_CLI_DEF(cli_uart,
             "SimPLab:~$ ",
             &cli_uart_transport.transport,
             '\n',
-            4U); /* TODO: magic number, but this is log queue size */
+            16U); /* TODO: magic number, but this is log queue size */
 
 /**
  * RTT configurations for CLI
@@ -61,7 +61,7 @@ NRF_CLI_DEF(cli_rtt,
             "SimPLab:~$ ",
             &cli_rtt_transport.transport,
             '\n',
-            4U); /* TODO: magic number, but this is log queue size */
+            16U); /* TODO: magic number, but this is log queue size */
 
 /**
  * @notapi
@@ -280,35 +280,35 @@ static void vcnl4040_stream_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 
 /**
  * @notapi
- * @brief Erase entire contents of flash 
+ * @brief Erase entire contents of external flash storage 
  */
-static void flash_erase_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+static void storage_erase_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
-    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Flash erase in progress...\n");
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Storage erase in progress...\n");
     sysret_t ret = mt25q_bulk_erase();
-    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Flash erase status - [%s]\n", retcodes_desc[ret]);
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "Storage erase status - [%s]\n", retcodes_desc[ret]);
 }
 
 /**
  * @notapi
- * @brief Flash test - write to every page in flash, read back and verify written value 
+ * @brief Storage test - write to every page in external flash storage, read back and verify written value 
  */
-static void flash_pp_test_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+static void storage_pp_test_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
 
     uint32_t expected = 0xDEADBEEFU; /* write this to every page in flash */
-    
+
     sysret_t ret;
 
     nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
         "\n"
-        "Flash PAGE PROGRAM test\n"
-        "- Write 0x%08X to every page in flash...\n"
+        "Storage PAGE PROGRAM test\n"
+        "- Write 0x%08X to every page in external flash storage...\n"
         "\n", expected);
 
     for(size_t i = 0U ; i < FLASH_CAPACITY ; i += FLASH_PAGE_SIZE)
@@ -340,42 +340,6 @@ static void flash_pp_test_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         }
 
         nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT, "\n");
-    }
-}
-
-/**
- * @notapi
- * @brief Enable/Disable CLI echo
- */
-static void echo_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
-{
-    ASSERT(p_cli);
-    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
-
-    bool command_unrecognized = true;
-    bool set = true;
-
-    if(argc >= 2)
-    {
-        if(strncmp(argv[1], "on", 2) == 0)
-        {
-            command_unrecognized = false;
-            set = true;
-        }
-        else if(strncmp(argv[1], "off", 3) == 0)
-        {
-            command_unrecognized = false;
-            set = false;
-        }
-    }
-
-    if(command_unrecognized)
-    {
-        nrf_cli_help_print(p_cli, NULL, 0);
-    }
-    else
-    {
-        p_cli->p_ctx->internal.flag.echo = set ? 1 : 0;
     }
 }
 
@@ -457,10 +421,10 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(sensor_subcmds)
     NRF_CLI_SUBCMD_SET_END
 };
 
-NRF_CLI_CREATE_STATIC_SUBCMD_SET(flash_subcmds)
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(storage_subcmds)
 {
-    NRF_CLI_CMD(erase, NULL, "Erase whole flash", flash_erase_cmd),
-    NRF_CLI_CMD(pp_test, NULL, "Flash page program test", flash_pp_test_cmd),
+    NRF_CLI_CMD(erase, NULL, "Erase entire storage", storage_erase_cmd),
+    NRF_CLI_CMD(pp_test, NULL, "Storage page program test", storage_pp_test_cmd),
     NRF_CLI_SUBCMD_SET_END
 };
 
@@ -471,16 +435,14 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(flash_subcmds)
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
 NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Sensor values and configurations", NULL);
-NRF_CLI_CMD_REGISTER(flash, &flash_subcmds, "Flash properties and testing", NULL);
-NRF_CLI_CMD_REGISTER(echo, NULL,
-    "Configure CLI echo setting\n"
-    "    echo off - turn off CLI echo\n"
-    "    echo off - turn on CLI echo\n", echo_cmd);
+NRF_CLI_CMD_REGISTER(storage, &storage_subcmds, "Storage properties and testing", NULL);
 NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysprop_cmd);
 
 /******************
  * Start of API
  ******************/
+
+#include "nrf_log.h"
 
 /**
  * @brief Initialize she CLI for user inputs
@@ -489,6 +451,8 @@ NRF_CLI_CMD_REGISTER(sysprop, NULL, "Display status of system peripherals", sysp
 sysret_t shell_init(void)
 {
     sysret_t ret;
+
+    NRF_LOG_INIT(NULL);
 
     /**
      * Configure the UART peripheral
