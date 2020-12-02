@@ -18,6 +18,7 @@
 #include "vcnl4040.h"
 #include "mt25q.h"
 #include "network.h"
+#include "statemachine.h"
 
 /**
  * @brief Default delay between sensor stream readouts in ms
@@ -79,6 +80,24 @@ static void hello_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         "Hello World!\n"
         "************\n"
         "\n");
+}
+
+/**
+ * @notapi
+ * @brief Enable datalogging
+ */
+static void datalog_enable_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    statemachine_set_datalogging(true);
+}
+
+/**
+ * @notapi
+ * @brief Disable datalogging
+ */
+static void datalog_disable_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    statemachine_set_datalogging(false);
 }
 
 /**
@@ -382,6 +401,13 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
  * Register the systest subcommands, pair them to their command names using NRF5's API
  ***************************************************************************************/
 
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(datalog_subcmds)
+{
+    NRF_CLI_CMD(disable, NULL, "Disable datalogging", datalog_disable_cmd),
+    NRF_CLI_CMD(enable, NULL, "Enable datalogging", datalog_enable_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
 NRF_CLI_CREATE_STATIC_SUBCMD_SET(datetime_subcmds)
 {
     NRF_CLI_CMD(get, NULL, "help string", datetime_get_cmd),
@@ -434,6 +460,7 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(storage_subcmds)
  ***************************************************************************************/
 
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
+NRF_CLI_CMD_REGISTER(datalog, &datalog_subcmds, "Enable/Disable datalogging", NULL);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
 NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Sensor values and configurations", NULL);
 NRF_CLI_CMD_REGISTER(storage, &storage_subcmds, "Storage properties and testing", NULL);

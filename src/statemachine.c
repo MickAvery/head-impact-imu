@@ -8,9 +8,19 @@
 #include "nrf_log.h"
 
 /**
- * @brief Keep track of system state
+ * @brief Device state and configurations, values below are default values
  */
-static statemachine_states_t state = STATE_UNINIT;
+static dev_config_t dev_state =
+{
+    .datalog_en        = false,
+    .datalog_mode      = DATALOG_TRIGGER,
+    .trigger_on        = TRIGGER_ON_LIN_ACCELERATION,
+    .trigger_threshold = 0x7FFFFFFF,
+    .sample_rate       = SAMPLE_RATE_100_HZ,
+    .accel_fs          = ICM20649_ACCEL_FS_30g,
+    .gyro_fs           = ICM20649_GYRO_FS_4000dps,
+    .state             = STATE_UNINIT
+};
 
 /**
  * @brief Initialize system state machine module
@@ -20,7 +30,7 @@ static statemachine_states_t state = STATE_UNINIT;
 sysret_t statemachine_init(void)
 {
     NRF_LOG_DEBUG("STATE = INIT");
-    state = STATE_INIT;
+    dev_state.state = STATE_INIT;
     return RET_OK;
 }
 
@@ -31,7 +41,17 @@ sysret_t statemachine_init(void)
  */
 statemachine_states_t statemachine_getstate(void)
 {
-    return state;
+    return dev_state.state;
+}
+
+/**
+ * @brief Set/Stop datalogging
+ * 
+ * @param set - If true, datalogging will start. If false, it will stop
+ */
+void statemachine_set_datalogging(bool set)
+{
+    dev_state.datalog_en = set;
 }
 
 /**
@@ -39,19 +59,31 @@ statemachine_states_t statemachine_getstate(void)
  */
 void statemachine_process(void)
 {
-    switch( state )
+    switch( dev_state.state )
     {
         case STATE_INIT:
             NRF_LOG_DEBUG("INIT -> IDLE");
-            state = STATE_IDLE;
+            dev_state.state = STATE_IDLE;
             break;
 
         case STATE_IDLE:
-            /* TODO */
+
+            if(dev_state.datalog_en)
+            {
+                NRF_LOG_DEBUG("IDLE -> WAIT_FOR_TRIGGER");
+                dev_state.state = STATE_WAIT_FOR_TRIGGER;
+            }
+
             break;
 
         case STATE_WAIT_FOR_TRIGGER:
-            /* TODO */
+
+            if(!dev_state.datalog_en)
+            {
+                NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> IDLE");
+                dev_state.state = STATE_IDLE;
+            }
+
             break;
 
         case STATE_DATALOGGING:
