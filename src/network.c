@@ -11,8 +11,11 @@
 #include "nrf_sdh.h"
 #include "nrf_sdh_ble.h"
 #include "nrf_ble_gatt.h"
+#include "nrf_cli_ble_uart.h"
+#include "nrf_log.h"
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
+#include "ble_nus.h"
 
 /************************************************
  * MACROS and GLOBAL OBJECTS
@@ -39,8 +42,9 @@
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(30000) /*!< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
 #define MAX_CONN_PARAMS_UPDATE_COUNT    3                      /*!< Number of attempts before giving up the connection parameter negotiation. */
 
-NRF_BLE_GATT_DEF(gatt_instance);           /*!< GATT module instance */
-BLE_ADVERTISING_DEF(advertising_instance); /*!< Advertising module instance */
+BLE_NUS_DEF(nus_instance, NRF_SDH_BLE_TOTAL_LINK_COUNT); /*!< BLE NUS service instance. */
+NRF_BLE_GATT_DEF(gatt_instance);                         /*!< GATT module instance */
+BLE_ADVERTISING_DEF(advertising_instance);               /*!< Advertising module instance */
 
 static uint16_t conn_handle = BLE_CONN_HANDLE_INVALID; /*!< Handle of the current connection. */
 
@@ -51,8 +55,33 @@ static uint16_t conn_handle = BLE_CONN_HANDLE_INVALID; /*!< Handle of the curren
  */
 static ble_uuid_t advertised_uuids[] =
 {
-    {BLE_APPEARANCE_GENERIC_OUTDOOR_SPORTS_ACT, BLE_UUID_TYPE_BLE}
+    {BLE_APPEARANCE_GENERIC_OUTDOOR_SPORTS_ACT, BLE_UUID_TYPE_BLE},
+    {BLE_UUID_NUS_SERVICE, BLE_UUID_TYPE_BLE}
 };
+
+/**
+ * BLE configuration for CLI
+ */
+NRF_CLI_BLE_UART_DEF(cli_ble_transport, &gatt_instance, 64, 32); /* TODO: magic numbers */
+NRF_CLI_DEF(cli_ble,
+            "SimPLab:~$ ",
+            &cli_ble_transport.transport,
+            '\n',
+            16U); /* TODO: magic number, but this is log queue size */
+
+/**
+ * @brief Module states definitions
+ */
+typedef enum
+{
+    NETWORK_UNINIT = 0,            /*!< Network uninitialized */
+    NETWORK_INIT,                  /*!< Module initialized but unconnected */
+    NETWORK_CONNECTED,             /*!< Module connected */
+    NETWORK_CONNECTED_COMM_STARTED /*!< Module connected and communicating */
+} network_state_t;
+
+/* Module state */
+static network_state_t network_state = NETWORK_UNINIT;
 
 /************************************************
  * EVENT HANDLERS
@@ -71,10 +100,36 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
     switch(p_ble_evt->header.evt_id)
     {
-        case BLE_GAP_EVT_DISCONNECTED:
-            break;
-
         case BLE_GAP_EVT_CONNECTED:
+        {
+            NRF_LOG_DEBUG("BLE CONNECTED");
+
+            /* Initialize Nordic UART Service (NUS) */
+
+            conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+
+            nrf_cli_ble_uart_config_t config = { .conn_handle = conn_handle };
+
+            err = nrf_cli_init(&cli_ble, &config,
+                                    false, /* colored prints disabled */
+                                    true,  /* CLI to be used as logger backend */
+                                    NRF_LOG_SEVERITY_DEBUG);
+            APP_ERROR_CHECK(err);
+
+            network_state = NETWORK_CONNECTED;
+            break;
+        }
+
+        case BLE_GAP_EVT_DISCONNECTED:
+            NRF_LOG_DEBUG("BLE DISCONNECTED");
+
+            /* Uninitialize Nordic UART Service (NUS) */
+
+            conn_handle = BLE_CONN_HANDLE_INVALID;
+            (void)nrf_cli_stop(&cli_ble);
+            (void)nrf_cli_uninit(&cli_ble);
+
+            network_state = NETWORK_INIT;
             break;
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
@@ -122,7 +177,7 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
  * 
  * @param p_evt 
  */
-static void on_connect_params_event(ble_conn_params_evt_t* p_evt)
+static void on_connect_params_event_handler(ble_conn_params_evt_t* p_evt)
 {
     ret_code_t err_code;
 
@@ -151,7 +206,7 @@ static void conn_params_error_handler(uint32_t nrf_error)
  * 
  * @param ble_adv_evt - Advertising event
  */
-static void on_advertising_event(ble_adv_evt_t ble_adv_evt)
+static void on_advertising_event_handler(ble_adv_evt_t ble_adv_evt)
 {
     switch (ble_adv_evt)
     {
@@ -179,21 +234,21 @@ static sysret_t ble_stack_init(void)
     sysret_t ret = RET_ERR;
     uint32_t ram_start = 0U;
 
-    if((ret = nrf_sdh_enable_request()) != RET_OK)
-        return ret;
+    ret = nrf_sdh_enable_request();
+    SYSRET_CHECK(ret);
 
     /**
      * Configure BLE stack with default settings.
      * Fetch start address of the application RAM.
      */
-    if((ret = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start)) != RET_OK)
-        return ret;
+    ret = nrf_sdh_ble_default_cfg_set(APP_BLE_CONN_CFG_TAG, &ram_start);
+    SYSRET_CHECK(ret);
 
     /**
      * Enable BLE stack
      */
-    if((ret = nrf_sdh_ble_enable(&ram_start)) != RET_OK)
-        return ret;
+    ret = nrf_sdh_ble_enable(&ram_start);
+    SYSRET_CHECK(ret);
 
     /**
      * Register handler for BLE events
@@ -220,15 +275,13 @@ static sysret_t gap_params_init(void)
      */
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
     ret = sd_ble_gap_device_name_set(&sec_mode, (const uint8_t*)DEVICE_NAME, strlen(DEVICE_NAME));
-    if(ret != RET_OK)
-        return ret;
+    SYSRET_CHECK(ret);
 
     /**
      * Use an appearance value matching the application's use case
      */
     ret = sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_OUTDOOR_SPORTS_ACT);
-    if(ret != RET_OK)
-        return ret;
+    SYSRET_CHECK(ret);
 
     /**
      * Set GAP peripheral preferred connection parameters
@@ -239,8 +292,7 @@ static sysret_t gap_params_init(void)
     gap_conn_params.conn_sup_timeout  = CONN_SUP_TIMEOUT ;
 
     ret = sd_ble_gap_ppcp_set(&gap_conn_params);
-    if(ret != RET_OK)
-        return ret;
+    SYSRET_CHECK(ret);
 
     return RET_OK;
 }
@@ -264,12 +316,7 @@ static sysret_t gatt_init(void)
  */
 static sysret_t services_init(void)
 {
-    sysret_t ret = RET_ERR;
-
-    /* TODO */
-    ret = RET_OK;
-
-    return ret;
+    return nrf_cli_ble_uart_service_init();
 }
 
 /**
@@ -295,12 +342,11 @@ static sysret_t advertising_init(void)
     init.config.ble_adv_fast_interval    = APP_ADV_INTERVAL;
     init.config.ble_adv_fast_timeout     = APP_ADV_DURATION;
 
-    init.evt_handler = on_advertising_event;
+    init.evt_handler = on_advertising_event_handler;
 
     /* Initialize BLE advertising */
     ret = ble_advertising_init(&advertising_instance, &init);
-    if(ret != RET_OK)
-        return ret;
+    SYSRET_CHECK(ret);
 
     ble_advertising_conn_cfg_tag_set(&advertising_instance, APP_BLE_CONN_CFG_TAG);
 
@@ -322,7 +368,7 @@ static sysret_t connection_params_init(void)
         .max_conn_params_update_count   = MAX_CONN_PARAMS_UPDATE_COUNT,
         .start_on_notify_cccd_handle    = BLE_GATT_HANDLE_INVALID,
         .disconnect_on_fail             = false,
-        .evt_handler                    = on_connect_params_event,
+        .evt_handler                    = on_connect_params_event_handler,
         .error_handler                  = conn_params_error_handler
     };
 
@@ -346,26 +392,53 @@ sysret_t network_init(void)
      * Perform all necessary initializations
      */
 
-    if((ret = ble_stack_init()) != RET_OK)
-        return ret;
+    ret = ble_stack_init();
+    SYSRET_CHECK(ret);
 
-    if((ret = gap_params_init()) != RET_OK)
-        return ret;
+    ret = gap_params_init();
+    SYSRET_CHECK(ret);
 
-    if((ret = gatt_init()) != RET_OK)
-        return ret;
+    ret = gatt_init();
+    SYSRET_CHECK(ret);
 
-    if((ret = services_init()) != RET_OK)
-        return ret;
+    ret = services_init();
+    SYSRET_CHECK(ret);
 
-    if((ret = advertising_init()) != RET_OK)
-        return ret;
+    ret = advertising_init();
+    SYSRET_CHECK(ret);
 
-    if((ret = connection_params_init()) != RET_OK)
-        return ret;
+    ret = connection_params_init();
+    SYSRET_CHECK(ret);
 
-    if((ret = ble_advertising_start(&advertising_instance, BLE_ADV_MODE_FAST)) != RET_OK)
-        return ret;
+    ret = ble_advertising_start(&advertising_instance, BLE_ADV_MODE_FAST);
+    SYSRET_CHECK(ret);
 
+    network_state = NETWORK_INIT;
     return RET_OK;
+}
+
+/**
+ * @brief Process BLE CLI
+ * @note  This function is meant to only be called in shell.c
+ */
+void network_cli_process(void)
+{
+    switch(network_state)
+    {
+        case NETWORK_CONNECTED:
+            if(cli_ble_transport.p_cb->service_started)
+            {
+                nrf_cli_start(&cli_ble);
+                network_state = NETWORK_CONNECTED_COMM_STARTED;
+            }
+
+            break;
+
+        case NETWORK_CONNECTED_COMM_STARTED:
+            nrf_cli_process(&cli_ble);
+            break;
+
+        default:
+            break;
+    }
 }
