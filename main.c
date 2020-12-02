@@ -20,6 +20,7 @@
 #include "vcnl4040.h"
 #include "mt25q.h"
 #include "network.h"
+#include "statemachine.h"
 
 /**
  * @brief ADXL372 config
@@ -108,10 +109,14 @@ int main(void)
     NRF_LOG_INFO("Datetime - [%s]", retcodes_desc[datetime_init()]);
     NRF_LOG_INFO("Network  - [%s]", retcodes_desc[network_init()]);
 
+    /* initialize state machine */
+    (void)statemachine_init();
+
     while(1)
     {
         /* infinite loop */
         shell_process();
+        statemachine_process();
     }
 
     /* we should never get here */
