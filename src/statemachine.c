@@ -47,6 +47,27 @@ void statemachine_process(void)
             break;
 
         case STATE_IDLE:
+            /* TODO */
+            break;
+
+        case STATE_WAIT_FOR_TRIGGER:
+            /* TODO */
+            break;
+
+        case STATE_DATALOGGING:
+            /* TODO */
+            break;
+
+        case STATE_LOW_POWER:
+            /* TODO */
+            break;
+
+        case STATE_FILE_TRANSFER:
+            /* TODO */
+            break;
+
+        case STATE_FW_UPDATE:
+            /* TODO */
             break;
 
         default:

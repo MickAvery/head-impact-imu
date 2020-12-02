@@ -14,9 +14,18 @@
  */
 typedef enum
 {
-    STATE_UNINIT = 0, /*!< State machine uninitialized */
-    STATE_INIT,       /*!< State machine initialization, transitions to IDLE after */
-    STATE_IDLE        /*!< Idle state */
+    STATE_UNINIT = 0,       /*!< State machine uninitialized */
+    STATE_INIT,             /*!< State machine initialization, transitions to IDLE after */
+    STATE_IDLE,             /*!< Idle state */
+    STATE_WAIT_FOR_TRIGGER, /*!< Waiting for trigger */
+    STATE_DATALOGGING,      /*!< Device is logging data */
+    STATE_LOW_POWER,        /*!< Device is in low power mode, some ICs are powered down */
+
+    /* states related to file-streaming */
+    STATE_FILE_TRANSFER, /*!< Transfer file from device to app */
+    STATE_FW_UPDATE,     /*!< Receive updated firmware from app */
+
+    STATES_NUM /*!< Max number of states */
 } statemachine_states_t;
 
 #ifdef __cplusplus
