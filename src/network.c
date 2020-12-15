@@ -60,6 +60,26 @@ static ble_uuid_t advertised_uuids[] =
 };
 
 /**
+ * @brief UUIDs!
+ */
+/* 32A2xxxx-ED70-480B-A945-866522F66758 in reverse byte order! */
+#define CUSTOM_BASE_UUID              { 0x58, 0x67, 0xF6, 0x22, 0x65, 0x86, 0x45, 0xA9, 0x0B, 0x48, 0x70, 0xED, 0x00, 0x00, 0xA2, 0x32 } /*!< Custom base UUID for custom services, generated with https://www.uuidgenerator.net/ */
+/* 32A20001-ED70-480B-A945-866522F66758 */
+#define CUSTOM_SERVICE_UUID           0x0001 /*!< Custom 16-bit service UUID, based on custom UUID */
+/* 32A20002-ED70-480B-A945-866522F66758 */
+#define CUSTOM_TX_CHARACTERISTIC_UUID 0x0002 /*!< Custom 16-bit TX characteristic UUID, based on custom UUID */
+/* 32A20003-ED70-480B-A945-866522F66758 */
+#define CUSTOM_RX_CHARACTERISTIC_UUID 0x0003 /*!< Custom 16-bit RX characteristic UUID, based on custom UUID */
+
+/**
+ * @brief Custom SimpL Service handler
+ */
+static ble_simpl_service_t simpl_service = {
+    .conn_handle  = BLE_CONN_HANDLE_INVALID,
+    .service_uuid = { CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN }
+};
+
+/**
  * BLE configuration for CLI
  */
 NRF_CLI_BLE_UART_DEF(cli_ble_transport, &gatt_instance, 64, 32); /* TODO: magic numbers */
@@ -104,10 +124,10 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
         {
             NRF_LOG_DEBUG("BLE CONNECTED");
 
-            /* Initialize Nordic UART Service (NUS) */
-
+            /* Get connection handle */
             conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 
+            /* Initialize Nordic UART Service (NUS) */
             nrf_cli_ble_uart_config_t config = { .conn_handle = conn_handle };
 
             err = nrf_cli_init(&cli_ble, &config,
@@ -116,6 +136,9 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
                                     NRF_LOG_SEVERITY_DEBUG);
             APP_ERROR_CHECK(err);
 
+            /* Set connection handle for custom service */
+            simpl_service.conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+
             network_state = NETWORK_CONNECTED;
             break;
         }
@@ -123,11 +146,15 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_DEBUG("BLE DISCONNECTED");
 
-            /* Uninitialize Nordic UART Service (NUS) */
-
+            /* Reset the connection handle */
             conn_handle = BLE_CONN_HANDLE_INVALID;
+
+            /* Uninitialize Nordic UART Service (NUS) */
             (void)nrf_cli_stop(&cli_ble);
             (void)nrf_cli_uninit(&cli_ble);
+
+            /* Reset connection handle for custom service */
+            simpl_service.conn_handle = BLE_CONN_HANDLE_INVALID;
 
             network_state = NETWORK_INIT;
             break;
@@ -308,19 +335,6 @@ static sysret_t gatt_init(void)
     return nrf_ble_gatt_init(&gatt_instance, NULL);
 }
 
-/* 32A2xxxx-ED70-480B-A945-866522F66758 in reverse byte order! */
-#define CUSTOM_BASE_UUID              { 0x58, 0x67, 0xF6, 0x22, 0x65, 0x86, 0x45, 0xA9, 0x0B, 0x48, 0x70, 0xED, 0x00, 0x00, 0xA2, 0x32 } /*!< Custom base UUID for custom services, generated with https://www.uuidgenerator.net/ */
-/* 32A20001-ED70-480B-A945-866522F66758 */
-#define CUSTOM_SERVICE_UUID           0x0001 /*!< Custom 16-bit service UUID, based on custom UUID */
-/* 32A20002-ED70-480B-A945-866522F66758 */
-#define CUSTOM_TX_CHARACTERISTIC_UUID 0x0002 /*!< Custom 16-bit TX characteristic UUID, based on custom UUID */
-/* 32A20003-ED70-480B-A945-866522F66758 */
-#define CUSTOM_RX_CHARACTERISTIC_UUID 0x0003 /*!< Custom 16-bit RX characteristic UUID, based on custom UUID */
-
-static ble_simpl_service_t simpl_service = {
-    .service_uuid = {CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
-};
-
 /**
  * @notapi
  * @brief Initialize BLE services
@@ -332,17 +346,63 @@ static sysret_t services_init(void)
     sysret_t ret = RET_OK;
 
     /* setup UUID objects */
-    ble_uuid128_t base_uuid = { .uuid128 = CUSTOM_BASE_UUID };
+    ble_uuid128_t base_uuid    = { .uuid128 = CUSTOM_BASE_UUID };
+    ble_uuid_t    tx_char_uuid = { CUSTOM_TX_CHARACTERISTIC_UUID, BLE_UUID_TYPE_VENDOR_BEGIN };
+    ble_uuid_t    rx_char_uuid = { CUSTOM_RX_CHARACTERISTIC_UUID, BLE_UUID_TYPE_VENDOR_BEGIN };
 
     /* Add custom UUIDs to BLE stack */
     ret = sd_ble_uuid_vs_add(&base_uuid, &simpl_service.service_uuid.type);
     SYSRET_CHECK(ret);
 
-    /* Add custom service */
+    /* Add custom service.
+     * For more information, see:
+     * https://devzone.nordicsemi.com/nordic/short-range-guides/b/bluetooth-low-energy/posts/ble-services-a-beginners-tutorial
+     */
     ret = sd_ble_gatts_service_add(
         BLE_GATTS_SRVC_TYPE_PRIMARY,
         &simpl_service.service_uuid,
         &simpl_service.service_handle);
+    SYSRET_CHECK(ret);
+
+    /* Add characteristics to the custom service.
+     * For more information, see:
+     * https://devzone.nordicsemi.com/nordic/short-range-guides/b/bluetooth-low-energy/posts/ble-characteristics-a-beginners-tutorial
+     */
+
+    /* Characteristic # 1 : TX characteristic */
+    ble_gatts_char_md_t tx_char_md;
+    memset(&tx_char_md, 0, sizeof(tx_char_md));
+    tx_char_md.char_props.notify = 1; /* allow mobile app to be notified by this characteristic */
+
+    ble_gatts_attr_md_t tx_attr_md;
+    memset(&tx_attr_md, 0, sizeof(tx_attr_md));
+    tx_attr_md.vloc = BLE_GATTS_VLOC_STACK; /* attribute is to be stored in the SoftDevice stack */
+
+    ble_gatts_attr_t    tx_char_attr_val;
+    memset(&tx_char_attr_val, 0, sizeof(tx_char_attr_val));
+    tx_char_attr_val.p_uuid    = &tx_char_uuid;
+    tx_char_attr_val.p_attr_md = &tx_attr_md;
+
+    ret = sd_ble_gatts_characteristic_add(simpl_service.service_handle, &tx_char_md, &tx_char_attr_val, &simpl_service.tx_char_handles);
+    SYSRET_CHECK(ret);
+
+    /* Characteristic # 2 : RX characteristic */
+    ble_gatts_char_md_t rx_char_md;
+    memset(&rx_char_md, 0, sizeof(rx_char_md));
+    rx_char_md.char_props.write = 1; /* allow mobile app to write to this characteristic */
+    rx_char_md.char_props.write_wo_resp = 1; /* allow mobile app to write to this characteristic without response */
+
+    ble_gatts_attr_md_t rx_attr_md;
+    memset(&rx_attr_md, 0, sizeof(rx_attr_md));
+    rx_attr_md.vloc = BLE_GATTS_VLOC_STACK; /* attribute is to be stored in the SoftDevice stack */
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&rx_attr_md.write_perm); /* set open write permissions */
+
+    ble_gatts_attr_t    rx_char_attr_val;
+    memset(&rx_char_attr_val, 0, sizeof(rx_char_attr_val));
+    rx_char_attr_val.p_uuid    = &rx_char_uuid;
+    rx_char_attr_val.p_attr_md = &rx_attr_md;
+
+    ret = sd_ble_gatts_characteristic_add(simpl_service.service_handle, &rx_char_md, &rx_char_attr_val, &simpl_service.rx_char_handles);
     SYSRET_CHECK(ret);
 
     return nrf_cli_ble_uart_service_init();

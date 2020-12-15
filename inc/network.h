@@ -15,9 +15,11 @@
  */
 typedef struct
 {
-    uint16_t                 service_handle;
-    ble_gatts_char_handles_t custom_val_handles;
-    ble_uuid_t               service_uuid;
+    uint16_t                 conn_handle;     /*!< Connection handle upon device connection */
+    uint16_t                 service_handle;  /*!< Service handle */
+    ble_uuid_t               service_uuid;    /*!< Service UUID */
+    ble_gatts_char_handles_t tx_char_handles; /*!< Characteristic handle to be refered to later on */
+    ble_gatts_char_handles_t rx_char_handles; /*!< Characteristic handle to be refered to later on */
 } ble_simpl_service_t;
 
 #ifdef __cplusplus
