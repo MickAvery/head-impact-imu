@@ -308,6 +308,19 @@ static sysret_t gatt_init(void)
     return nrf_ble_gatt_init(&gatt_instance, NULL);
 }
 
+/* 32A2xxxx-ED70-480B-A945-866522F66758 in reverse byte order! */
+#define CUSTOM_BASE_UUID              { 0x58, 0x67, 0xF6, 0x22, 0x65, 0x86, 0x45, 0xA9, 0x0B, 0x48, 0x70, 0xED, 0x00, 0x00, 0xA2, 0x32 } /*!< Custom base UUID for custom services, generated with https://www.uuidgenerator.net/ */
+/* 32A20001-ED70-480B-A945-866522F66758 */
+#define CUSTOM_SERVICE_UUID           0x0001 /*!< Custom 16-bit service UUID, based on custom UUID */
+/* 32A20002-ED70-480B-A945-866522F66758 */
+#define CUSTOM_TX_CHARACTERISTIC_UUID 0x0002 /*!< Custom 16-bit TX characteristic UUID, based on custom UUID */
+/* 32A20003-ED70-480B-A945-866522F66758 */
+#define CUSTOM_RX_CHARACTERISTIC_UUID 0x0003 /*!< Custom 16-bit RX characteristic UUID, based on custom UUID */
+
+static ble_simpl_service_t simpl_service = {
+    .service_uuid = {CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
+};
+
 /**
  * @notapi
  * @brief Initialize BLE services
@@ -316,6 +329,22 @@ static sysret_t gatt_init(void)
  */
 static sysret_t services_init(void)
 {
+    sysret_t ret = RET_OK;
+
+    /* setup UUID objects */
+    ble_uuid128_t base_uuid = { .uuid128 = CUSTOM_BASE_UUID };
+
+    /* Add custom UUIDs to BLE stack */
+    ret = sd_ble_uuid_vs_add(&base_uuid, &simpl_service.service_uuid.type);
+    SYSRET_CHECK(ret);
+
+    /* Add custom service */
+    ret = sd_ble_gatts_service_add(
+        BLE_GATTS_SRVC_TYPE_PRIMARY,
+        &simpl_service.service_uuid,
+        &simpl_service.service_handle);
+    SYSRET_CHECK(ret);
+
     return nrf_cli_ble_uart_service_init();
 }
 

@@ -8,6 +8,17 @@
 #define NETWORK_H
 
 #include "retcodes.h"
+#include "ble_gatts.h"
+
+/**
+ * @brief BLE custom service definition (name = SimpL Service)
+ */
+typedef struct
+{
+    uint16_t                 service_handle;
+    ble_gatts_char_handles_t custom_val_handles;
+    ble_uuid_t               service_uuid;
+} ble_simpl_service_t;
 
 #ifdef __cplusplus
 extern "C" {
