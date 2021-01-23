@@ -72,6 +72,12 @@ static ble_uuid_t advertised_uuids[] =
 #define CUSTOM_RX_CHARACTERISTIC_UUID 0x0003 /*!< Custom 16-bit RX characteristic UUID, based on custom UUID */
 
 /**
+ * @brief Characteristic UUIDs
+ */
+static ble_uuid_t tx_char_uuid;
+static ble_uuid_t rx_char_uuid;
+
+/**
  * @brief Custom SimpL Service handler
  */
 static ble_simpl_service_t simpl_service = {
@@ -184,6 +190,12 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
             err = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                         BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err);
+            break;
+
+        case BLE_GATTS_EVT_WRITE:
+            if( memcmp(&(p_ble_evt->evt.gatts_evt.params.write.uuid), &rx_char_uuid, sizeof(ble_uuid_t)) == 0 )
+                NRF_LOG_DEBUG("WRITE")
+
             break;
 
         default:
@@ -346,9 +358,11 @@ static sysret_t services_init(void)
     sysret_t ret = RET_OK;
 
     /* setup UUID objects */
-    ble_uuid128_t base_uuid    = { .uuid128 = CUSTOM_BASE_UUID };
-    ble_uuid_t    tx_char_uuid = { CUSTOM_TX_CHARACTERISTIC_UUID, BLE_UUID_TYPE_VENDOR_BEGIN };
-    ble_uuid_t    rx_char_uuid = { CUSTOM_RX_CHARACTERISTIC_UUID, BLE_UUID_TYPE_VENDOR_BEGIN };
+    ble_uuid128_t base_uuid = { .uuid128 = CUSTOM_BASE_UUID };
+    tx_char_uuid.uuid = CUSTOM_TX_CHARACTERISTIC_UUID;
+    tx_char_uuid.type = BLE_UUID_TYPE_VENDOR_BEGIN;
+    rx_char_uuid.uuid = CUSTOM_RX_CHARACTERISTIC_UUID;
+    rx_char_uuid.type = BLE_UUID_TYPE_VENDOR_BEGIN;
 
     /* Add custom UUIDs to BLE stack */
     ret = sd_ble_uuid_vs_add(&base_uuid, &simpl_service.service_uuid.type);
@@ -401,6 +415,7 @@ static sysret_t services_init(void)
     memset(&rx_char_attr_val, 0, sizeof(rx_char_attr_val));
     rx_char_attr_val.p_uuid    = &rx_char_uuid;
     rx_char_attr_val.p_attr_md = &rx_attr_md;
+    rx_char_attr_val.max_len   = 247; /* TODO: magic number */
 
     ret = sd_ble_gatts_characteristic_add(simpl_service.service_handle, &rx_char_md, &rx_char_attr_val, &simpl_service.rx_char_handles);
     SYSRET_CHECK(ret);
