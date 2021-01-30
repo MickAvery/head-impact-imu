@@ -20,6 +20,7 @@ typedef struct
     ble_uuid_t               service_uuid;    /*!< Service UUID */
     ble_gatts_char_handles_t tx_char_handles; /*!< Characteristic handle to be refered to later on */
     ble_gatts_char_handles_t rx_char_handles; /*!< Characteristic handle to be refered to later on */
+    ble_gatts_char_handles_t dev_conf_char_handles; /*!< Characteristic handle to be refered to later on */
 } ble_simpl_service_t;
 
 #ifdef __cplusplus
@@ -32,6 +33,15 @@ extern "C" {
  * @return sysret_t Module status
  */
 sysret_t network_init(void);
+
+/**
+ * On a WRITE REQUEST WITH RESPONSE from the app to the RX characteristic,
+ * this function sends the response back to the app
+ * 
+ * @param buf - Response bytes
+ * @param len - Response length
+ */
+void network_send_response(uint8_t* buf, uint16_t* len);
 
 /**
  * @brief Process BLE CLI

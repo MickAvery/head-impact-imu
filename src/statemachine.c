@@ -5,7 +5,18 @@
  */
 
 #include "statemachine.h"
+#include "network.h"
 #include "nrf_log.h"
+
+/**
+ * @brief Request codes from app
+ */
+typedef enum
+{
+    REQ_GET_ALL_INFO = 0,
+    REQ_SYNC_DATETIME,
+    REQ_UPDATE_CONFIGS
+} requests_t;
 
 /**
  * @brief Device state and configurations, values below are default values
@@ -52,6 +63,39 @@ statemachine_states_t statemachine_getstate(void)
 void statemachine_set_datalogging(bool set)
 {
     dev_state.datalog_en = set;
+}
+
+/**
+ * @brief Handles incoming bytes coming from mobile app
+ * 
+ * @param data - received data
+ * @param size - number of data bytes received
+ */
+void statemachine_ble_data_handler(uint8_t* data, size_t size)
+{
+    ASSERT(data != NULL);
+    ASSERT(size > 0);
+
+    uint8_t request = data[0];
+
+    switch( request )
+    {
+        case REQ_GET_ALL_INFO:
+            NRF_LOG_DEBUG("REQ_GET_ALL_INFO");
+            uint8_t  resp[4] = { 0xDE, 0xAD, 0xBE, 0xEF };
+            uint16_t len     = 4;
+            network_send_response(resp, &len);
+            break;
+
+        case REQ_SYNC_DATETIME:
+            break;
+
+        case REQ_UPDATE_CONFIGS:
+            break;
+
+        default:
+            break;
+    }
 }
 
 /**

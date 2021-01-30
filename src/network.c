@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include "network.h"
+#include "statemachine.h"
 #include "app_timer.h"
 #include "app_error.h"
 #include "nrf_sdh.h"
@@ -70,12 +71,16 @@ static ble_uuid_t advertised_uuids[] =
 #define CUSTOM_TX_CHARACTERISTIC_UUID 0x0002 /*!< Custom 16-bit TX characteristic UUID, based on custom UUID */
 /* 32A20003-ED70-480B-A945-866522F66758 */
 #define CUSTOM_RX_CHARACTERISTIC_UUID 0x0003 /*!< Custom 16-bit RX characteristic UUID, based on custom UUID */
+/* 32A20004-ED70-480B-A945-866522F66758 */
+#define DEVCONF_CHARACTERISTIC_UUID   0x0004 /*!< Custom 16-bit RX characteristic UUID, based on custom UUID */
+
 
 /**
  * @brief Characteristic UUIDs
  */
 static ble_uuid_t tx_char_uuid;
 static ble_uuid_t rx_char_uuid;
+static ble_uuid_t dev_conf_char_uuid;
 
 /**
  * @brief Custom SimpL Service handler
@@ -134,13 +139,37 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
             conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 
             /* Initialize Nordic UART Service (NUS) */
-            nrf_cli_ble_uart_config_t config = { .conn_handle = conn_handle };
+            // nrf_cli_ble_uart_config_t config = { .conn_handle = conn_handle };
 
-            err = nrf_cli_init(&cli_ble, &config,
-                                    false, /* colored prints disabled */
-                                    true,  /* CLI to be used as logger backend */
-                                    NRF_LOG_SEVERITY_DEBUG);
-            APP_ERROR_CHECK(err);
+            // err = nrf_cli_init(&cli_ble, &config,
+            //                         false, /* colored prints disabled */
+            //                         true,  /* CLI to be used as logger backend */
+            //                         NRF_LOG_SEVERITY_DEBUG);
+            // APP_ERROR_CHECK(err);
+
+            (void)sd_ble_gatts_sys_attr_set(conn_handle, NULL, 0, 0);
+
+            // ble_gatts_value_t test_gatts;
+            // uint8_t testbuf[4] = {0xde, 0xad, 0xbe, 0xef};
+            // uint16_t len = 4;
+
+            // test_gatts.len     = 4;
+            // test_gatts.offset  = 0;
+            // test_gatts.p_value = testbuf;
+            // sd_ble_gatts_value_set(conn_handle, simpl_service.dev_conf_char_handles.value_handle, &test_gatts);
+            // sd_ble_gatts_hvx();
+
+            // ble_gatts_hvx_params_t hvx_params =
+            // {
+            //     .handle = simpl_service.dev_conf_char_handles.value_handle,
+            //     .offset = 0,
+            //     .p_data = testbuf,
+            //     .p_len  = &len,
+            //     .type   = BLE_GATT_HVX_NOTIFICATION
+            // };
+
+            // uint32_t test = sd_ble_gatts_hvx(conn_handle, (const ble_gatts_hvx_params_t*)&hvx_params);
+            // NRF_LOG_DEBUG("HVX - 0x%X", test);
 
             /* Set connection handle for custom service */
             simpl_service.conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
@@ -156,8 +185,8 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
             conn_handle = BLE_CONN_HANDLE_INVALID;
 
             /* Uninitialize Nordic UART Service (NUS) */
-            (void)nrf_cli_stop(&cli_ble);
-            (void)nrf_cli_uninit(&cli_ble);
+            // (void)nrf_cli_stop(&cli_ble);
+            // (void)nrf_cli_uninit(&cli_ble);
 
             /* Reset connection handle for custom service */
             simpl_service.conn_handle = BLE_CONN_HANDLE_INVALID;
@@ -167,6 +196,7 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
         {
+            NRF_LOG_DEBUG("BLE_GAP_EVT_PHY_UPDATE_REQUEST");
             ble_gap_phys_t const phys =
             {
                 .rx_phys = BLE_GAP_PHY_AUTO,
@@ -193,8 +223,14 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
             break;
 
         case BLE_GATTS_EVT_WRITE:
+            NRF_LOG_DEBUG("BLE_GATTS_EVT_WRITE");
             if( memcmp(&(p_ble_evt->evt.gatts_evt.params.write.uuid), &rx_char_uuid, sizeof(ble_uuid_t)) == 0 )
-                NRF_LOG_DEBUG("WRITE")
+            {
+                /* App writes to RX characteristic */
+                uint8_t* data = (uint8_t*)p_ble_evt->evt.gatts_evt.params.write.data;
+                size_t   len  = p_ble_evt->evt.gatts_evt.params.write.len;
+                statemachine_ble_data_handler(data, len);
+            }
 
             break;
 
@@ -359,10 +395,12 @@ static sysret_t services_init(void)
 
     /* setup UUID objects */
     ble_uuid128_t base_uuid = { .uuid128 = CUSTOM_BASE_UUID };
-    tx_char_uuid.uuid = CUSTOM_TX_CHARACTERISTIC_UUID;
-    tx_char_uuid.type = BLE_UUID_TYPE_VENDOR_BEGIN;
-    rx_char_uuid.uuid = CUSTOM_RX_CHARACTERISTIC_UUID;
-    rx_char_uuid.type = BLE_UUID_TYPE_VENDOR_BEGIN;
+    tx_char_uuid.uuid       = CUSTOM_TX_CHARACTERISTIC_UUID;
+    tx_char_uuid.type       = BLE_UUID_TYPE_VENDOR_BEGIN;
+    rx_char_uuid.uuid       = CUSTOM_RX_CHARACTERISTIC_UUID;
+    rx_char_uuid.type       = BLE_UUID_TYPE_VENDOR_BEGIN;
+    dev_conf_char_uuid.uuid = DEVCONF_CHARACTERISTIC_UUID;
+    dev_conf_char_uuid.type = BLE_UUID_TYPE_VENDOR_BEGIN;
 
     /* Add custom UUIDs to BLE stack */
     ret = sd_ble_uuid_vs_add(&base_uuid, &simpl_service.service_uuid.type);
@@ -415,9 +453,29 @@ static sysret_t services_init(void)
     memset(&rx_char_attr_val, 0, sizeof(rx_char_attr_val));
     rx_char_attr_val.p_uuid    = &rx_char_uuid;
     rx_char_attr_val.p_attr_md = &rx_attr_md;
-    rx_char_attr_val.max_len   = 247; /* TODO: magic number */
+    rx_char_attr_val.max_len   = NRF_SDH_BLE_GATT_MAX_MTU_SIZE;
 
     ret = sd_ble_gatts_characteristic_add(simpl_service.service_handle, &rx_char_md, &rx_char_attr_val, &simpl_service.rx_char_handles);
+    SYSRET_CHECK(ret);
+
+    /* Characteristic # 3 : Device Configs characteristic */
+    ble_gatts_char_md_t dev_conf_char_md;
+    memset(&dev_conf_char_md, 0, sizeof(dev_conf_char_md));
+    dev_conf_char_md.char_props.read   = 1;
+    dev_conf_char_md.char_props.notify = 1;
+
+    ble_gatts_attr_md_t dev_conf_attr_md;
+    memset(&dev_conf_attr_md, 0, sizeof(dev_conf_attr_md));
+    dev_conf_attr_md.vloc = BLE_GATTS_VLOC_STACK; /* attribute is to be stored in the SoftDevice stack */
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&dev_conf_attr_md.read_perm);
+
+    ble_gatts_attr_t dev_conf_attr_val;
+    memset(&dev_conf_attr_val, 0, sizeof(dev_conf_attr_val));
+    dev_conf_attr_val.p_uuid    = &dev_conf_char_uuid;
+    dev_conf_attr_val.p_attr_md = &dev_conf_attr_md;
+    dev_conf_attr_val.max_len   = NRF_SDH_BLE_GATT_MAX_MTU_SIZE;
+
+    ret = sd_ble_gatts_characteristic_add(simpl_service.service_handle, &dev_conf_char_md, &dev_conf_attr_val, &simpl_service.dev_conf_char_handles);
     SYSRET_CHECK(ret);
 
     return nrf_cli_ble_uart_service_init();
@@ -522,6 +580,28 @@ sysret_t network_init(void)
 }
 
 /**
+ * On a WRITE REQUEST WITH RESPONSE from the app to the RX characteristic,
+ * this function sends the response back to the app
+ * 
+ * @param buf - Response bytes
+ * @param len - Response length
+ */
+void network_send_response(uint8_t* buf, uint16_t* len)
+{
+    ble_gatts_hvx_params_t hvx_params =
+    {
+        .handle = simpl_service.dev_conf_char_handles.value_handle,
+        .offset = 0,
+        .p_data = buf,
+        .p_len  = len,
+        .type   = BLE_GATT_HVX_NOTIFICATION
+    };
+
+    uint32_t test = sd_ble_gatts_hvx(conn_handle, (const ble_gatts_hvx_params_t*)&hvx_params);
+    NRF_LOG_DEBUG("test = 0x%X", test);
+}
+
+/**
  * @brief Process BLE CLI
  * @note  This function is meant to only be called in shell.c
  */
@@ -532,14 +612,14 @@ void network_cli_process(void)
         case NETWORK_CONNECTED:
             if(cli_ble_transport.p_cb->service_started)
             {
-                nrf_cli_start(&cli_ble);
+                // nrf_cli_start(&cli_ble);
                 network_state = NETWORK_CONNECTED_COMM_STARTED;
             }
 
             break;
 
         case NETWORK_CONNECTED_COMM_STARTED:
-            nrf_cli_process(&cli_ble);
+            // nrf_cli_process(&cli_ble);
             break;
 
         default:

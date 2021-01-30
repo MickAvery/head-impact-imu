@@ -7,6 +7,7 @@
 #ifndef STATE_MACHINE_H
 #define STATE_MACHINE_H
 
+#include <stddef.h>
 #include "retcodes.h"
 #include "icm20649.h"
 
@@ -100,6 +101,14 @@ statemachine_states_t statemachine_getstate(void);
  * @param set - If true, datalogging will start. If false, it will stop
  */
 void statemachine_set_datalogging(bool set);
+
+/**
+ * @brief Handles incoming bytes coming from mobile app
+ * 
+ * @param data - received data
+ * @param size - number of data bytes received
+ */
+void statemachine_ble_data_handler(uint8_t* data, size_t size);
 
 /**
  * @brief State machine iteration, meant to be called in the main loop
