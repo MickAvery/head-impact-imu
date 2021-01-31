@@ -223,7 +223,7 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
             break;
 
         case BLE_GATTS_EVT_WRITE:
-            NRF_LOG_DEBUG("BLE_GATTS_EVT_WRITE");
+            NRF_LOG_DEBUG("BLE_GATTS_EVT_WRITE - 0x%X", p_ble_evt->evt.gatts_evt.params.write.uuid.uuid);
             if( memcmp(&(p_ble_evt->evt.gatts_evt.params.write.uuid), &rx_char_uuid, sizeof(ble_uuid_t)) == 0 )
             {
                 /* App writes to RX characteristic */

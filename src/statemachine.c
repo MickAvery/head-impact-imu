@@ -5,6 +5,7 @@
  */
 
 #include "statemachine.h"
+#include "datetime.h"
 #include "network.h"
 #include "mt25q.h"
 #include "nrf_log.h"
@@ -16,7 +17,9 @@ typedef enum
 {
     REQ_GET_ALL_INFO = 0,
     REQ_SET_CONFIGS,
-    REQ_SET_DATETIME
+    REQ_SET_DATETIME,
+    REQ_START_DATALOG,
+    REQ_STOP_DATALOG
 } requests_t;
 
 /**
@@ -114,6 +117,8 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
     uint16_t len = 0U;
     uint8_t request = data[0];
 
+    NRF_LOG_DEBUG("request = %d | size = %d", request, size);
+
     switch( request )
     {
         case REQ_GET_ALL_INFO:
@@ -123,12 +128,13 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
             break;
 
         case REQ_SET_CONFIGS:
-            NRF_LOG_DEBUG("REQ_SET_CONFIGS - size=%d", size);
+            NRF_LOG_DEBUG("REQ_SET_CONFIGS", size);
 
             /* set preamble */
             metadata.device_configs.preamble = preamble_word;
 
             /* extract configurations */
+            // TODO: maybe memcpy to metadata_bytes???
             metadata.device_configs.datalog_mode = data[1];
             metadata.device_configs.trigger_on   = data[2];
             metadata.device_configs.trigger_axis = data[3];
@@ -153,6 +159,21 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
             break;
 
         case REQ_SET_DATETIME:
+            NRF_LOG_DEBUG("REQ_SET_DATETIME");
+
+            // TODO: maybe make datetime_t a union?
+            datetime_t dt;
+            memcpy(&dt.year, &data[1], sizeof(dt.year));
+            dt.month = data[3];
+            dt.day   = data[4];
+            dt.hr    = data[5];
+            dt.min   = data[6];
+            dt.sec   = data[7];
+            memcpy(&dt.usec, &data[8], sizeof(dt.usec));
+
+            datetime_reset();
+            datetime_set(&dt);
+
             break;
 
         default:
