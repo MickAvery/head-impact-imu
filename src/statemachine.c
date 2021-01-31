@@ -26,16 +26,9 @@ typedef enum
 /**
  * @brief Device state and configurations, values below are default values
  */
-static dev_config_t dev_state =
+static statemachine_t state_machine =
 {
-    .datalog_en        = false,
-    .datalog_mode      = DATALOG_TRIGGER,
-    .trigger_on        = TRIGGER_ON_LIN_ACCELERATION,
-    .trigger_threshold = 0x7FFFFFFF,
-    .sample_rate       = SAMPLE_RATE_100_HZ,
-    .accel_fs          = ICM20649_ACCEL_FS_30g,
-    .gyro_fs           = ICM20649_GYRO_FS_4000dps,
-    .state             = STATE_UNINIT
+    .state = STATE_UNINIT
 };
 
 /**
@@ -46,7 +39,7 @@ static dev_config_t dev_state =
 sysret_t statemachine_init(void)
 {
     NRF_LOG_DEBUG("STATE = INIT");
-    dev_state.state = STATE_INIT;
+    state_machine.state = STATE_INIT;
     return RET_OK;
 }
 
@@ -57,17 +50,7 @@ sysret_t statemachine_init(void)
  */
 statemachine_states_t statemachine_getstate(void)
 {
-    return dev_state.state;
-}
-
-/**
- * @brief Set/Stop datalogging
- * 
- * @param set - If true, datalogging will start. If false, it will stop
- */
-void statemachine_set_datalogging(bool set)
-{
-    dev_state.datalog_en = set;
+    return state_machine.state;
 }
 
 /**
@@ -103,7 +86,7 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
 
             /* save configurations */
             memcpy(
-                GLOBAL_CONFIGS.configs_bytes + sizeof(CONFIGS_FRAME_HEADER),
+                GLOBAL_CONFIGS.configs_bytes + sizeof(CONFIGS_FRAME_HEADER) + 1,
                 &data[1],
                 size-1
             );
@@ -149,7 +132,7 @@ void statemachine_process(void)
 {
     sysret_t ret;
 
-    switch( dev_state.state )
+    switch( state_machine.state )
     {
         case STATE_INIT:
             NRF_LOG_DEBUG("INIT -> IDLE");
@@ -170,25 +153,27 @@ void statemachine_process(void)
                 NRF_LOG_DEBUG("FAILED TO READ CONFIGS - %d", ret);
             }
 
-            dev_state.state = STATE_IDLE;
+            GLOBAL_CONFIGS.device_configs.datalog_en = false;
+
+            state_machine.state = STATE_IDLE;
             break;
 
         case STATE_IDLE:
 
-            if(dev_state.datalog_en)
+            if(GLOBAL_CONFIGS.device_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("IDLE -> WAIT_FOR_TRIGGER");
-                dev_state.state = STATE_WAIT_FOR_TRIGGER;
+                state_machine.state = STATE_WAIT_FOR_TRIGGER;
             }
 
             break;
 
         case STATE_WAIT_FOR_TRIGGER:
 
-            if(!dev_state.datalog_en)
+            if(!GLOBAL_CONFIGS.device_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> IDLE");
-                dev_state.state = STATE_IDLE;
+                state_machine.state = STATE_IDLE;
             }
 
             break;

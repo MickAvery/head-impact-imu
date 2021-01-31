@@ -12,38 +12,6 @@
 #include "icm20649.h"
 
 /**
- * @brief Datalogging mode
- */
-typedef enum
-{
-    DATALOG_TRIGGER = 0,
-    DATALOG_CONTINUOUS
-} dev_datalog_modes_t;
-
-/**
- * @brief Datalogging triggers on this sensor value
- */
-typedef enum
-{
-    TRIGGER_ON_ANG_VELOCITY = 0,
-    TRIGGER_ON_LIN_ACCELERATION
-} dev_trigger_on_t;
-
-/**
- * @brief Rate for datalogging
- */
-typedef enum
-{
-    SAMPLE_RATE_6400_HZ = 0,
-    SAMPLE_RATE_3200_HZ,
-    SAMPLE_RATE_1600_HZ,
-    SAMPLE_RATE_800_HZ,
-    SAMPLE_RATE_400_HZ,
-    SAMPLE_RATE_200_HZ,
-    SAMPLE_RATE_100_HZ
-} dev_sample_rate_t;
-
-/**
  * @brief State machine states
  */
 typedef enum
@@ -67,15 +35,8 @@ typedef enum
  */
 typedef struct
 {
-    bool                  datalog_en;
-    dev_datalog_modes_t   datalog_mode;
-    dev_trigger_on_t      trigger_on;
-    int32_t               trigger_threshold;
-    dev_sample_rate_t     sample_rate;
-    icm20649_accel_fs_t   accel_fs;
-    icm20649_gyro_fs_t    gyro_fs;
     statemachine_states_t state;
-} dev_config_t;
+} statemachine_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -94,13 +55,6 @@ sysret_t statemachine_init(void);
  * @return statemachine_states_t Current state
  */
 statemachine_states_t statemachine_getstate(void);
-
-/**
- * @brief Set/Stop datalogging
- * 
- * @param set - If true, datalogging will start. If false, it will stop
- */
-void statemachine_set_datalogging(bool set);
 
 /**
  * @brief Handles incoming bytes coming from mobile app

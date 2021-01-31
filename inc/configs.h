@@ -8,43 +8,8 @@
 #define CONFIGS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "mt25q.h"
-
-/**
- * @brief Expected header of the configurations frame.
- *
- * After attempting to read configurations from flash memory,
- * check existence of header to see if previous configurations
- * were saved.
- */
-#define CONFIGS_FRAME_HEADER 0xDEADBEEF
-
-/**
- * @brief Size in memory for a configurations frame
- */
-#define CONFIGS_FRAME_SIZE (FLASH_PAGE_SIZE)
-
-/**
- * @brief Definition of a configurations frame
- */
-typedef union
-{
-    struct __attribute__((__packed__)) device_configs
-    {
-        uint32_t header;
-        uint8_t  datalog_mode;
-        uint8_t  trigger_on;
-        uint8_t  trigger_axis;
-        int16_t  threshold_resultant;
-        int16_t  threshold_x;
-        int16_t  threshold_y;
-        int16_t  threshold_z;
-        uint8_t  gyro_sampling_rate;
-        uint8_t  low_g_sampling_rate;
-        uint8_t  high_g_sampling_rate;
-    } device_configs;
-    uint8_t  configs_bytes[CONFIGS_FRAME_SIZE];
-} configs_t;
 
 /**
  * @brief Datalog mode options
@@ -119,11 +84,6 @@ typedef enum
 } configs_high_g_accel_sample_rate_t;
 
 /**
- * @brief Global configurations singleton, can be referenced anywhere
- */
-extern configs_t GLOBAL_CONFIGS;
-
-/**
  * @brief Configuration option strings for logging
  */
 extern char* configs_datalog_mode_strings[CONFIGS_DATALOG_MODE_MAX];
@@ -132,6 +92,48 @@ extern char* configs_trigger_axis_strings[CONFIGS_TRIGGER_AXIS_MAX];
 extern char* configs_gyro_sample_rate_strings[CONFIGS_GYRO_SAMPLE_RATE_MAX];
 extern char* configs_low_g_accel_sample_rate_strings[CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_MAX];
 extern char* configs_high_g_accel_sample_rate_strings[CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX];
+
+/**
+ * @brief Expected header of the configurations frame.
+ *
+ * After attempting to read configurations from flash memory,
+ * check existence of header to see if previous configurations
+ * were saved.
+ */
+#define CONFIGS_FRAME_HEADER 0xDEADBEEF
+
+/**
+ * @brief Size in memory for a configurations frame
+ */
+#define CONFIGS_FRAME_SIZE (FLASH_PAGE_SIZE)
+
+/**
+ * @brief Definition of a configurations frame
+ */
+typedef union
+{
+    struct __attribute__((__packed__)) device_configs
+    {
+        uint32_t header;
+        bool     datalog_en;
+        uint8_t  datalog_mode;
+        uint8_t  trigger_on;
+        uint8_t  trigger_axis;
+        int16_t  threshold_resultant;
+        int16_t  threshold_x;
+        int16_t  threshold_y;
+        int16_t  threshold_z;
+        uint8_t  gyro_sampling_rate;
+        uint8_t  low_g_sampling_rate;
+        uint8_t  high_g_sampling_rate;
+    } device_configs;
+    uint8_t  configs_bytes[CONFIGS_FRAME_SIZE];
+} configs_t;
+
+/**
+ * @brief Global configurations singleton, can be referenced anywhere
+ */
+extern configs_t GLOBAL_CONFIGS;
 
 #ifdef __cplusplus
 extern "C" {

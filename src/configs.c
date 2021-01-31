@@ -5,6 +5,7 @@
  */
 
 #include "configs.h"
+#include "nrf_assert.h"
 
 configs_t GLOBAL_CONFIGS =
 {
@@ -71,7 +72,12 @@ sysret_t configs_get(configs_t* configs)
  */
 sysret_t configs_save(configs_t* configs)
 {
+    ASSERT(configs);
     sysret_t ret;
+
+    /* There's no point in saving datalog_en=TRUE in memory */
+    bool tmp = configs->device_configs.datalog_en;
+    configs->device_configs.datalog_en = false;
 
     /* erase first subsector in flash */
     ret = mt25q_4kB_subsector_erase(0);
@@ -79,5 +85,8 @@ sysret_t configs_save(configs_t* configs)
 
     /* save configs to flash */
     ret = mt25q_page_program(0, GLOBAL_CONFIGS.configs_bytes, CONFIGS_FRAME_SIZE);
+
+    /* restore prior config */
+    configs->device_configs.datalog_en = tmp;
     return ret;
 }

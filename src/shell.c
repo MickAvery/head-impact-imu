@@ -124,7 +124,9 @@ static void configs_show_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
  */
 static void datalog_enable_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
-    statemachine_set_datalogging(true);
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+    GLOBAL_CONFIGS.device_configs.datalog_en = true;
 }
 
 /**
@@ -133,7 +135,9 @@ static void datalog_enable_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
  */
 static void datalog_disable_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
-    statemachine_set_datalogging(false);
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+    GLOBAL_CONFIGS.device_configs.datalog_en = false;
 }
 
 /**
