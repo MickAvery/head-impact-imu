@@ -101,20 +101,12 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
             /* set header */
             GLOBAL_CONFIGS.device_configs.header = CONFIGS_FRAME_HEADER;
 
-            /* extract configurations */
-            // TODO: maybe memcpy to configs_bytes???
-            GLOBAL_CONFIGS.device_configs.datalog_mode = data[1];
-            GLOBAL_CONFIGS.device_configs.trigger_on   = data[2];
-            GLOBAL_CONFIGS.device_configs.trigger_axis = data[3];
-
-            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_resultant, &data[4], sizeof(uint16_t));
-            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_x, &data[6], sizeof(uint16_t));
-            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_y, &data[8], sizeof(uint16_t));
-            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_z, &data[10], sizeof(uint16_t));
-
-            GLOBAL_CONFIGS.device_configs.gyro_sampling_rate   = data[12];
-            GLOBAL_CONFIGS.device_configs.low_g_sampling_rate  = data[13];
-            GLOBAL_CONFIGS.device_configs.high_g_sampling_rate = data[14];
+            /* save configurations */
+            memcpy(
+                GLOBAL_CONFIGS.configs_bytes + sizeof(CONFIGS_FRAME_HEADER),
+                &data[1],
+                size-1
+            );
 
             /* erase first subsector in flash */
             ret = configs_save(&GLOBAL_CONFIGS);
