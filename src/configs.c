@@ -11,6 +11,36 @@ configs_t GLOBAL_CONFIGS =
     .configs_bytes = {0}
 };
 
+char* configs_datalog_mode_strings[CONFIGS_DATALOG_MODE_MAX] =
+{
+    "CONTINUOUS", "TRIGGER"
+};
+
+char* configs_trigger_on_strings[CONFIGS_TRIGGER_ON_MAX] =
+{
+    "LINEAR ACCELERATION", "ANGULAR VELOCITY"
+};
+
+char* configs_trigger_axis_strings[CONFIGS_TRIGGER_AXIS_MAX] =
+{
+    "RESULTANT", "PER AXIS"
+};
+
+char* configs_gyro_sample_rate_strings[CONFIGS_GYRO_SAMPLE_RATE_MAX] =
+{
+    "4500 Hz", "2000 Hz", "1000 Hz", "500 Hz", "250 Hz", "125 Hz"
+};
+
+char* configs_low_g_accel_sample_rate_strings[CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_MAX] =
+{
+    "4500 Hz", "2000 Hz", "1000 Hz", "500 Hz", "250 Hz", "125 Hz"
+};
+
+char* configs_high_g_accel_sample_rate_strings[CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX] =
+{
+    "4500 Hz", "2000 Hz", "1000 Hz", "500 Hz", "250 Hz", "125 Hz"
+};
+
 /**
  * @brief Attempt to get configurations from persistent memory
  * 

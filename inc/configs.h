@@ -47,9 +47,91 @@ typedef union
 } configs_t;
 
 /**
+ * @brief Datalog mode options
+ */
+typedef enum
+{
+    CONFIGS_DATALOG_MODE_CONTINUOUS = 0,
+    CONFIGS_DATALOG_MODE_TRIGGER,
+    CONFIGS_DATALOG_MODE_MAX /*!< not an option */
+} configs_datalog_mode_t;
+
+/**
+ * @brief Trigger on... options
+ */
+typedef enum
+{
+    CONFIGS_TRIGGER_ON_LINEAR_ACC = 0,
+    CONFIGS_TRIGGER_ON_ANG_VELOC,
+    CONFIGS_TRIGGER_ON_MAX /*!< not an option */
+} configs_trigger_on_t;
+
+/**
+ * @brief Trigger axis options
+ */
+typedef enum
+{
+    CONFIGS_TRIGGER_AXIS_RESULTANT = 0,
+    CONFIGS_TRIGGER_AXIS_PER_AXIS,
+    CONFIGS_TRIGGER_AXIS_MAX /*!< not an option */
+} configs_trigger_axis_t;
+
+/**
+ * @brief Gyroscope sampling rate options
+ */
+typedef enum
+{
+    CONFIGS_GYRO_SAMPLE_RATE_4500HZ = 0,
+    CONFIGS_GYRO_SAMPLE_RATE_2000HZ,
+    CONFIGS_GYRO_SAMPLE_RATE_1000HZ,
+    CONFIGS_GYRO_SAMPLE_RATE_500HZ,
+    CONFIGS_GYRO_SAMPLE_RATE_250HZ,
+    CONFIGS_GYRO_SAMPLE_RATE_125HZ,
+    CONFIGS_GYRO_SAMPLE_RATE_MAX /*!< not an option */
+} configs_gyro_sample_rate_t;
+
+/**
+ * @brief Low G Accelerometer sampling rate options
+ */
+typedef enum
+{
+    CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_4500HZ = 0,
+    CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_2000HZ,
+    CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_1000HZ,
+    CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_500HZ,
+    CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_250HZ,
+    CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_125HZ,
+    CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_MAX /*!< not an option */
+} configs_low_g_accel_sample_rate_t;
+
+/**
+ * @brief High G Accelerometer sampling rate options
+ */
+typedef enum
+{
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_4500HZ = 0,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_2000HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_1000HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_500HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_250HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_125HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX /*!< not an option */
+} configs_high_g_accel_sample_rate_t;
+
+/**
  * @brief Global configurations singleton, can be referenced anywhere
  */
 extern configs_t GLOBAL_CONFIGS;
+
+/**
+ * @brief Configuration option strings for logging
+ */
+extern char* configs_datalog_mode_strings[CONFIGS_DATALOG_MODE_MAX];
+extern char* configs_trigger_on_strings[CONFIGS_TRIGGER_ON_MAX];
+extern char* configs_trigger_axis_strings[CONFIGS_TRIGGER_AXIS_MAX];
+extern char* configs_gyro_sample_rate_strings[CONFIGS_GYRO_SAMPLE_RATE_MAX];
+extern char* configs_low_g_accel_sample_rate_strings[CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_MAX];
+extern char* configs_high_g_accel_sample_rate_strings[CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX];
 
 #ifdef __cplusplus
 extern "C" {

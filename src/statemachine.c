@@ -108,7 +108,7 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
                 size-1
             );
 
-            /* erase first subsector in flash */
+            /* save configurations */
             ret = configs_save(&GLOBAL_CONFIGS);
             NRF_LOG_DEBUG("CONFIGS_SAVE = %d", ret);
 

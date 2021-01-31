@@ -18,6 +18,7 @@
 #include "vcnl4040.h"
 #include "mt25q.h"
 #include "network.h"
+#include "configs.h"
 #include "statemachine.h"
 
 /**
@@ -80,6 +81,41 @@ static void hello_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         "Hello World!\n"
         "************\n"
         "\n");
+}
+
+/**
+ * @notapi
+ * @brief Display device configurations
+ */
+static void configs_show_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
+{
+    ASSERT(p_cli);
+    ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
+
+    nrf_cli_fprintf(p_cli, NRF_CLI_VT100_COLOR_DEFAULT,
+        "\n"
+        "              Datalog mode : [ %s ]\n"
+        "                Trigger on : [ %s ]\n"
+        "              Trigger axis : [ %s ]\n"
+        "     Threshold (resultant) : [ %d ]\n"
+        "             Threshold (X) : [ %d ]\n"
+        "             Threshold (Y) : [ %d ]\n"
+        "             Threshold (Z) : [ %d ]\n"
+        "        Gyro Sampling Rate : [ %s ]\n"
+        " Low G Accel Sampling Rate : [ %s ]\n"
+        "High G Accel Sampling Rate : [ %s ]\n"
+        "\n",
+        configs_datalog_mode_strings            [ GLOBAL_CONFIGS.device_configs.datalog_mode ],
+        configs_trigger_on_strings              [ GLOBAL_CONFIGS.device_configs.trigger_on ],
+        configs_trigger_axis_strings            [ GLOBAL_CONFIGS.device_configs.trigger_axis ],
+        GLOBAL_CONFIGS.device_configs.threshold_resultant,
+        GLOBAL_CONFIGS.device_configs.threshold_x,
+        GLOBAL_CONFIGS.device_configs.threshold_y,
+        GLOBAL_CONFIGS.device_configs.threshold_z,
+        configs_gyro_sample_rate_strings        [ GLOBAL_CONFIGS.device_configs.gyro_sampling_rate],
+        configs_low_g_accel_sample_rate_strings [ GLOBAL_CONFIGS.device_configs.low_g_sampling_rate ],
+        configs_high_g_accel_sample_rate_strings[ GLOBAL_CONFIGS.device_configs.high_g_sampling_rate ]
+    );
 }
 
 /**
@@ -401,6 +437,12 @@ static void sysprop_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
  * Register the systest subcommands, pair them to their command names using NRF5's API
  ***************************************************************************************/
 
+NRF_CLI_CREATE_STATIC_SUBCMD_SET(configs_subcmds)
+{
+    NRF_CLI_CMD(show, NULL, "Display device configurations", configs_show_cmd),
+    NRF_CLI_SUBCMD_SET_END
+};
+
 NRF_CLI_CREATE_STATIC_SUBCMD_SET(datalog_subcmds)
 {
     NRF_CLI_CMD(disable, NULL, "Disable datalogging", datalog_disable_cmd),
@@ -460,6 +502,7 @@ NRF_CLI_CREATE_STATIC_SUBCMD_SET(storage_subcmds)
  ***************************************************************************************/
 
 NRF_CLI_CMD_REGISTER(hello, NULL, "Test shell interface", hello_cmd);
+NRF_CLI_CMD_REGISTER(configs, &configs_subcmds, "Configurations commands", NULL);
 NRF_CLI_CMD_REGISTER(datalog, &datalog_subcmds, "Enable/Disable datalogging", NULL);
 NRF_CLI_CMD_REGISTER(datetime, &datetime_subcmds, "Datetime API for setting and getting datetime", NULL);
 NRF_CLI_CMD_REGISTER(sensor, &sensor_subcmds, "Sensor values and configurations", NULL);
