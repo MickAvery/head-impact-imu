@@ -228,12 +228,15 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
                 p_ble_evt->evt.gatts_evt.params.write.uuid.uuid,
                 p_ble_evt->evt.gatts_evt.params.write.uuid.type);
 
-            if( memcmp(&(p_ble_evt->evt.gatts_evt.params.write.uuid), &rx_char_uuid, sizeof(ble_uuid_t)) == 0 )
+            ble_uuid_t incoming_uuid = p_ble_evt->evt.gatts_evt.params.write.uuid;
+
+            /* check if writing to RX characteristic */
+            if( incoming_uuid.type == rx_char_uuid.type && incoming_uuid.uuid == rx_char_uuid.uuid )
             {
                 /* App writes to RX characteristic */
-                uint8_t* data = (uint8_t*)p_ble_evt->evt.gatts_evt.params.write.data;
-                size_t   len  = p_ble_evt->evt.gatts_evt.params.write.len;
-                statemachine_ble_data_handler(data, len);
+                statemachine_ble_data_handler(
+                    (uint8_t*)p_ble_evt->evt.gatts_evt.params.write.data,
+                    p_ble_evt->evt.gatts_evt.params.write.len);
             }
 
             break;
@@ -446,7 +449,7 @@ static sysret_t services_init(void)
     ble_gatts_char_md_t rx_char_md;
     memset(&rx_char_md, 0, sizeof(rx_char_md));
     rx_char_md.char_props.write = 1; /* allow mobile app to write to this characteristic */
-    rx_char_md.char_props.write_wo_resp = 1; /* allow mobile app to write to this characteristic without response */
+    // rx_char_md.char_props.write_wo_resp = 1; /* allow mobile app to write to this characteristic without response */
 
     ble_gatts_attr_md_t rx_attr_md;
     memset(&rx_attr_md, 0, sizeof(rx_attr_md));
