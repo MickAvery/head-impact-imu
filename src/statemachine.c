@@ -202,7 +202,7 @@ void statemachine_process(void)
             if(!GLOBAL_CONFIGS.device_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("DATALOGGING -> WAIT_FOR_TRIGGER");
-                state_machine.state = STATE_IDLE;
+                state_machine.state = STATE_WAIT_FOR_TRIGGER;
             }
             break;
 
