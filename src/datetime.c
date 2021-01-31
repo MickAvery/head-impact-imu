@@ -141,11 +141,10 @@ sysret_t datetime_set(datetime_t* datetime_in)
  */
 sysret_t datetime_reset(void)
 {
-    sysret_t ret = RET_ERR;
+    nrf_drv_rtc_overflow_disable(&rtc);
+    nrf_drv_rtc_disable(&rtc);
 
-    /* TODO */
-
-    return ret;
+    return RET_OK;
 }
 
 /**

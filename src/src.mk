@@ -5,4 +5,5 @@ $(SRC_PATH)/datetime.c \
 $(SRC_PATH)/shell.c    \
 $(SRC_PATH)/retcodes.c \
 $(SRC_PATH)/network.c  \
-$(SRC_PATH)/statemachine.c
+$(SRC_PATH)/statemachine.c \
+$(SRC_PATH)/configs.c

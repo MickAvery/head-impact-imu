@@ -10,6 +10,12 @@
 #include "nrf_gpio.h"
 
 /**
+ * @brief NRF52 chip is limited to 255-byte transfers at a time, see:
+ *        https://devzone.nordicsemi.com/f/nordic-q-a/49699/nrf52832-spi-master-s-max-transfer-size-at-once-is-255
+ */
+#define NRF52_MAX_SPIM_TRANSFER_SIZE 255U
+
+/**
  * @brief SPI instances used by system
  */
 static const nrf_drv_spi_t spi0 = NRF_DRV_SPI_INSTANCE(SPI0_PERIPH);
@@ -188,14 +194,12 @@ sysret_t spi_transfer(
  * @param addr - Address to reference from flash chip
  * @param txbuf - bytes to transmit
  * @param txn - number of bytes to transmit
- * @param rxbuf - buffer to receive bytes
- * @param rxn - number of bytes to store in rxbuf
  * @return sysret_t - Module status
  */
-sysret_t spi_flash_transfer(
+sysret_t spi_flash_transmit(
     spi_instance_t instance, spi_devs_t dev,
     uint8_t cmd, uint32_t addr,
-    void* txbuf, size_t txn, void* rxbuf, size_t rxn)
+    uint8_t* txbuf, size_t txn)
 {
     ASSERT(instance < SPI_INSTANCE_MAX);
     ASSERT(dev < SPI_DEV_MAX);
@@ -223,8 +227,82 @@ sysret_t spi_flash_transfer(
         /* failed to send command */
     } else if((ret = nrf_drv_spi_transfer(spi, (uint8_t*)&addr, sizeof(addr), NULL, 0U)) != RET_OK) {
         /* failed to send address */
-    } else if((ret = nrf_drv_spi_transfer(spi, txbuf, txn, rxbuf, rxn)) != RET_OK) {
-        /* failed to write/read to address */
+    } else {
+
+        for(size_t i = 0 ; i < txn ; i += NRF52_MAX_SPIM_TRANSFER_SIZE)
+        {
+
+            uint8_t size = NRF52_MAX_SPIM_TRANSFER_SIZE;
+
+            if( (txn - i) < NRF52_MAX_SPIM_TRANSFER_SIZE )
+                size = txn - i;
+
+            if((ret = nrf_drv_spi_transfer(spi, &txbuf[i], size, NULL, 0)) != RET_OK)
+                break;
+        }
+
+    }
+    nrf_gpio_pin_set(pin);
+
+    return ret;
+}
+
+/**
+ * @brief Flash-specific SPI bus transfer, specifying address
+ * 
+ * @param instance - SPI bus to read from
+ * @param dev - Specify device to determine correct CS pin
+ * @param cmd - Command to send to flash chip
+ * @param addr - Address to reference from flash chip
+ * @param rxbuf - buffer to receive bytes
+ * @param rxn - number of bytes to store in rxbuf
+ * @return sysret_t - Module status
+ */
+sysret_t spi_flash_receive(
+    spi_instance_t instance, spi_devs_t dev,
+    uint8_t cmd, uint32_t addr,
+    uint8_t* rxbuf, size_t rxn)
+{
+    ASSERT(instance < SPI_INSTANCE_MAX);
+    ASSERT(dev < SPI_DEV_MAX);
+
+    sysret_t ret = RET_ERR;
+    addr = htonl(addr);
+
+    nrf_drv_spi_t const * const spi = (instance == SPI_INSTANCE_0) ? &(spi0) : &(spi2);
+    uint8_t pin = cs_pins[dev];
+
+    /**
+     * @note see function doc above to know why we do this...
+     */
+    if(instance == SPI_INSTANCE_2)
+    {
+        ret = spi2_lock(dev);
+        SYSRET_CHECK(ret);
+    }
+
+    /**
+     * Initiate transfer, manually reset and set CS pin
+     */
+    nrf_gpio_pin_clear(pin);
+    if((ret = nrf_drv_spi_transfer(spi, &cmd, 1U, NULL, 0U)) != RET_OK) {
+        /* failed to send command */
+    } else if((ret = nrf_drv_spi_transfer(spi, (uint8_t*)&addr, sizeof(addr), NULL, 0U)) != RET_OK) {
+        /* failed to send address */
+    } else {
+
+        for(size_t i = 0 ; i < rxn ; i += NRF52_MAX_SPIM_TRANSFER_SIZE)
+        {
+
+            uint8_t size = NRF52_MAX_SPIM_TRANSFER_SIZE;
+
+            if( (rxn - i) < NRF52_MAX_SPIM_TRANSFER_SIZE )
+                size = rxn - i;
+
+            if((ret = nrf_drv_spi_transfer(spi, NULL, 0, (uint8_t*)&rxbuf[i], size)) != RET_OK)
+                break;
+        }
+
     }
     nrf_gpio_pin_set(pin);
 

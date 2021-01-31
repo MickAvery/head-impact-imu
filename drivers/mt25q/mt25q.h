@@ -8,6 +8,7 @@
 #define MT25Q_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include "retcodes.h"
 
 /**
@@ -70,6 +71,33 @@ sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n);
  * @return sysret_t - Driver status
  */
 sysret_t mt25q_read(uint32_t address, uint8_t* buf, size_t n);
+
+/**
+ * @brief Set device bits of a 32kB subsector with a given adress to 0xFF.
+ *        Any address within a specific subsector is valid.
+ * 
+ * @param address Any address within a specific sector
+ * @return sysret_t Driver status
+ */
+sysret_t mt25q_32kB_subsector_erase(uint32_t address);
+
+/**
+ * @brief Set device bits of a 4kB subsector with a given adress to 0xFF.
+ *        Any address within a specific subsector is valid.
+ * 
+ * @param address Any address within a specific subsector
+ * @return sysret_t Driver status
+ */
+sysret_t mt25q_4kB_subsector_erase(uint32_t address);
+
+/**
+ * @brief Set device bits of a 64kB sector with a given adress to 0xFF.
+ *        Any address within a specific sector is valid.
+ * 
+ * @param address Any address within a specific sector
+ * @return sysret_t Driver status
+ */
+sysret_t mt25q_64kB_sector_erase(uint32_t address);
 
 /**
  * @brief Set device bits to 0xFF. Needless to say this is irreversible.

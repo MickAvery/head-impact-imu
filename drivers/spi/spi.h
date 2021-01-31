@@ -64,14 +64,28 @@ sysret_t spi_transfer(spi_instance_t instance, spi_devs_t dev, void* txbuf, size
  * @param addr - Address to reference from flash chip
  * @param txbuf - bytes to transmit
  * @param txn - number of bytes to transmit
+ * @return sysret_t - Module status
+ */
+sysret_t spi_flash_transmit(
+    spi_instance_t instance, spi_devs_t dev,
+    uint8_t cmd, uint32_t addr,
+    uint8_t* txbuf, size_t txn);
+
+/**
+ * @brief Flash-specific SPI bus transfer, specifying address
+ * 
+ * @param instance - SPI bus to read from
+ * @param dev - Specify device to determine correct CS pin
+ * @param cmd - Command to send to flash chip
+ * @param addr - Address to reference from flash chip
  * @param rxbuf - buffer to receive bytes
  * @param rxn - number of bytes to store in rxbuf
  * @return sysret_t - Module status
  */
-sysret_t spi_flash_transfer(
+sysret_t spi_flash_receive(
     spi_instance_t instance, spi_devs_t dev,
     uint8_t cmd, uint32_t addr,
-    void* txbuf, size_t txn, void* rxbuf, size_t rxn);
+    uint8_t* rxbuf, size_t rxn);
 
 #ifdef __cplusplus
 }
