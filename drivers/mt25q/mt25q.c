@@ -277,6 +277,87 @@ sysret_t mt25q_read(uint32_t address, uint8_t* buf, size_t n)
 }
 
 /**
+ * @brief Set device bits of a 32kB subsector with a given adress to 0xFF.
+ *        Any address within a specific subsector is valid.
+ * 
+ * @param address Any address within a specific sector
+ * @return sysret_t Driver status
+ */
+sysret_t mt25q_32kB_subsector_erase(uint32_t address)
+{
+    sysret_t ret = RET_ERR;
+
+    /* enable write for ERASE command */
+    ret = write_enable();
+    SYSRET_CHECK(ret);
+
+    ret = spi_flash_transmit(
+        SPI_INSTANCE_2, SPI_DEV_MT25Q,
+        MT25Q_32KB_SUBSECTOR_ERASE_CMD, address,
+        NULL, 0);
+    SYSRET_CHECK(ret);
+
+    /* wait for PROGRAM to complete */
+    ret = wait_for_write_complete(WRITE_PROG);
+
+    return ret;
+}
+
+/**
+ * @brief Set device bits of a 4kB subsector with a given adress to 0xFF.
+ *        Any address within a specific subsector is valid.
+ * 
+ * @param address Any address within a specific subsector
+ * @return sysret_t Driver status
+ */
+sysret_t mt25q_4kB_subsector_erase(uint32_t address)
+{
+    sysret_t ret = RET_ERR;
+
+    /* enable write for ERASE command */
+    ret = write_enable();
+    SYSRET_CHECK(ret);
+
+    ret = spi_flash_transmit(
+        SPI_INSTANCE_2, SPI_DEV_MT25Q,
+        MT25Q_4KB_SUBSECTOR_ERASE_CMD, address,
+        NULL, 0);
+    SYSRET_CHECK(ret);
+
+    /* wait for PROGRAM to complete */
+    ret = wait_for_write_complete(WRITE_PROG);
+
+    return ret;
+}
+
+/**
+ * @brief Set device bits of a 64kB sector with a given adress to 0xFF.
+ *        Any address within a specific sector is valid.
+ * 
+ * @param address Any address within a specific sector
+ * @return sysret_t Driver status
+ */
+sysret_t mt25q_64kB_sector_erase(uint32_t address)
+{
+    sysret_t ret = RET_ERR;
+
+    /* enable write for ERASE command */
+    ret = write_enable();
+    SYSRET_CHECK(ret);
+
+    ret = spi_flash_transmit(
+        SPI_INSTANCE_2, SPI_DEV_MT25Q,
+        MT25Q_SECTOR_ERASE_CMD, address,
+        NULL, 0);
+    SYSRET_CHECK(ret);
+
+    /* wait for PROGRAM to complete */
+    ret = wait_for_write_complete(WRITE_PROG);
+
+    return ret;
+}
+
+/**
  * @brief Set device bits to 0xFF. Needless to say this is irreversible.
  * 
  * @return sysret_t - Driver status

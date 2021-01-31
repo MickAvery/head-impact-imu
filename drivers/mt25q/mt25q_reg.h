@@ -26,6 +26,9 @@
 
 #define MT25Q_4B_PAGE_PROG_CMD         0x12U /*!< Command for 4-Byte page program, allowing to use entire 256Mb/32MB capacity */
 
+#define MT25Q_32KB_SUBSECTOR_ERASE_CMD 0x52U /*!< Command to perform a 32 KB SUBSECTOR ERASE at a given address */
+#define MT25Q_4KB_SUBSECTOR_ERASE_CMD  0x20U /*!< Command to perform a 4 KB SUBSECTOR ERASE at a given address */
+#define MT25Q_SECTOR_ERASE_CMD         0xD8U /*!< Command to perform a 64KB SECTOR ERASE at a given address */
 #define MT25Q_BULK_ERASE_CMD           0xC7U /*!< Command to perfrom BULK ERASE */
 
 #define MT25Q_ENTER_4B_ADDR_CMD        0xB7U /*!< Command to enter 4-Byte address mode */
