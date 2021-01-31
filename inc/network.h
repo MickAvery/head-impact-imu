@@ -40,13 +40,14 @@ extern "C" {
 sysret_t network_init(void);
 
 /**
- * On a WRITE REQUEST WITH RESPONSE from the app to the RX characteristic,
+ * On a WRITE REQUEST WITH RESPONSE from the app to the Device Configurations Characteristic,
  * this function sends the response back to the app
  * 
  * @param buf - Response bytes
  * @param len - Response length
+ * @return sysret_t Driver status
  */
-void network_send_response(uint8_t* buf, uint16_t* len);
+sysret_t network_set_dev_conf_char_response(uint8_t* buf, uint16_t* len);
 
 /**
  * @brief Process BLE CLI

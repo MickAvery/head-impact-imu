@@ -116,6 +116,7 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
 
     uint16_t len = 0U;
     uint8_t request = data[0];
+    sysret_t ret = RET_ERR;
 
     NRF_LOG_DEBUG("request = %d | size = %d", request, size);
 
@@ -148,13 +149,16 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
             metadata.device_configs.low_g_sampling_rate  = data[13];
             metadata.device_configs.high_g_sampling_rate = data[14];
 
+            /* erase first subsector in flash */
+            ret = mt25q_4kB_subsector_erase(0);
+            NRF_LOG_DEBUG("FLASH_ERASE = %d", ret);
             /* save configs to flash */
-            sysret_t ret = mt25q_page_program(0, metadata.metadata_bytes, METADATA_SIZE);
-            NRF_LOG_DEBUG("FLASH_RET = %d", ret);
+            ret = mt25q_page_program(0, metadata.metadata_bytes, METADATA_SIZE);
+            NRF_LOG_DEBUG("FLASH_WRITE = %d", ret);
 
             /* update characteristic attribute */
             len = NRF_SDH_BLE_GATT_MAX_MTU_SIZE;
-            network_send_response(metadata.metadata_bytes, &len);
+            (void)network_set_dev_conf_char_response(metadata.metadata_bytes, &len);
 
             break;
 

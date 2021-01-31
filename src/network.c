@@ -223,7 +223,11 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
             break;
 
         case BLE_GATTS_EVT_WRITE:
-            NRF_LOG_DEBUG("BLE_GATTS_EVT_WRITE - 0x%X", p_ble_evt->evt.gatts_evt.params.write.uuid.uuid);
+            NRF_LOG_DEBUG(
+                "BLE_GATTS_EVT_WRITE - 0x%X -- 0x%X",
+                p_ble_evt->evt.gatts_evt.params.write.uuid.uuid,
+                p_ble_evt->evt.gatts_evt.params.write.uuid.type);
+
             if( memcmp(&(p_ble_evt->evt.gatts_evt.params.write.uuid), &rx_char_uuid, sizeof(ble_uuid_t)) == 0 )
             {
                 /* App writes to RX characteristic */
@@ -580,13 +584,14 @@ sysret_t network_init(void)
 }
 
 /**
- * On a WRITE REQUEST WITH RESPONSE from the app to the RX characteristic,
+ * On a WRITE REQUEST WITH RESPONSE from the app to the Device Configurations Characteristic,
  * this function sends the response back to the app
  * 
  * @param buf - Response bytes
  * @param len - Response length
+ * @return sysret_t Driver status
  */
-void network_send_response(uint8_t* buf, uint16_t* len)
+sysret_t network_set_dev_conf_char_response(uint8_t* buf, uint16_t* len)
 {
     ble_gatts_hvx_params_t hvx_params =
     {
@@ -597,8 +602,7 @@ void network_send_response(uint8_t* buf, uint16_t* len)
         .type   = BLE_GATT_HVX_NOTIFICATION
     };
 
-    uint32_t test = sd_ble_gatts_hvx(conn_handle, (const ble_gatts_hvx_params_t*)&hvx_params);
-    NRF_LOG_DEBUG("test = 0x%X", test);
+    return sd_ble_gatts_hvx(conn_handle, (const ble_gatts_hvx_params_t*)&hvx_params);
 }
 
 /**
