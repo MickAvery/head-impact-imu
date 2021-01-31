@@ -81,6 +81,8 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
         case REQ_SET_CONFIGS:
             NRF_LOG_DEBUG("REQ_SET_CONFIGS", size);
 
+            /* TODO: make sure configs can only be set when IDLE */
+
             /* set header */
             GLOBAL_CONFIGS.device_configs.header = CONFIGS_FRAME_HEADER;
 
