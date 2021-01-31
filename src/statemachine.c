@@ -120,6 +120,20 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
 
             break;
 
+        case REQ_START_DATALOG:
+            NRF_LOG_DEBUG("REQ_START_DATALOG");
+
+            GLOBAL_CONFIGS.device_configs.datalog_en = true;
+
+            break;
+
+        case REQ_STOP_DATALOG:
+            NRF_LOG_DEBUG("REQ_STOP_DATALOG");
+
+            GLOBAL_CONFIGS.device_configs.datalog_en = false;
+
+            break;
+
         default:
             break;
     }
@@ -175,11 +189,21 @@ void statemachine_process(void)
                 NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> IDLE");
                 state_machine.state = STATE_IDLE;
             }
+            else if(GLOBAL_CONFIGS.device_configs.datalog_mode == CONFIGS_DATALOG_MODE_CONTINUOUS)
+            {
+                NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> DATALOGGING");
+                state_machine.state = STATE_DATALOGGING;
+            }
 
             break;
 
         case STATE_DATALOGGING:
-            /* TODO */
+
+            if(!GLOBAL_CONFIGS.device_configs.datalog_en)
+            {
+                NRF_LOG_DEBUG("DATALOGGING -> WAIT_FOR_TRIGGER");
+                state_machine.state = STATE_IDLE;
+            }
             break;
 
         case STATE_LOW_POWER:
