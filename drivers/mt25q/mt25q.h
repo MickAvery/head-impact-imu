@@ -8,6 +8,7 @@
 #define MT25Q_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include "retcodes.h"
 
 /**
