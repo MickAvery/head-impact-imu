@@ -11,6 +11,11 @@
 #include "ble_gatts.h"
 
 /**
+ * @brief Max BLE ATT payload size is ATT_MTU (=247 bytes) size minus ATT Header size (=3 bytes)
+ */
+#define NETWORK_BLE_MAX_ATT_PAYLOAD_SIZE (247U - 3U)
+
+/**
  * @brief BLE custom service definition (name = SimpL Service)
  */
 typedef struct
