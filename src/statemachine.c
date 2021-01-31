@@ -7,6 +7,7 @@
 #include "statemachine.h"
 #include "datetime.h"
 #include "network.h"
+#include "configs.h"
 #include "mt25q.h"
 #include "nrf_log.h"
 
@@ -36,40 +37,6 @@ static dev_config_t dev_state =
     .gyro_fs           = ICM20649_GYRO_FS_4000dps,
     .state             = STATE_UNINIT
 };
-
-/**
- * @brief If this preamble exists as first few bytes in flash memory, then
- *        metadata exists for device
- */
-static uint32_t preamble_word = 0xDEADBEEF;
-
-/**
- * @brief Size of metadata in flash,
- *        ideally occupies entire first page in flash
- */
-#define METADATA_SIZE (FLASH_PAGE_SIZE)
-
-/**
- * @brief 
- */
-union
-{
-    struct __attribute__((__packed__)) device_configs
-    {
-        uint32_t preamble;
-        uint8_t  datalog_mode;
-        uint8_t  trigger_on;
-        uint8_t  trigger_axis;
-        int16_t  threshold_resultant;
-        int16_t  threshold_x;
-        int16_t  threshold_y;
-        int16_t  threshold_z;
-        uint8_t  gyro_sampling_rate;
-        uint8_t  low_g_sampling_rate;
-        uint8_t  high_g_sampling_rate;
-    } device_configs;
-    uint8_t  metadata_bytes[METADATA_SIZE];
-} metadata;
 
 /**
  * @brief Initialize system state machine module
@@ -125,40 +92,38 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
         case REQ_GET_ALL_INFO:
             NRF_LOG_DEBUG("REQ_GET_ALL_INFO");
             len = NRF_SDH_BLE_GATT_MAX_MTU_SIZE;
-            network_send_response(metadata.metadata_bytes, &len);
+            network_set_dev_conf_char_response(GLOBAL_CONFIGS.configs_bytes, &len);
             break;
 
         case REQ_SET_CONFIGS:
             NRF_LOG_DEBUG("REQ_SET_CONFIGS", size);
 
-            /* set preamble */
-            metadata.device_configs.preamble = preamble_word;
+            /* set header */
+            GLOBAL_CONFIGS.device_configs.header = CONFIGS_FRAME_HEADER;
 
             /* extract configurations */
-            // TODO: maybe memcpy to metadata_bytes???
-            metadata.device_configs.datalog_mode = data[1];
-            metadata.device_configs.trigger_on   = data[2];
-            metadata.device_configs.trigger_axis = data[3];
+            // TODO: maybe memcpy to configs_bytes???
+            GLOBAL_CONFIGS.device_configs.datalog_mode = data[1];
+            GLOBAL_CONFIGS.device_configs.trigger_on   = data[2];
+            GLOBAL_CONFIGS.device_configs.trigger_axis = data[3];
 
-            memcpy(&metadata.device_configs.threshold_resultant, &data[4], sizeof(uint16_t));
-            memcpy(&metadata.device_configs.threshold_x, &data[6], sizeof(uint16_t));
-            memcpy(&metadata.device_configs.threshold_y, &data[8], sizeof(uint16_t));
-            memcpy(&metadata.device_configs.threshold_z, &data[10], sizeof(uint16_t));
+            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_resultant, &data[4], sizeof(uint16_t));
+            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_x, &data[6], sizeof(uint16_t));
+            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_y, &data[8], sizeof(uint16_t));
+            memcpy(&GLOBAL_CONFIGS.device_configs.threshold_z, &data[10], sizeof(uint16_t));
 
-            metadata.device_configs.gyro_sampling_rate   = data[12];
-            metadata.device_configs.low_g_sampling_rate  = data[13];
-            metadata.device_configs.high_g_sampling_rate = data[14];
+            GLOBAL_CONFIGS.device_configs.gyro_sampling_rate   = data[12];
+            GLOBAL_CONFIGS.device_configs.low_g_sampling_rate  = data[13];
+            GLOBAL_CONFIGS.device_configs.high_g_sampling_rate = data[14];
 
             /* erase first subsector in flash */
-            ret = mt25q_4kB_subsector_erase(0);
-            NRF_LOG_DEBUG("FLASH_ERASE = %d", ret);
-            /* save configs to flash */
-            ret = mt25q_page_program(0, metadata.metadata_bytes, METADATA_SIZE);
-            NRF_LOG_DEBUG("FLASH_WRITE = %d", ret);
+            ret = configs_save(&GLOBAL_CONFIGS);
+            NRF_LOG_DEBUG("CONFIGS_SAVE = %d", ret);
 
             /* update characteristic attribute */
             len = NRF_SDH_BLE_GATT_MAX_MTU_SIZE;
-            (void)network_set_dev_conf_char_response(metadata.metadata_bytes, &len);
+            ret = network_set_dev_conf_char_response(GLOBAL_CONFIGS.configs_bytes, &len);
+            NRF_LOG_DEBUG("ATT_UPDATE = %d", ret);
 
             break;
 
@@ -190,21 +155,27 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
  */
 void statemachine_process(void)
 {
+    sysret_t ret;
+
     switch( dev_state.state )
     {
         case STATE_INIT:
             NRF_LOG_DEBUG("INIT -> IDLE");
 
-            /* readf metadata from flash */
-            mt25q_read(0, metadata.metadata_bytes, METADATA_SIZE);
+            /* read existing configs from memory */
+            ret = configs_get(&GLOBAL_CONFIGS);
 
-            if(metadata.device_configs.preamble == preamble_word)
+            if(ret == RET_OK)
             {
                 NRF_LOG_DEBUG("EXISTING METADATA IN FLASH");
             }
-            else
+            else if(ret == RET_ERR)
             {
                 NRF_LOG_DEBUG("NO EXISTING METADATA IN FLASH");
+            }
+            else
+            {
+                NRF_LOG_DEBUG("FAILED TO READ CONFIGS - %d", ret);
             }
 
             dev_state.state = STATE_IDLE;
