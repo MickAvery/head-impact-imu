@@ -247,11 +247,10 @@ sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n)
     ret = write_enable();
     SYSRET_CHECK(ret);
 
-    ret = spi_flash_transfer(
+    ret = spi_flash_transmit(
         SPI_INSTANCE_2, SPI_DEV_MT25Q,
         MT25Q_4B_PAGE_PROG_CMD, address,
-        buf, n,
-        NULL, 0U);
+        buf, n);
     SYSRET_CHECK(ret);
 
     /* wait for PROGRAM to complete */
@@ -271,11 +270,10 @@ sysret_t mt25q_page_program(uint32_t address, uint8_t* buf, size_t n)
 sysret_t mt25q_read(uint32_t address, uint8_t* buf, size_t n)
 {
     ASSERT(buf);
-    return spi_flash_transfer(
+    return spi_flash_receive(
         SPI_INSTANCE_2, SPI_DEV_MT25Q,
         MT25Q_4B_READ_CMD, address,
-        NULL, 0U,
-        buf, n+1);
+        buf, n);
 }
 
 /**
