@@ -114,6 +114,19 @@ typedef enum
 /* Module state */
 static network_state_t network_state = NETWORK_UNINIT;
 
+/**
+ * This is set true after a call to @ref network_transmit_file_packet(),
+ * indicating that the SoftDev is currently transmitting a notification.
+ * 
+ * Calls to @ref network_transmit_file_packet() are not allowed while
+ * this flag is true.
+ * 
+ * It is then reset after a @ref BLE_GATTS_EVT_HVN_TX_COMPLETE event,
+ * indicating that the transmission is complete, and
+ * @ref network_transmit_file_packet() can be called again.
+ */
+static bool network_transmission_in_progress = false;
+
 /************************************************
  * EVENT HANDLERS
  ************************************************/
@@ -148,28 +161,6 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
             // APP_ERROR_CHECK(err);
 
             (void)sd_ble_gatts_sys_attr_set(conn_handle, NULL, 0, 0);
-
-            // ble_gatts_value_t test_gatts;
-            // uint8_t testbuf[4] = {0xde, 0xad, 0xbe, 0xef};
-            // uint16_t len = 4;
-
-            // test_gatts.len     = 4;
-            // test_gatts.offset  = 0;
-            // test_gatts.p_value = testbuf;
-            // sd_ble_gatts_value_set(conn_handle, simpl_service.dev_conf_char_handles.value_handle, &test_gatts);
-            // sd_ble_gatts_hvx();
-
-            // ble_gatts_hvx_params_t hvx_params =
-            // {
-            //     .handle = simpl_service.dev_conf_char_handles.value_handle,
-            //     .offset = 0,
-            //     .p_data = testbuf,
-            //     .p_len  = &len,
-            //     .type   = BLE_GATT_HVX_NOTIFICATION
-            // };
-
-            // uint32_t test = sd_ble_gatts_hvx(conn_handle, (const ble_gatts_hvx_params_t*)&hvx_params);
-            // NRF_LOG_DEBUG("HVX - 0x%X", test);
 
             /* Set connection handle for custom service */
             simpl_service.conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
@@ -239,6 +230,11 @@ static void ble_event_handler(ble_evt_t const * p_ble_evt, void * p_context)
                     p_ble_evt->evt.gatts_evt.params.write.len);
             }
 
+            break;
+
+        case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+            // NRF_LOG_DEBUG("BLE_GATTS_EVT_HVN_TX_COMPLETE");
+            network_transmission_in_progress = false;
             break;
 
         default:
@@ -435,12 +431,23 @@ static sysret_t services_init(void)
 
     ble_gatts_attr_md_t tx_attr_md;
     memset(&tx_attr_md, 0, sizeof(tx_attr_md));
-    tx_attr_md.vloc = BLE_GATTS_VLOC_STACK; /* attribute is to be stored in the SoftDevice stack */
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&tx_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&tx_attr_md.write_perm);
+    tx_attr_md.vloc      = BLE_GATTS_VLOC_STACK; /* attribute is to be stored in the SoftDevice stack */
+    tx_char_md.p_cccd_md = &tx_attr_md; /* assign CCCD ATT metadata to characteristic */
+
+    ble_gatts_attr_md_t attr_md;
+    memset(&attr_md, 0, sizeof(attr_md));
+    attr_md.vloc    = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth = 0;
+    attr_md.wr_auth = 0;
+    attr_md.vlen    = 1;
 
     ble_gatts_attr_t    tx_char_attr_val;
     memset(&tx_char_attr_val, 0, sizeof(tx_char_attr_val));
     tx_char_attr_val.p_uuid    = &tx_char_uuid;
-    tx_char_attr_val.p_attr_md = &tx_attr_md;
+    tx_char_attr_val.p_attr_md = &attr_md;
+    tx_char_attr_val.max_len   = NETWORK_BLE_MAX_ATT_PAYLOAD_SIZE;
 
     ret = sd_ble_gatts_characteristic_add(simpl_service.service_handle, &tx_char_md, &tx_char_attr_val, &simpl_service.tx_char_handles);
     SYSRET_CHECK(ret);
@@ -449,7 +456,6 @@ static sysret_t services_init(void)
     ble_gatts_char_md_t rx_char_md;
     memset(&rx_char_md, 0, sizeof(rx_char_md));
     rx_char_md.char_props.write = 1; /* allow mobile app to write to this characteristic */
-    // rx_char_md.char_props.write_wo_resp = 1; /* allow mobile app to write to this characteristic without response */
 
     ble_gatts_attr_md_t rx_attr_md;
     memset(&rx_attr_md, 0, sizeof(rx_attr_md));
@@ -606,6 +612,42 @@ sysret_t network_set_dev_conf_char_response(uint8_t* buf, uint16_t* len)
     };
 
     return sd_ble_gatts_hvx(conn_handle, (const ble_gatts_hvx_params_t*)&hvx_params);
+}
+
+/**
+ * @brief Transmit logdata file packet to mobile app.
+ * 
+ * @note Size of packet depends on ATT_MTU size (see @ref NRF_SDH_BLE_GATT_MAX_MTU_SIZE) minus ATT header bytes.
+ *       Max size is therefore @ref NETWORK_BLE_MAX_ATT_PAYLOAD_SIZE
+ *
+ * @param buf File packet bytes
+ * @param len Size of packet in bytes, max is @ref NETWORK_BLE_MAX_ATT_PAYLOAD_SIZE
+ * @return sysret_t 
+ */
+sysret_t network_transmit_file_packet(uint8_t* buf, uint16_t len)
+{
+    ASSERT(buf);
+
+    sysret_t ret;
+
+    if(network_transmission_in_progress)
+        return RET_ERR;
+
+    ble_gatts_hvx_params_t hvx_params =
+    {
+        .handle = simpl_service.tx_char_handles.value_handle,
+        .offset = 0,
+        .p_data = buf,
+        .p_len  = &len,
+        .type   = BLE_GATT_HVX_NOTIFICATION
+    };
+
+    ret = sd_ble_gatts_hvx(conn_handle, (const ble_gatts_hvx_params_t*)&hvx_params);
+
+    if(ret == RET_OK)
+        network_transmission_in_progress = true;
+
+    return ret;
 }
 
 /**

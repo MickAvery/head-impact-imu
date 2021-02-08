@@ -50,6 +50,18 @@ sysret_t network_init(void);
 sysret_t network_set_dev_conf_char_response(uint8_t* buf, uint16_t* len);
 
 /**
+ * @brief Transmit logdata file packet to mobile app.
+ * 
+ * @note Size of packet depends on ATT_MTU size (see @ref NRF_SDH_BLE_GATT_MAX_MTU_SIZE) minus ATT header bytes.
+ *       Max size is therefore @ref NETWORK_BLE_MAX_ATT_PAYLOAD_SIZE
+ *
+ * @param buf File packet bytes
+ * @param len Size of packet in bytes, max is @ref NETWORK_BLE_MAX_ATT_PAYLOAD_SIZE
+ * @return sysret_t 
+ */
+sysret_t network_transmit_file_packet(uint8_t* buf, uint16_t len);
+
+/**
  * @brief Process BLE CLI
  * @note  This function is meant to only be called in shell.c
  */
