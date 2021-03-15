@@ -35,6 +35,7 @@ typedef enum
  */
 typedef struct
 {
+    bool log_download_requested;
     statemachine_states_t state;
 } statemachine_t;
 
