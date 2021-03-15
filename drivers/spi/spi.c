@@ -62,7 +62,7 @@ static sysret_t spi2_lock(spi_devs_t dev)
 {
     sysret_t ret = RET_OK;
 
-#ifdef PCB_REV_1
+#if defined(PCB_REV_1) || defined(PCB_REV_2)
     /* who currently holds lock SPI2 peripheral? (default=ADXL372) */
     static spi_devs_t cur_dev_lock_owner = SPI_DEV_ADXL372;
     
@@ -82,7 +82,7 @@ static sysret_t spi2_lock(spi_devs_t dev)
         cur_dev_lock_owner = dev;
     }
 
-#endif /* PCB_REV_1 */
+#endif /* defined(PCB_REV_1) || defined(PCB_REV_2) */
 
     return ret;
 }

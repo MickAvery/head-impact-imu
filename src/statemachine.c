@@ -4,6 +4,7 @@
  * @brief State machine to define device behaviour
  */
 
+#include "nrf_delay.h"
 #include "statemachine.h"
 #include "datetime.h"
 #include "network.h"
@@ -20,7 +21,8 @@ typedef enum
     REQ_SET_CONFIGS,
     REQ_SET_DATETIME,
     REQ_START_DATALOG,
-    REQ_STOP_DATALOG
+    REQ_STOP_DATALOG,
+    REQ_LOG_DOWNLOAD
 } requests_t;
 
 /**
@@ -28,6 +30,7 @@ typedef enum
  */
 static statemachine_t state_machine =
 {
+    .log_download_requested = false,
     .state = STATE_UNINIT
 };
 
@@ -74,7 +77,7 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
     {
         case REQ_GET_ALL_INFO:
             NRF_LOG_DEBUG("REQ_GET_ALL_INFO");
-            len = NRF_SDH_BLE_GATT_MAX_MTU_SIZE;
+            len = NRF_SDH_BLE_GATT_MAX_MTU_SIZE - 3; // TODO: make this into a better macro
             network_set_dev_conf_char_response(GLOBAL_CONFIGS.configs_bytes, &len);
             break;
 
@@ -136,6 +139,13 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
 
             break;
 
+        case REQ_LOG_DOWNLOAD:
+            NRF_LOG_DEBUG("REQ_LOG_DOWNLOAD");
+
+            state_machine.log_download_requested = true;
+
+            break;
+
         default:
             break;
     }
@@ -181,6 +191,11 @@ void statemachine_process(void)
                 NRF_LOG_DEBUG("IDLE -> WAIT_FOR_TRIGGER");
                 state_machine.state = STATE_WAIT_FOR_TRIGGER;
             }
+            else if(state_machine.log_download_requested)
+            {
+                NRF_LOG_DEBUG("IDLE -> FILE_TRANSFER");
+                state_machine.state = STATE_FILE_TRANSFER;
+            }
 
             break;
 
@@ -213,8 +228,34 @@ void statemachine_process(void)
             break;
 
         case STATE_FILE_TRANSFER:
-            /* TODO */
+        {
+            uint16_t len = NRF_SDH_BLE_GATT_MAX_MTU_SIZE - 3; // TODO: make this into a better macro
+            uint8_t tx[NRF_SDH_BLE_GATT_MAX_MTU_SIZE - 3] = {0xde, 0xad, 0xbe, 0xef};
+            size_t failed = 0;
+            size_t success = 0;
+            sysret_t ret;
+
+            for(int i = 0 ; i < 256 ; )
+            {
+                ret = network_transmit_file_packet(tx, len);
+                if(ret == RET_OK)
+                {
+                    i++;
+                    success++;
+                }
+                else
+                {
+                    failed++;
+                }
+            }
+
+            NRF_LOG_DEBUG("filetx = 0x%X | success = %d | failed = %d", ret, success, failed);
+
+            NRF_LOG_DEBUG("FILE_TRANSFER -> IDLE");
+            state_machine.log_download_requested = false;
+            state_machine.state = STATE_IDLE;
             break;
+        }
 
         case STATE_FW_UPDATE:
             /* TODO */
