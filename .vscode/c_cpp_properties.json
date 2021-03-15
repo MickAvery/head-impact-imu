@@ -12,12 +12,6 @@
                 "__UINT8_TYPE__=unsigned char",
                 "__INT8_TYPE__=char"
             ],
-            "compilerPath": "C:/ChibiStudio/tools/GNU Tools ARM Embedded/8.0 2018q4/bin/arm-none-eabi-gcc",
-            "compilerArgs": [
-                "-mcpu=cortex-m4",
-                "-mthumb",
-                "-mfloat-abi=hard"
-            ],
             "cStandard": "c99",
             "cppStandard": "c++17",
             "intelliSenseMode": "gcc-arm",
