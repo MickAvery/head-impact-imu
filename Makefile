@@ -159,10 +159,12 @@ ifeq ($(REV), 1)
   CFLAGS += -DPCB_REV_1
 else ifeq ($(REV), 2)
   CFLAGS += -DPCB_REV_2
+else ifeq ($(REV), 3)
+  CFLAGS += -DPCB_REV_3
 else ifeq ($(REV), MDK)
   CFLAGS += -DBOARD_MDK
 else
-  $(error Invalid board revision)
+  CFLAGS += -DPCB_REV_1
 endif
 
 # C flags common to all targets
@@ -254,7 +256,7 @@ pyocdflash:
 # Flash the program using nRF Command Line Tools
 flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
-	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex --sectorerase
+	nrfjprog -f nrf52 --program $(CURDIR)/hex/imu_pack_pcb.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
 # Merge application and softdevice

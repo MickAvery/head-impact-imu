@@ -44,10 +44,12 @@
 extern "C" {
 #endif
 
-#if defined PCB_REV_2
-#include "pin_mappings_rev_2.h"
-#elif defined PCB_REV_1
+#if defined PCB_REV_1
 #include "pin_mappings_rev_1.h"
+#elif defined PCB_REV_2
+#include "pin_mappings_rev_2.h"
+#elif defined PCB_REV_3
+#include "pin_mappings_rev_3.h"
 #elif defined BOARD_MDK
 #include "pin_mappings_mdk.h"
 #else
