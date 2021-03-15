@@ -10,6 +10,7 @@
 #include "network.h"
 #include "configs.h"
 #include "mt25q.h"
+#include "app_timer.h"
 #include "nrf_log.h"
 
 /**
@@ -33,6 +34,36 @@ static statemachine_t state_machine =
     .log_download_requested = false,
     .state = STATE_UNINIT
 };
+
+/**************************************
+ * Variables and configurations related
+ * to the datalog timer
+ **************************************/
+
+/**
+ * @brief datalog timer handle
+ */
+APP_TIMER_DEF(datalog_timer);
+
+/**
+ * @brief Set by @ref datalog_timer_handler() on timer alarm
+ */
+static volatile bool its_time_to_log_data = false;
+
+/**
+ * @notapi
+ * @brief Signify to state machine that it's time for another
+ *        round of datalogging
+ */
+static void datalog_timer_handler(void* p_ctx)
+{
+    (void)p_ctx;
+    its_time_to_log_data = true;
+}
+
+/**************************************
+ * API
+ **************************************/
 
 /**
  * @brief Initialize system state machine module
@@ -179,6 +210,12 @@ void statemachine_process(void)
                 NRF_LOG_DEBUG("FAILED TO READ CONFIGS - %d", ret);
             }
 
+            (void)app_timer_create(
+                &datalog_timer,
+                APP_TIMER_MODE_REPEATED,
+                datalog_timer_handler
+            );
+
             GLOBAL_CONFIGS.device_configs.datalog_en = false;
 
             state_machine.state = STATE_IDLE;
@@ -209,6 +246,14 @@ void statemachine_process(void)
             else if(GLOBAL_CONFIGS.device_configs.datalog_mode == CONFIGS_DATALOG_MODE_CONTINUOUS)
             {
                 NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> DATALOGGING");
+
+                /* start timer */
+                (void)app_timer_start(
+                    datalog_timer,
+                    APP_TIMER_TICKS(1000), // TODO: get this value programatically
+                    NULL
+                );
+
                 state_machine.state = STATE_DATALOGGING;
             }
 
@@ -219,8 +264,16 @@ void statemachine_process(void)
             if(!GLOBAL_CONFIGS.device_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("DATALOGGING -> WAIT_FOR_TRIGGER");
+                (void)app_timer_stop(datalog_timer);
                 state_machine.state = STATE_WAIT_FOR_TRIGGER;
             }
+
+            if(its_time_to_log_data)
+            {
+                NRF_LOG_DEBUG(".");
+                its_time_to_log_data = false;
+            }
+
             break;
 
         case STATE_LOW_POWER:
