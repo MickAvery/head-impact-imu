@@ -108,7 +108,7 @@ extern char* configs_high_g_accel_sample_rate_strings[CONFIGS_HIGH_G_ACCEL_SAMPL
 #define CONFIGS_FRAME_SIZE (FLASH_PAGE_SIZE)
 
 /**
- * @brief  
+ * @brief Device configurations
  */
 typedef struct __attribute__((__packed__))
 {
@@ -133,9 +133,16 @@ typedef union
 {
     struct __attribute__((__packed__))
     {
-        configs_t current_dev_configs; /*!<  */
-        uint32_t  datalog_size;        /*!<  */
-        configs_t datalog_configs;     /*!<  */
+        /* Current device configurations metadata */
+        configs_t current_dev_configs; /*!< Current device configurations */
+
+        /* Schedule-related metadata */
+        /* TODO: scheduling hasn't been implemented yet */
+
+        /* Datalog-related metadata */
+        uint32_t  datalog_header;      /*!< If equal to DEADBEEF, datalog exists */
+        uint32_t  datalog_size;        /*!< Size of saved datalog file */
+        configs_t datalog_configs;     /*!< Device configurations during datalog */
     } device_metadata;
     uint8_t  configs_bytes[CONFIGS_FRAME_SIZE];
 } metadata_t;
