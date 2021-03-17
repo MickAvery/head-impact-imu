@@ -118,7 +118,7 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
             /* TODO: make sure configs can only be set when IDLE */
 
             /* set header */
-            GLOBAL_CONFIGS.device_configs.header = CONFIGS_FRAME_HEADER;
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.header = CONFIGS_FRAME_HEADER;
 
             /* save configurations */
             memcpy(
@@ -159,14 +159,14 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
         case REQ_START_DATALOG:
             NRF_LOG_DEBUG("REQ_START_DATALOG");
 
-            GLOBAL_CONFIGS.device_configs.datalog_en = true;
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = true;
 
             break;
 
         case REQ_STOP_DATALOG:
             NRF_LOG_DEBUG("REQ_STOP_DATALOG");
 
-            GLOBAL_CONFIGS.device_configs.datalog_en = false;
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = false;
 
             break;
 
@@ -216,14 +216,14 @@ void statemachine_process(void)
                 datalog_timer_handler
             );
 
-            GLOBAL_CONFIGS.device_configs.datalog_en = false;
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = false;
 
             state_machine.state = STATE_IDLE;
             break;
 
         case STATE_IDLE:
 
-            if(GLOBAL_CONFIGS.device_configs.datalog_en)
+            if(GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("IDLE -> WAIT_FOR_TRIGGER");
                 state_machine.state = STATE_WAIT_FOR_TRIGGER;
@@ -238,12 +238,12 @@ void statemachine_process(void)
 
         case STATE_WAIT_FOR_TRIGGER:
 
-            if(!GLOBAL_CONFIGS.device_configs.datalog_en)
+            if(!GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> IDLE");
                 state_machine.state = STATE_IDLE;
             }
-            else if(GLOBAL_CONFIGS.device_configs.datalog_mode == CONFIGS_DATALOG_MODE_CONTINUOUS)
+            else if(GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_mode == CONFIGS_DATALOG_MODE_CONTINUOUS)
             {
                 NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> DATALOGGING");
 
@@ -261,7 +261,7 @@ void statemachine_process(void)
 
         case STATE_DATALOGGING:
 
-            if(!GLOBAL_CONFIGS.device_configs.datalog_en)
+            if(!GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("DATALOGGING -> WAIT_FOR_TRIGGER");
                 (void)app_timer_stop(datalog_timer);

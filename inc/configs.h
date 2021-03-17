@@ -108,32 +108,42 @@ extern char* configs_high_g_accel_sample_rate_strings[CONFIGS_HIGH_G_ACCEL_SAMPL
 #define CONFIGS_FRAME_SIZE (FLASH_PAGE_SIZE)
 
 /**
+ * @brief  
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint32_t header;
+    bool     datalog_en;
+    uint8_t  datalog_mode;
+    uint8_t  trigger_on;
+    uint8_t  trigger_axis;
+    int16_t  threshold_resultant;
+    int16_t  threshold_x;
+    int16_t  threshold_y;
+    int16_t  threshold_z;
+    uint8_t  gyro_sampling_rate;
+    uint8_t  low_g_sampling_rate;
+    uint8_t  high_g_sampling_rate;
+} configs_t;
+
+/**
  * @brief Definition of a configurations frame
  */
 typedef union
 {
-    struct __attribute__((__packed__)) device_configs
+    struct __attribute__((__packed__))
     {
-        uint32_t header;
-        bool     datalog_en;
-        uint8_t  datalog_mode;
-        uint8_t  trigger_on;
-        uint8_t  trigger_axis;
-        int16_t  threshold_resultant;
-        int16_t  threshold_x;
-        int16_t  threshold_y;
-        int16_t  threshold_z;
-        uint8_t  gyro_sampling_rate;
-        uint8_t  low_g_sampling_rate;
-        uint8_t  high_g_sampling_rate;
-    } device_configs;
+        configs_t current_dev_configs; /*!<  */
+        uint32_t  datalog_size;        /*!<  */
+        configs_t datalog_configs;     /*!<  */
+    } device_metadata;
     uint8_t  configs_bytes[CONFIGS_FRAME_SIZE];
-} configs_t;
+} metadata_t;
 
 /**
  * @brief Global configurations singleton, can be referenced anywhere
  */
-extern configs_t GLOBAL_CONFIGS;
+extern metadata_t GLOBAL_CONFIGS;
 
 #ifdef __cplusplus
 extern "C" {
@@ -147,7 +157,7 @@ extern "C" {
  * @retval RET_ERR if persistent memory doesn't contain configurations
  * @retval RET_OK if configurations are present in persistent memory
  */
-sysret_t configs_get(configs_t* configs);
+sysret_t configs_get(metadata_t* configs);
 
 /**
  * @brief Save configurations to persistent memory
@@ -155,7 +165,7 @@ sysret_t configs_get(configs_t* configs);
  * @param configs Configurations to save
  * @return sysret_t Driver status
  */
-sysret_t configs_save(configs_t* configs);
+sysret_t configs_save(metadata_t* configs);
 
 #ifdef __cplusplus
 }

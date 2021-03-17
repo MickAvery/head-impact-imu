@@ -105,16 +105,16 @@ static void configs_show_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
         " Low G Accel Sampling Rate : [ %s ]\n"
         "High G Accel Sampling Rate : [ %s ]\n"
         "\n",
-        configs_datalog_mode_strings            [ GLOBAL_CONFIGS.device_configs.datalog_mode ],
-        configs_trigger_on_strings              [ GLOBAL_CONFIGS.device_configs.trigger_on ],
-        configs_trigger_axis_strings            [ GLOBAL_CONFIGS.device_configs.trigger_axis ],
-        GLOBAL_CONFIGS.device_configs.threshold_resultant,
-        GLOBAL_CONFIGS.device_configs.threshold_x,
-        GLOBAL_CONFIGS.device_configs.threshold_y,
-        GLOBAL_CONFIGS.device_configs.threshold_z,
-        configs_gyro_sample_rate_strings        [ GLOBAL_CONFIGS.device_configs.gyro_sampling_rate],
-        configs_low_g_accel_sample_rate_strings [ GLOBAL_CONFIGS.device_configs.low_g_sampling_rate ],
-        configs_high_g_accel_sample_rate_strings[ GLOBAL_CONFIGS.device_configs.high_g_sampling_rate ]
+        configs_datalog_mode_strings            [ GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_mode ],
+        configs_trigger_on_strings              [ GLOBAL_CONFIGS.device_metadata.current_dev_configs.trigger_on ],
+        configs_trigger_axis_strings            [ GLOBAL_CONFIGS.device_metadata.current_dev_configs.trigger_axis ],
+        GLOBAL_CONFIGS.device_metadata.current_dev_configs.threshold_resultant,
+        GLOBAL_CONFIGS.device_metadata.current_dev_configs.threshold_x,
+        GLOBAL_CONFIGS.device_metadata.current_dev_configs.threshold_y,
+        GLOBAL_CONFIGS.device_metadata.current_dev_configs.threshold_z,
+        configs_gyro_sample_rate_strings        [ GLOBAL_CONFIGS.device_metadata.current_dev_configs.gyro_sampling_rate],
+        configs_low_g_accel_sample_rate_strings [ GLOBAL_CONFIGS.device_metadata.current_dev_configs.low_g_sampling_rate ],
+        configs_high_g_accel_sample_rate_strings[ GLOBAL_CONFIGS.device_metadata.current_dev_configs.high_g_sampling_rate ]
     );
 }
 
@@ -126,7 +126,7 @@ static void datalog_enable_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv)
 {
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
-    GLOBAL_CONFIGS.device_configs.datalog_en = true;
+    GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = true;
 }
 
 /**
@@ -137,7 +137,7 @@ static void datalog_disable_cmd(nrf_cli_t const* p_cli, size_t argc, char** argv
 {
     ASSERT(p_cli);
     ASSERT(p_cli->p_ctx && p_cli->p_iface && p_cli->p_name);
-    GLOBAL_CONFIGS.device_configs.datalog_en = false;
+    GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = false;
 }
 
 /**
