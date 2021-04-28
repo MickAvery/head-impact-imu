@@ -22,6 +22,11 @@
 #define BULK_ERASE_TIME_MS        ((77U + 8U) * 1000U) /*!< Typical bulk erase time in ms based on datasheet, +10% */
 
 /**
+ * @brief Given an address, get the starting address of the next page
+ */
+#define NEXT_PAGE_ADDR_FROM_CURR(curr_addr) (curr_addr + (FLASH_PAGE_SIZE - (curr_addr % FLASH_PAGE_SIZE)))
+
+/**
  * @brief MT25Q driver configurations
  * 
  * @note The Capstone 2020/2021 team decided that the default flash chip settings

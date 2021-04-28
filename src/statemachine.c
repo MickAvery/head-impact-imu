@@ -9,7 +9,11 @@
 #include "datetime.h"
 #include "network.h"
 #include "configs.h"
+#include "datalog.h"
 #include "mt25q.h"
+#include "adxl372.h"
+#include "icm20649.h"
+#include "app_timer.h"
 #include "nrf_log.h"
 
 /**
@@ -33,6 +37,36 @@ static statemachine_t state_machine =
     .log_download_requested = false,
     .state = STATE_UNINIT
 };
+
+/**************************************
+ * Variables and configurations related
+ * to the datalog timer
+ **************************************/
+
+/**
+ * @brief datalog timer handle
+ */
+APP_TIMER_DEF(datalog_timer);
+
+/**
+ * @brief Set by @ref datalog_timer_handler() on timer alarm
+ */
+static volatile bool its_time_to_log_data = false;
+
+/**
+ * @notapi
+ * @brief Signify to state machine that it's time for another
+ *        round of datalogging
+ */
+static void datalog_timer_handler(void* p_ctx)
+{
+    (void)p_ctx;
+    its_time_to_log_data = true;
+}
+
+/**************************************
+ * API
+ **************************************/
 
 /**
  * @brief Initialize system state machine module
@@ -87,7 +121,7 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
             /* TODO: make sure configs can only be set when IDLE */
 
             /* set header */
-            GLOBAL_CONFIGS.device_configs.header = CONFIGS_FRAME_HEADER;
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.header = CONFIGS_FRAME_HEADER;
 
             /* save configurations */
             memcpy(
@@ -128,14 +162,14 @@ void statemachine_ble_data_handler(uint8_t* data, size_t size)
         case REQ_START_DATALOG:
             NRF_LOG_DEBUG("REQ_START_DATALOG");
 
-            GLOBAL_CONFIGS.device_configs.datalog_en = true;
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = true;
 
             break;
 
         case REQ_STOP_DATALOG:
             NRF_LOG_DEBUG("REQ_STOP_DATALOG");
 
-            GLOBAL_CONFIGS.device_configs.datalog_en = false;
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = false;
 
             break;
 
@@ -179,16 +213,25 @@ void statemachine_process(void)
                 NRF_LOG_DEBUG("FAILED TO READ CONFIGS - %d", ret);
             }
 
-            GLOBAL_CONFIGS.device_configs.datalog_en = false;
+            (void)app_timer_create(
+                &datalog_timer,
+                APP_TIMER_MODE_REPEATED,
+                datalog_timer_handler
+            );
+
+            GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en = false;
 
             state_machine.state = STATE_IDLE;
             break;
 
         case STATE_IDLE:
 
-            if(GLOBAL_CONFIGS.device_configs.datalog_en)
+            if(GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("IDLE -> WAIT_FOR_TRIGGER");
+
+                (void)datalog_start(&GLOBAL_CONFIGS);
+
                 state_machine.state = STATE_WAIT_FOR_TRIGGER;
             }
             else if(state_machine.log_download_requested)
@@ -201,14 +244,25 @@ void statemachine_process(void)
 
         case STATE_WAIT_FOR_TRIGGER:
 
-            if(!GLOBAL_CONFIGS.device_configs.datalog_en)
+            if(!GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> IDLE");
+
+                (void)datalog_stop(&GLOBAL_CONFIGS);
+
                 state_machine.state = STATE_IDLE;
             }
-            else if(GLOBAL_CONFIGS.device_configs.datalog_mode == CONFIGS_DATALOG_MODE_CONTINUOUS)
+            else if(GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_mode == CONFIGS_DATALOG_MODE_CONTINUOUS)
             {
                 NRF_LOG_DEBUG("WAIT_FOR_TRIGGER -> DATALOGGING");
+
+                /* start timer */
+                (void)app_timer_start(
+                    datalog_timer,
+                    configs_sample_rate_ticks[GLOBAL_CONFIGS.device_metadata.current_dev_configs.high_g_sampling_rate],
+                    NULL
+                );
+
                 state_machine.state = STATE_DATALOGGING;
             }
 
@@ -216,11 +270,35 @@ void statemachine_process(void)
 
         case STATE_DATALOGGING:
 
-            if(!GLOBAL_CONFIGS.device_configs.datalog_en)
+            if(!GLOBAL_CONFIGS.device_metadata.current_dev_configs.datalog_en)
             {
                 NRF_LOG_DEBUG("DATALOGGING -> WAIT_FOR_TRIGGER");
+                (void)app_timer_stop(datalog_timer);
                 state_machine.state = STATE_WAIT_FOR_TRIGGER;
             }
+
+            if(its_time_to_log_data)
+            {
+                datetime_t dt;
+                int16_t gyro[ICM20649_GYRO_AXES] = {0U};
+                int16_t low_g_accel[ICM20649_ACCEL_AXES] = {0U};
+                int16_t high_g_accel[ADXL372_AXES] = {0U};
+
+                /* get sensor readings */
+                sysret_t dt_ret   = datetime_get(&dt);
+                sysret_t icm_ret  = icm20649_read_raw(gyro, low_g_accel);
+                sysret_t adxl_ret = adxl372_read_raw(high_g_accel);
+
+                (void)datalog_log(
+                    dt_ret == RET_OK   ? &dt : NULL,
+                    icm_ret == RET_OK  ? gyro : NULL,
+                    icm_ret == RET_OK  ? low_g_accel : NULL,
+                    adxl_ret == RET_OK ? high_g_accel : NULL
+                );
+
+                its_time_to_log_data = false;
+            }
+
             break;
 
         case STATE_LOW_POWER:

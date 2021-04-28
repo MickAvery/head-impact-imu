@@ -99,6 +99,8 @@ sysret_t adxl372_init(const adxl372_cfg_t* cfg);
 /**
  * @brief Read raw linear acceleration data from sensor (values straight from registers)
  * 
+ * Raw readings are expressed in 100mg/LSB
+ * 
  * @param readings - Buffer to store data
  * @return adxl372_err_t - Error status if something goes wrong 
  */
