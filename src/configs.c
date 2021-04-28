@@ -39,7 +39,18 @@ char* configs_low_g_accel_sample_rate_strings[CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_MA
 
 char* configs_high_g_accel_sample_rate_strings[CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX] =
 {
-    "4500 Hz", "2000 Hz", "1000 Hz", "500 Hz", "250 Hz", "125 Hz"
+    "6400 Hz", "3200 Hz", "1600 Hz", "800 Hz", "400 Hz"
+};
+
+/**
+ * @brief Timer ticks corresponding to High G accelerometer sampling rates.
+ * 
+ * Tick is calculated with (1 / rate) / (1 / 32768Hz),
+ * where 32768Hz is the RTC clock frequency
+ */
+size_t configs_sample_rate_ticks[CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX] =
+{
+    5, 10, 20, 40, 80
 };
 
 /**

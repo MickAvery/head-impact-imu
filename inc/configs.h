@@ -74,12 +74,11 @@ typedef enum
  */
 typedef enum
 {
-    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_4500HZ = 0,
-    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_2000HZ,
-    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_1000HZ,
-    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_500HZ,
-    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_250HZ,
-    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_125HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_6400HZ = 0,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_3200HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_1600HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_800HZ,
+    CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_400HZ,
     CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX /*!< not an option */
 } configs_high_g_accel_sample_rate_t;
 
@@ -92,6 +91,7 @@ extern char* configs_trigger_axis_strings[CONFIGS_TRIGGER_AXIS_MAX];
 extern char* configs_gyro_sample_rate_strings[CONFIGS_GYRO_SAMPLE_RATE_MAX];
 extern char* configs_low_g_accel_sample_rate_strings[CONFIGS_LOW_G_ACCEL_SAMPLE_RATE_MAX];
 extern char* configs_high_g_accel_sample_rate_strings[CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX];
+extern size_t configs_sample_rate_ticks[CONFIGS_HIGH_G_ACCEL_SAMPLE_RATE_MAX];
 
 /**
  * @brief Expected header of the configurations frame.

@@ -34,7 +34,7 @@ typedef enum
 /**
  * @brief Struct to contain datetime info
  */
-typedef struct
+typedef struct __attribute__((__packed__))
 {
     uint16_t year;  /*!< Year */
     uint8_t  month; /*!< Month */
