@@ -151,7 +151,10 @@ static void nus_data_handler(ble_nus_evt_t * p_nus_evt)
         }
         case BLE_NUS_EVT_COMM_STARTED:
             p_instance->p_cb->service_started = true;
-
+            err_code = app_timer_start(*p_instance->p_timer,
+                                       APP_TIMER_TICKS(NRF_CLI_BLE_UART_TIMEOUT_MS),
+                                       p_instance);
+            ASSERT(err_code == NRF_SUCCESS);
             NRF_LOG_INFO("Conn_handle:%d, communication started", p_instance->p_cb->conn_handle);
             break;
         case BLE_NUS_EVT_COMM_STOPPED:
@@ -246,12 +249,7 @@ static ret_code_t cli_ble_uart_enable(nrf_cli_transport_t const * p_transport, b
             err_code = app_timer_create(p_instance->p_timer,
                                         APP_TIMER_MODE_SINGLE_SHOT,
                                         timer_handler);
-            ASSERT(err_code == NRF_SUCCESS);
             p_instance->p_cb->timer_created = true;
-            err_code = app_timer_start(*p_instance->p_timer,
-                                       APP_TIMER_TICKS(NRF_CLI_BLE_UART_TIMEOUT_MS),
-                                       p_instance);
-            ASSERT(err_code == NRF_SUCCESS);
         }
         return err_code;
     }
