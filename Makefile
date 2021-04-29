@@ -255,8 +255,8 @@ pyocdflash:
 
 # Flash the program using nRF Command Line Tools
 flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
-	nrfjprog -f nrf52 --program $(CURDIR)/hex/imu_pack_pcb.hex --sectorerase
+	@echo Flashing: $(CURDIR)/hex/$(PROJECT_NAME).hex
+	nrfjprog -f nrf52 --program $(CURDIR)/hex/$(PROJECT_NAME).hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
 # Merge application and softdevice
