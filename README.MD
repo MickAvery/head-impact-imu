@@ -82,9 +82,10 @@ The `makefile` is located in  `<your path >/head_impact_IMU/ble_app/armgcc/ .
 Go to your app config folder and run make:
 ``` sh
 $ cd path/to/proj/root
-$ make flash
+$ make REV=x
 ```
-The command `make` will compile the and link the source files. 
+where `REV=x` can be `REV=1`, `REV=2`, `REV=3`, or `REV=MDK`. By default it compiles to `REV=1`.
+
 If successful you should see:
 
 ``` sh
@@ -179,10 +180,10 @@ The CLI is accessible through UART and the JLink RTT, setup is described below:
 
 The following MCU pins correspond with UART RX and TX pins:
 
-|    | REV 1/2 | MDK |
-|---:|:-------:|:---:|
-| RX |    23   |  17 |
-| TX |    24   |  18 |
+|    | REV 1 | REV 2/3 | MDK |
+|---:|:-----:|:-------:|:---:|
+| RX |  23   |    19   |  17 |
+| TX |  24   |    20   |  18 |
 
 Keep in mind that when using an RS232/UART dongle, you need to hook up the dongle's `TX` pin with the MCU's `RX` pin and the dongle's `RX` pin with the MCU's `TX` pin:
 
@@ -300,9 +301,26 @@ J-Link>
 
 ```
 
-## Navigating the Repository (OUT OF DATE AS OF OCTOBER 2020)
+## Navigating the Repository
 
-### nrf_sdk
+```
+*****************************************************************************
+*** Files Organization                                                    ***
+*****************************************************************************
+
+--{root}                        - ChibiOS directory.
+  +-- main.c                    - Firmware entry point
+  +-- sdk_config.h              - nRF SDK configurations
+  +-- .travis.yml               - TravisCI configurations
+  +-- inc/                      - Header files
+  +-- src/                      - Modules source code
+  +-- drivers/                  - Low level drivers for serial communication and external peripherals
+  +-- scripts/                  - Contains scripts for automation and data processing
+  +-- nrf_sdk/                  - nRF SDK 15.2 source files
+  +-- board_config/             - Contains pin mappings for each board revision
+```
+
+### nrf_sdk/
 
 This directory contains part of the Nordic Semiconductor Software Development Kit (SDK). The full version is an extremely detailed guide for developing applications on the NRF52832 microcontroller used by the project.
 
@@ -310,11 +328,7 @@ The partial version contained here consists mainly of toolchain resources (as yo
 
 [The full SDK](https://www.nordicsemi.com/Software-and-tools/Software/nRF5-SDK) contains various examples, most of which are irrelevant to this project, and so are not included here. Nordic Semiconductor also has an online[Infocenter](https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk5.v15.0.0%2Fexamples.html) that provides more detailed information on the SDK and its various modules.
 
-#### config
-
-This directory contains the default *sdk_config.h* file. This file type is discussed in more detail later.
-
-### sdk_config file
+### sdk_config.h
 
 This header file allows you to modify the configuration options for the code that you write. Essentially, it contains a list of #define statements that allow you to select the MCU features or specifc modes used by your application.
 
